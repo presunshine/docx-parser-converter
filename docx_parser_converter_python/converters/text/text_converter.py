@@ -184,44 +184,69 @@ class TextConverter:
             return (None, "", "")
 
         key = (num_pr.num_id, num_pr.ilvl)
-
-        # Increment counter
-        current = self._numbering_counters.get(key, 0) + 1
-        self._numbering_counters[key] = current
+        ilvl = num_pr.ilvl
+        num_id = num_pr.num_id
 
         # Get format from numbering definitions
         num_fmt = "decimal"
-        lvl_text = "%1."
+        lvl_text = f"%{ilvl + 1}."
         suff = "\t"
+        abstract_def = None
 
         if self.numbering:
-            # Find the numbering instance
+            # Find the numbering instance and abstract definition
             for num_instance in self.numbering.num:
-                if num_instance.num_id == num_pr.num_id:
-                    # Find the abstract numbering
+                if num_instance.num_id == num_id:
                     for abstract in self.numbering.abstract_num:
                         if abstract.abstract_num_id == num_instance.abstract_num_id:
+                            abstract_def = abstract
                             # Find the level
                             for level in abstract.lvl:
-                                if level.ilvl == num_pr.ilvl:
+                                if level.ilvl == ilvl:
                                     num_fmt = level.num_fmt or "decimal"
-                                    lvl_text = level.lvl_text or "%1."
+                                    lvl_text = level.lvl_text or f"%{ilvl + 1}."
                                     suff = level.suff or "tab"
                                     break
                             break
                     break
 
+        # Reset counters for deeper levels when we go back to a shallower level
+        for counter_key in list(self._numbering_counters.keys()):
+            if counter_key[0] == num_id and counter_key[1] > ilvl:
+                del self._numbering_counters[counter_key]
+
+        # Increment counter for current level
+        current = self._numbering_counters.get(key, 0) + 1
+        self._numbering_counters[key] = current
+
         # Format the prefix
         if num_fmt == "bullet":
             prefix = lvl_text if lvl_text else "•"
         else:
-            from converters.text.numbering_to_text import format_number
+            from converters.text.numbering_to_text import apply_level_text
 
-            formatted = format_number(current, num_fmt)
-            if "%1" in lvl_text:
-                prefix = lvl_text.replace("%1", formatted)
-            else:
-                prefix = formatted + lvl_text
+            # Build counters dict and num_fmts dict for all levels
+            counters: dict[int, int] = {}
+            num_fmts: dict[int, str] = {}
+
+            for level_idx in range(10):
+                level_key = (num_id, level_idx)
+                if level_key in self._numbering_counters:
+                    counters[level_idx] = self._numbering_counters[level_key]
+
+                # Get num_fmt for each level from abstract definition
+                if abstract_def:
+                    for level in abstract_def.lvl:
+                        if level.ilvl == level_idx:
+                            num_fmts[level_idx] = level.num_fmt or "decimal"
+                            break
+
+            # Make sure current level is in counters
+            counters[ilvl] = current
+            num_fmts[ilvl] = num_fmt
+
+            # Use apply_level_text to handle all placeholders
+            prefix = apply_level_text(lvl_text, counters, num_fmts)
 
         # Get suffix
         if suff == "tab":
