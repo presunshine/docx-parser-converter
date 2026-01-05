@@ -581,6 +581,12 @@ def run_properties_to_css(r_pr: RunProperties | None) -> dict[str, str]:
         if bg:
             result["background-color"] = bg
 
+    # Shading (background-color) - only applies if no highlight is set
+    if r_pr.shd and "background-color" not in result:
+        bg = shading_to_css(r_pr.shd)
+        if bg:
+            result["background-color"] = bg
+
     # Character spacing
     if r_pr.spacing is not None:
         # Spacing is in twips

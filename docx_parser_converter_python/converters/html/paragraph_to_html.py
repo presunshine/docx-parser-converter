@@ -167,6 +167,7 @@ def paragraph_to_html(
     relationships: dict[str, str] | None = None,
     numbering_prefix: str | None = None,
     numbering_indent_pt: float | None = None,
+    numbering_styles: dict[str, str] | None = None,
     use_semantic_tags: bool = True,
     use_headings: bool = False,
     css_generator: CSSGenerator | None = None,
@@ -179,6 +180,7 @@ def paragraph_to_html(
         relationships: Dict mapping r:id to URL for hyperlinks
         numbering_prefix: List number/bullet prefix to prepend
         numbering_indent_pt: Left indentation in points from numbering level
+        numbering_styles: CSS properties for the numbering marker
         use_semantic_tags: Use semantic tags (<strong>, <em>)
         use_headings: Use heading tags (<h1>-<h6>) for outline levels
         css_generator: CSS generator instance
@@ -207,7 +209,12 @@ def paragraph_to_html(
 
     # Add numbering prefix if provided
     if numbering_prefix:
-        content_html = f'<span class="list-marker">{escape(numbering_prefix)}</span>{content_html}'
+        # Apply numbering styles if provided
+        if numbering_styles:
+            marker_style = gen.generate_inline_style(numbering_styles)
+            content_html = f'<span class="list-marker" style="{marker_style}">{escape(numbering_prefix)}</span>{content_html}'
+        else:
+            content_html = f'<span class="list-marker">{escape(numbering_prefix)}</span>{content_html}'
 
     # Determine tag to use
     tag = _get_paragraph_tag(para.p_pr, use_headings)

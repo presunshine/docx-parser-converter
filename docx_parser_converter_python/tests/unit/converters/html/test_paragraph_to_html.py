@@ -517,6 +517,106 @@ class TestNumberingConversion:
         result = paragraph_to_html(para, numbering_prefix="1. ")
         assert "margin-left" in result
 
+    def test_numbering_indent_pt_parameter(self) -> None:
+        """numbering_indent_pt parameter applies margin-left."""
+        para = Paragraph(
+            content=[Run(content=[Text(value="Indented item")])],
+        )
+        result = paragraph_to_html(para, numbering_prefix="1.\t", numbering_indent_pt=36.0)
+        assert "margin-left: 36" in result or "margin-left:36" in result
+
+    def test_numbering_indent_pt_overrides_paragraph_indent(self) -> None:
+        """numbering_indent_pt overrides paragraph indentation."""
+        para = Paragraph(
+            p_pr=ParagraphProperties(ind=Indentation(left=1440)),  # 72pt
+            content=[Run(content=[Text(value="Item")])],
+        )
+        # numbering_indent_pt should override to 36pt
+        result = paragraph_to_html(para, numbering_prefix="1.\t", numbering_indent_pt=36.0)
+        assert "36" in result
+
+    def test_numbering_styles_applies_to_marker(self) -> None:
+        """numbering_styles parameter applies styles to list marker span."""
+        para = Paragraph(
+            content=[Run(content=[Text(value="Bold marker text")])],
+        )
+        result = paragraph_to_html(
+            para, numbering_prefix="1.\t", numbering_styles={"font-weight": "bold"}
+        )
+        assert 'class="list-marker"' in result
+        assert "font-weight" in result
+        assert "bold" in result
+
+    def test_numbering_styles_multiple_properties(self) -> None:
+        """numbering_styles with multiple CSS properties."""
+        para = Paragraph(
+            content=[Run(content=[Text(value="Styled marker")])],
+        )
+        result = paragraph_to_html(
+            para,
+            numbering_prefix="1.\t",
+            numbering_styles={"font-weight": "bold", "color": "#FF0000"},
+        )
+        assert "font-weight" in result
+        assert "#FF0000" in result
+
+    def test_numbering_styles_font_family(self) -> None:
+        """numbering_styles with font-family."""
+        para = Paragraph(
+            content=[Run(content=[Text(value="Font marker")])],
+        )
+        result = paragraph_to_html(
+            para,
+            numbering_prefix="1.\t",
+            numbering_styles={"font-family": "'Times New Roman'"},
+        )
+        assert "font-family" in result
+        assert "Times New Roman" in result
+
+    def test_numbering_styles_none_uses_plain_marker(self) -> None:
+        """numbering_styles=None results in plain marker span without style."""
+        para = Paragraph(
+            content=[Run(content=[Text(value="Plain marker")])],
+        )
+        result = paragraph_to_html(para, numbering_prefix="1.\t", numbering_styles=None)
+        assert 'class="list-marker"' in result
+        # Should not have inline style on marker
+        assert 'list-marker" style="' not in result
+
+    def test_numbering_styles_empty_dict_uses_plain_marker(self) -> None:
+        """numbering_styles={} results in plain marker span."""
+        para = Paragraph(
+            content=[Run(content=[Text(value="Empty style")])],
+        )
+        result = paragraph_to_html(para, numbering_prefix="1.\t", numbering_styles={})
+        assert 'class="list-marker"' in result
+
+    def test_combined_indent_and_styles(self) -> None:
+        """Both numbering_indent_pt and numbering_styles work together."""
+        para = Paragraph(
+            content=[Run(content=[Text(value="Styled and indented")])],
+        )
+        result = paragraph_to_html(
+            para,
+            numbering_prefix="1.\t",
+            numbering_indent_pt=72.0,
+            numbering_styles={"font-style": "italic"},
+        )
+        # Should have both margin-left and italic style
+        assert "margin-left" in result
+        assert "72" in result
+        assert "font-style" in result
+        assert "italic" in result
+
+    def test_marker_escapes_prefix_html(self) -> None:
+        """Numbering prefix with special characters is escaped."""
+        para = Paragraph(
+            content=[Run(content=[Text(value="HTML chars")])],
+        )
+        result = paragraph_to_html(para, numbering_prefix="<1>\t")
+        # Should escape < and > in prefix
+        assert "&lt;1&gt;" in result
+
 
 # =============================================================================
 # Tab Stop Tests

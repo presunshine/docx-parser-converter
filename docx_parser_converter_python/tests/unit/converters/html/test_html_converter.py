@@ -570,6 +570,438 @@ class TestHTMLListPrefixes:
 
 
 # =============================================================================
+# Numbering Indentation Tests
+# =============================================================================
+
+
+class TestNumberingIndentation:
+    """Tests for numbering indentation extraction."""
+
+    def test_numbering_indentation_from_level(self) -> None:
+        """Indentation is extracted from numbering level p_pr."""
+        from models.numbering.abstract_numbering import AbstractNumbering
+        from models.numbering.level import Level
+        from models.numbering.numbering import Numbering
+        from models.numbering.numbering_instance import NumberingInstance
+
+        # Level with 720 twips left indent (36pt)
+        level = Level(
+            ilvl=0,
+            num_fmt="decimal",
+            lvl_text="%1.",
+            p_pr={"left": 720, "hanging": 360},
+        )
+        abstract = AbstractNumbering(abstract_num_id=10, lvl=[level])
+        instance = NumberingInstance(num_id=10, abstract_num_id=10)
+        numbering = Numbering(abstract_num=[abstract], num=[instance])
+
+        from models.document.paragraph import NumberingProperties
+
+        doc = Document(
+            body=Body(
+                content=[
+                    Paragraph(
+                        p_pr=ParagraphProperties(num_pr=NumberingProperties(num_id=10, ilvl=0)),
+                        content=[Run(content=[Text(value="Indented item")])],
+                    ),
+                ]
+            )
+        )
+
+        converter = HTMLConverter(numbering=numbering)
+        result = converter.convert(doc)
+
+        # Should have margin-left: 36pt (720 twips / 20)
+        assert "margin-left: 36" in result or "margin-left:36" in result
+        assert "Indented item" in result
+
+    def test_multi_level_indentation(self) -> None:
+        """Different levels have different indentation."""
+        from models.numbering.abstract_numbering import AbstractNumbering
+        from models.numbering.level import Level
+        from models.numbering.numbering import Numbering
+        from models.numbering.numbering_instance import NumberingInstance
+
+        levels = [
+            Level(ilvl=0, num_fmt="decimal", lvl_text="%1.", p_pr={"left": 720}),
+            Level(ilvl=1, num_fmt="decimal", lvl_text="%1.%2.", p_pr={"left": 1440}),
+        ]
+        abstract = AbstractNumbering(abstract_num_id=11, lvl=levels)
+        instance = NumberingInstance(num_id=11, abstract_num_id=11)
+        numbering = Numbering(abstract_num=[abstract], num=[instance])
+
+        from models.document.paragraph import NumberingProperties
+
+        doc = Document(
+            body=Body(
+                content=[
+                    Paragraph(
+                        p_pr=ParagraphProperties(num_pr=NumberingProperties(num_id=11, ilvl=0)),
+                        content=[Run(content=[Text(value="Level 0")])],
+                    ),
+                    Paragraph(
+                        p_pr=ParagraphProperties(num_pr=NumberingProperties(num_id=11, ilvl=1)),
+                        content=[Run(content=[Text(value="Level 1")])],
+                    ),
+                ]
+            )
+        )
+
+        converter = HTMLConverter(numbering=numbering)
+        result = converter.convert(doc)
+
+        # Level 0: 720 twips = 36pt, Level 1: 1440 twips = 72pt
+        assert "36" in result  # Level 0 indentation
+        assert "72" in result  # Level 1 indentation
+
+    def test_no_indentation_when_p_pr_missing(self) -> None:
+        """No indentation when level has no p_pr."""
+        from models.numbering.abstract_numbering import AbstractNumbering
+        from models.numbering.level import Level
+        from models.numbering.numbering import Numbering
+        from models.numbering.numbering_instance import NumberingInstance
+
+        level = Level(ilvl=0, num_fmt="decimal", lvl_text="%1.")  # No p_pr
+        abstract = AbstractNumbering(abstract_num_id=12, lvl=[level])
+        instance = NumberingInstance(num_id=12, abstract_num_id=12)
+        numbering = Numbering(abstract_num=[abstract], num=[instance])
+
+        from models.document.paragraph import NumberingProperties
+
+        doc = Document(
+            body=Body(
+                content=[
+                    Paragraph(
+                        p_pr=ParagraphProperties(num_pr=NumberingProperties(num_id=12, ilvl=0)),
+                        content=[Run(content=[Text(value="No indent")])],
+                    ),
+                ]
+            )
+        )
+
+        converter = HTMLConverter(numbering=numbering)
+        result = converter.convert(doc)
+
+        assert "No indent" in result
+        # Should not have margin-left from numbering
+        assert "margin-left" not in result or "margin-left: 0" in result
+
+
+# =============================================================================
+# Numbering Styles Tests
+# =============================================================================
+
+
+class TestNumberingStyles:
+    """Tests for numbering marker styling from level r_pr."""
+
+    def test_bold_numbering_marker(self) -> None:
+        """Bold marker from level r_pr."""
+        from models.numbering.abstract_numbering import AbstractNumbering
+        from models.numbering.level import Level
+        from models.numbering.numbering import Numbering
+        from models.numbering.numbering_instance import NumberingInstance
+
+        # RunProperties model uses 'b' for bold
+        level = Level(
+            ilvl=0,
+            num_fmt="decimal",
+            lvl_text="%1.",
+            r_pr={"b": True},
+            p_pr={"left": 720},
+        )
+        abstract = AbstractNumbering(abstract_num_id=20, lvl=[level])
+        instance = NumberingInstance(num_id=20, abstract_num_id=20)
+        numbering = Numbering(abstract_num=[abstract], num=[instance])
+
+        from models.document.paragraph import NumberingProperties
+
+        doc = Document(
+            body=Body(
+                content=[
+                    Paragraph(
+                        p_pr=ParagraphProperties(num_pr=NumberingProperties(num_id=20, ilvl=0)),
+                        content=[Run(content=[Text(value="Bold marker item")])],
+                    ),
+                ]
+            )
+        )
+
+        converter = HTMLConverter(numbering=numbering)
+        result = converter.convert(doc)
+
+        # Marker span should have bold styling
+        assert 'class="list-marker"' in result
+        assert "font-weight: bold" in result or "font-weight:bold" in result
+
+    def test_italic_numbering_marker(self) -> None:
+        """Italic marker from level r_pr."""
+        from models.numbering.abstract_numbering import AbstractNumbering
+        from models.numbering.level import Level
+        from models.numbering.numbering import Numbering
+        from models.numbering.numbering_instance import NumberingInstance
+
+        # RunProperties model uses 'i' for italic
+        level = Level(
+            ilvl=0,
+            num_fmt="decimal",
+            lvl_text="%1.",
+            r_pr={"i": True},
+            p_pr={"left": 720},
+        )
+        abstract = AbstractNumbering(abstract_num_id=21, lvl=[level])
+        instance = NumberingInstance(num_id=21, abstract_num_id=21)
+        numbering = Numbering(abstract_num=[abstract], num=[instance])
+
+        from models.document.paragraph import NumberingProperties
+
+        doc = Document(
+            body=Body(
+                content=[
+                    Paragraph(
+                        p_pr=ParagraphProperties(num_pr=NumberingProperties(num_id=21, ilvl=0)),
+                        content=[Run(content=[Text(value="Italic marker item")])],
+                    ),
+                ]
+            )
+        )
+
+        converter = HTMLConverter(numbering=numbering)
+        result = converter.convert(doc)
+
+        assert 'class="list-marker"' in result
+        assert "font-style: italic" in result or "font-style:italic" in result
+
+    def test_colored_numbering_marker(self) -> None:
+        """Colored marker from level r_pr."""
+        from models.numbering.abstract_numbering import AbstractNumbering
+        from models.numbering.level import Level
+        from models.numbering.numbering import Numbering
+        from models.numbering.numbering_instance import NumberingInstance
+
+        # RunProperties.color is a Color object with a 'val' field
+        level = Level(
+            ilvl=0,
+            num_fmt="decimal",
+            lvl_text="%1.",
+            r_pr={"color": {"val": "FF0000"}},
+            p_pr={"left": 720},
+        )
+        abstract = AbstractNumbering(abstract_num_id=22, lvl=[level])
+        instance = NumberingInstance(num_id=22, abstract_num_id=22)
+        numbering = Numbering(abstract_num=[abstract], num=[instance])
+
+        from models.document.paragraph import NumberingProperties
+
+        doc = Document(
+            body=Body(
+                content=[
+                    Paragraph(
+                        p_pr=ParagraphProperties(num_pr=NumberingProperties(num_id=22, ilvl=0)),
+                        content=[Run(content=[Text(value="Red marker item")])],
+                    ),
+                ]
+            )
+        )
+
+        converter = HTMLConverter(numbering=numbering)
+        result = converter.convert(doc)
+
+        assert 'class="list-marker"' in result
+        assert "#FF0000" in result or "#ff0000" in result
+
+    def test_font_family_numbering_marker(self) -> None:
+        """Font family on marker from level r_pr."""
+        from models.numbering.abstract_numbering import AbstractNumbering
+        from models.numbering.level import Level
+        from models.numbering.numbering import Numbering
+        from models.numbering.numbering_instance import NumberingInstance
+
+        # RunProperties model uses 'r_fonts' for fonts
+        level = Level(
+            ilvl=0,
+            num_fmt="decimal",
+            lvl_text="%1.",
+            r_pr={"r_fonts": {"ascii": "Times New Roman"}},
+            p_pr={"left": 720},
+        )
+        abstract = AbstractNumbering(abstract_num_id=23, lvl=[level])
+        instance = NumberingInstance(num_id=23, abstract_num_id=23)
+        numbering = Numbering(abstract_num=[abstract], num=[instance])
+
+        from models.document.paragraph import NumberingProperties
+
+        doc = Document(
+            body=Body(
+                content=[
+                    Paragraph(
+                        p_pr=ParagraphProperties(num_pr=NumberingProperties(num_id=23, ilvl=0)),
+                        content=[Run(content=[Text(value="Times marker item")])],
+                    ),
+                ]
+            )
+        )
+
+        converter = HTMLConverter(numbering=numbering)
+        result = converter.convert(doc)
+
+        assert 'class="list-marker"' in result
+        assert "Times New Roman" in result
+
+    def test_underline_numbering_marker(self) -> None:
+        """Underline marker from level r_pr."""
+        from models.numbering.abstract_numbering import AbstractNumbering
+        from models.numbering.level import Level
+        from models.numbering.numbering import Numbering
+        from models.numbering.numbering_instance import NumberingInstance
+
+        # RunProperties.u is an Underline object with a 'val' field
+        level = Level(
+            ilvl=0,
+            num_fmt="decimal",
+            lvl_text="%1.",
+            r_pr={"u": {"val": "single"}},
+            p_pr={"left": 720},
+        )
+        abstract = AbstractNumbering(abstract_num_id=24, lvl=[level])
+        instance = NumberingInstance(num_id=24, abstract_num_id=24)
+        numbering = Numbering(abstract_num=[abstract], num=[instance])
+
+        from models.document.paragraph import NumberingProperties
+
+        doc = Document(
+            body=Body(
+                content=[
+                    Paragraph(
+                        p_pr=ParagraphProperties(num_pr=NumberingProperties(num_id=24, ilvl=0)),
+                        content=[Run(content=[Text(value="Underline marker")])],
+                    ),
+                ]
+            )
+        )
+
+        converter = HTMLConverter(numbering=numbering)
+        result = converter.convert(doc)
+
+        assert 'class="list-marker"' in result
+        assert "text-decoration" in result and "underline" in result
+
+    def test_background_color_numbering_marker(self) -> None:
+        """Background color on marker from level r_pr."""
+        from models.numbering.abstract_numbering import AbstractNumbering
+        from models.numbering.level import Level
+        from models.numbering.numbering import Numbering
+        from models.numbering.numbering_instance import NumberingInstance
+
+        # RunProperties model uses 'shd' for shading
+        level = Level(
+            ilvl=0,
+            num_fmt="decimal",
+            lvl_text="%1.",
+            r_pr={"shd": {"fill": "FFFF00"}},
+            p_pr={"left": 720},
+        )
+        abstract = AbstractNumbering(abstract_num_id=25, lvl=[level])
+        instance = NumberingInstance(num_id=25, abstract_num_id=25)
+        numbering = Numbering(abstract_num=[abstract], num=[instance])
+
+        from models.document.paragraph import NumberingProperties
+
+        doc = Document(
+            body=Body(
+                content=[
+                    Paragraph(
+                        p_pr=ParagraphProperties(num_pr=NumberingProperties(num_id=25, ilvl=0)),
+                        content=[Run(content=[Text(value="Yellow bg marker")])],
+                    ),
+                ]
+            )
+        )
+
+        converter = HTMLConverter(numbering=numbering)
+        result = converter.convert(doc)
+
+        assert 'class="list-marker"' in result
+        assert "#FFFF00" in result or "#ffff00" in result or "background" in result
+
+    def test_no_marker_style_when_r_pr_missing(self) -> None:
+        """No marker styling when level has no r_pr."""
+        from models.numbering.abstract_numbering import AbstractNumbering
+        from models.numbering.level import Level
+        from models.numbering.numbering import Numbering
+        from models.numbering.numbering_instance import NumberingInstance
+
+        level = Level(ilvl=0, num_fmt="decimal", lvl_text="%1.", p_pr={"left": 720})  # No r_pr
+        abstract = AbstractNumbering(abstract_num_id=26, lvl=[level])
+        instance = NumberingInstance(num_id=26, abstract_num_id=26)
+        numbering = Numbering(abstract_num=[abstract], num=[instance])
+
+        from models.document.paragraph import NumberingProperties
+
+        doc = Document(
+            body=Body(
+                content=[
+                    Paragraph(
+                        p_pr=ParagraphProperties(num_pr=NumberingProperties(num_id=26, ilvl=0)),
+                        content=[Run(content=[Text(value="Plain marker")])],
+                    ),
+                ]
+            )
+        )
+
+        converter = HTMLConverter(numbering=numbering)
+        result = converter.convert(doc)
+
+        assert "Plain marker" in result
+        # Marker should exist but without style attribute (or empty style)
+        assert 'class="list-marker"' in result
+        # Should not have inline styling on marker span
+        assert 'list-marker" style="font-weight' not in result
+
+    def test_marker_style_vs_text_style_separation(self) -> None:
+        """Marker styling is separate from text styling."""
+        from models.numbering.abstract_numbering import AbstractNumbering
+        from models.numbering.level import Level
+        from models.numbering.numbering import Numbering
+        from models.numbering.numbering_instance import NumberingInstance
+
+        # Bold marker (b=True), italic text
+        level = Level(
+            ilvl=0,
+            num_fmt="decimal",
+            lvl_text="%1.",
+            r_pr={"b": True},
+            p_pr={"left": 720},
+        )
+        abstract = AbstractNumbering(abstract_num_id=27, lvl=[level])
+        instance = NumberingInstance(num_id=27, abstract_num_id=27)
+        numbering = Numbering(abstract_num=[abstract], num=[instance])
+
+        from models.document.paragraph import NumberingProperties
+
+        doc = Document(
+            body=Body(
+                content=[
+                    Paragraph(
+                        p_pr=ParagraphProperties(num_pr=NumberingProperties(num_id=27, ilvl=0)),
+                        content=[Run(r_pr=RunProperties(i=True), content=[Text(value="Italic text")])],
+                    ),
+                ]
+            )
+        )
+
+        converter = HTMLConverter(numbering=numbering)
+        result = converter.convert(doc)
+
+        # Marker should be bold
+        assert "font-weight: bold" in result or "font-weight:bold" in result
+        # Text should be italic (semantic tag or style)
+        assert "<em>" in result or "font-style: italic" in result or "font-style:italic" in result
+        # Both styles present separately
+        assert "Italic text" in result
+
+
+# =============================================================================
 # Table Conversion Tests
 # =============================================================================
 

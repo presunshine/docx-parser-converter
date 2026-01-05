@@ -11,14 +11,14 @@ from typing import BinaryIO
 
 from converters.common.numbering_tracker import NumberingTracker
 from converters.common.style_resolver import StyleResolver
-from converters.html.css_generator import CSSGenerator
+from converters.html.css_generator import CSSGenerator, run_properties_to_css
 from converters.html.html_document import HTMLDocumentBuilder
 from converters.html.paragraph_to_html import paragraph_to_html
 from converters.html.run_to_html import run_to_html
 from converters.html.table_to_html import table_to_html
 from models.document.document import Document
 from models.document.paragraph import Paragraph
-from models.document.run import Run
+from models.document.run import Run, RunProperties
 from models.document.table import Table
 from models.numbering.numbering import Numbering
 from models.styles.styles import Styles
@@ -167,15 +167,17 @@ class HTMLConverter:
         Returns:
             HTML string
         """
-        # Get numbering prefix and indentation if applicable
+        # Get numbering prefix, indentation, and styles if applicable
         numbering_prefix = self._get_numbering_prefix(paragraph)
         numbering_indent_pt = self._get_numbering_indentation(paragraph)
+        numbering_styles = self._get_numbering_styles(paragraph)
 
         return paragraph_to_html(
             paragraph,
             relationships=self.relationships,
             numbering_prefix=numbering_prefix,
             numbering_indent_pt=numbering_indent_pt,
+            numbering_styles=numbering_styles,
             use_semantic_tags=self.config.use_semantic_tags,
             css_generator=self.css_generator,
             style_resolver=self.style_resolver,
@@ -282,6 +284,41 @@ class HTMLConverter:
                 # Convert twips to points (1 point = 20 twips)
                 return left_twips / 20
         return None
+
+    def _get_numbering_styles(self, para: Paragraph | None) -> dict[str, str] | None:
+        """Get CSS styles from numbering level's run properties.
+
+        Args:
+            para: Paragraph element
+
+        Returns:
+            Dictionary of CSS properties for the numbering marker, or None
+        """
+        if para is None or para.p_pr is None or para.p_pr.num_pr is None:
+            return None
+
+        num_pr = para.p_pr.num_pr
+        if num_pr.num_id is None or num_pr.ilvl is None:
+            return None
+
+        # Get level definition
+        level = self._numbering_tracker.get_level(num_pr.num_id, num_pr.ilvl)
+        if level is None or level.r_pr is None:
+            return None
+
+        # Convert the level's run properties dict to RunProperties model
+        # then convert to CSS
+        r_pr_dict = level.r_pr
+        if not isinstance(r_pr_dict, dict) or not r_pr_dict:
+            return None
+
+        try:
+            r_pr = RunProperties(**r_pr_dict)
+            css_props = run_properties_to_css(r_pr)
+            return css_props if css_props else None
+        except Exception:
+            # If model conversion fails, return None
+            return None
 
     def _wrap_content(self, content: str) -> str:
         """Wrap content in HTML document structure.
