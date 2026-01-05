@@ -31,7 +31,8 @@ from api import docx_to_html, docx_to_text  # noqa: E402
 # Directories
 FIXTURES_DIR = PROJECT_DIR / "fixtures"
 TEST_DOCX_DIR = FIXTURES_DIR / "test_docx_files"
-EXPECTED_OUTPUT_DIR = FIXTURES_DIR / "outputs-python"
+# Expected outputs are stored alongside the DOCX files
+EXPECTED_OUTPUT_DIR = TEST_DOCX_DIR
 
 
 class Colors:

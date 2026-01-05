@@ -6,6 +6,7 @@ Provides the main entry point for converting DOCX documents to plain text.
 from dataclasses import dataclass
 from typing import Literal
 
+from converters.common.numbering_tracker import NumberingTracker
 from converters.text.paragraph_to_text import ParagraphToTextConverter
 from converters.text.table_to_text import TableMode, TableToTextConverter
 from models.document.document import Document
@@ -27,6 +28,7 @@ class TextConverterConfig:
     table_mode: TableMode = "auto"
     paragraph_separator: str = "\n\n"
     preserve_empty_paragraphs: bool = True
+    preserve_list_indentation: bool = True
 
 
 # =============================================================================
@@ -84,6 +86,9 @@ class TextConverter:
 
         # Track numbering counters
         self._numbering_counters: dict[tuple[int, int], int] = {}
+
+        # Create numbering tracker for list indentation
+        self._numbering_tracker = NumberingTracker(numbering)
 
         # Initialize sub-converters
         use_markdown = self.config.formatting == "markdown"
@@ -156,6 +161,11 @@ class TextConverter:
         # Update numbering counters and get prefix
         prefix_info = self._get_numbering_prefix(para)
 
+        # Get list indentation if enabled
+        list_indent_spaces = 0
+        if self.config.preserve_list_indentation:
+            list_indent_spaces = self._get_list_indentation_spaces(para)
+
         # Create paragraph-specific converter with numbering info
         converter = ParagraphToTextConverter(
             use_markdown=self.config.formatting == "markdown",
@@ -163,9 +173,43 @@ class TextConverter:
             numbering_prefixes={prefix_info[0]: (prefix_info[1], prefix_info[2])}
             if prefix_info[0]
             else {},
+            list_indent_spaces=list_indent_spaces,
         )
 
         return converter.convert(para)
+
+    def _get_list_indentation_spaces(self, para: Paragraph) -> int:
+        """Get list indentation as number of spaces.
+
+        Args:
+            para: Paragraph element
+
+        Returns:
+            Number of spaces for indentation
+        """
+        if not para.p_pr or not para.p_pr.num_pr:
+            return 0
+
+        num_pr = para.p_pr.num_pr
+        if num_pr.num_id is None or num_pr.ilvl is None:
+            return 0
+
+        # Get level definition
+        level = self._numbering_tracker.get_level(num_pr.num_id, num_pr.ilvl)
+        if level is None or level.p_pr is None:
+            return 0
+
+        # Extract left indentation from level's paragraph properties
+        p_pr = level.p_pr
+        if isinstance(p_pr, dict) and "left" in p_pr:
+            left_twips = p_pr["left"]
+            if isinstance(left_twips, (int, float)):
+                # Convert twips to spaces
+                # 720 twips = 0.5 inch ≈ 4 spaces (standard indent)
+                # Using ~180 twips per space
+                return max(0, int(left_twips / 180))
+
+        return 0
 
     def _get_numbering_prefix(self, para: Paragraph) -> tuple[tuple[int, int] | None, str, str]:
         """Get numbering prefix for paragraph.

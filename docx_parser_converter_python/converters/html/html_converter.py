@@ -169,7 +169,9 @@ class HTMLConverter:
         """
         # Get numbering prefix, indentation, and styles if applicable
         numbering_prefix = self._get_numbering_prefix(paragraph)
-        numbering_indent_pt = self._get_numbering_indentation(paragraph)
+        numbering_indent_pt, numbering_hanging_pt = self._get_numbering_indentation(
+            paragraph
+        )
         numbering_styles = self._get_numbering_styles(paragraph)
 
         return paragraph_to_html(
@@ -177,6 +179,7 @@ class HTMLConverter:
             relationships=self.relationships,
             numbering_prefix=numbering_prefix,
             numbering_indent_pt=numbering_indent_pt,
+            numbering_hanging_pt=numbering_hanging_pt,
             numbering_styles=numbering_styles,
             use_semantic_tags=self.config.use_semantic_tags,
             css_generator=self.css_generator,
@@ -254,36 +257,49 @@ class HTMLConverter:
 
         return prefix + suffix
 
-    def _get_numbering_indentation(self, para: Paragraph | None) -> float | None:
-        """Get left indentation in points from numbering level.
+    def _get_numbering_indentation(
+        self, para: Paragraph | None
+    ) -> tuple[float | None, float | None]:
+        """Get left and hanging indentation in points from numbering level.
 
         Args:
             para: Paragraph element
 
         Returns:
-            Left indentation in points, or None if not applicable
+            Tuple of (left_indent_pt, hanging_indent_pt), either may be None
         """
         if para is None or para.p_pr is None or para.p_pr.num_pr is None:
-            return None
+            return (None, None)
 
         num_pr = para.p_pr.num_pr
         if num_pr.num_id is None or num_pr.ilvl is None:
-            return None
+            return (None, None)
 
         # Get level definition
         level = self._numbering_tracker.get_level(num_pr.num_id, num_pr.ilvl)
         if level is None or level.p_pr is None:
-            return None
+            return (None, None)
 
         # Extract indentation from level's paragraph properties
         # The level parser stores indentation directly in p_pr (not nested under "ind")
         p_pr = level.p_pr
-        if isinstance(p_pr, dict) and "left" in p_pr:
-            left_twips = p_pr["left"]
-            if isinstance(left_twips, (int, float)):
-                # Convert twips to points (1 point = 20 twips)
-                return left_twips / 20
-        return None
+        left_pt = None
+        hanging_pt = None
+
+        if isinstance(p_pr, dict):
+            if "left" in p_pr:
+                left_twips = p_pr["left"]
+                if isinstance(left_twips, (int, float)):
+                    # Convert twips to points (1 point = 20 twips)
+                    left_pt = left_twips / 20
+
+            if "hanging" in p_pr:
+                hanging_twips = p_pr["hanging"]
+                if isinstance(hanging_twips, (int, float)):
+                    # Convert twips to points (1 point = 20 twips)
+                    hanging_pt = hanging_twips / 20
+
+        return (left_pt, hanging_pt)
 
     def _get_numbering_styles(self, para: Paragraph | None) -> dict[str, str] | None:
         """Get CSS styles from numbering level's run properties.

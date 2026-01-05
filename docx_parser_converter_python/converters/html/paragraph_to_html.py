@@ -167,6 +167,7 @@ def paragraph_to_html(
     relationships: dict[str, str] | None = None,
     numbering_prefix: str | None = None,
     numbering_indent_pt: float | None = None,
+    numbering_hanging_pt: float | None = None,
     numbering_styles: dict[str, str] | None = None,
     use_semantic_tags: bool = False,
     use_headings: bool = False,
@@ -180,6 +181,7 @@ def paragraph_to_html(
         relationships: Dict mapping r:id to URL for hyperlinks
         numbering_prefix: List number/bullet prefix to prepend
         numbering_indent_pt: Left indentation in points from numbering level
+        numbering_hanging_pt: Hanging indent in points (applied as negative text-indent)
         numbering_styles: CSS properties for the numbering marker
         use_semantic_tags: Use semantic tags (<strong>, <em>)
         use_headings: Use heading tags (<h1>-<h6>) for outline levels
@@ -227,6 +229,10 @@ def paragraph_to_html(
     # Apply numbering indentation if provided (overrides other left margin)
     if numbering_indent_pt is not None:
         css_props["margin-left"] = f"{numbering_indent_pt}pt"
+
+    # Apply hanging indent from numbering level (negative text-indent)
+    if numbering_hanging_pt is not None:
+        css_props["text-indent"] = f"-{numbering_hanging_pt}pt"
 
     # Resolve paragraph style if present and merge with direct formatting
     if style_resolver and para.p_pr and para.p_pr.p_style:

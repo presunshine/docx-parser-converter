@@ -50,6 +50,7 @@ class ParagraphToTextConverter:
         hyperlink_urls: dict[str, str] | None = None,
         numbering_prefixes: dict[tuple[int, int], tuple[str, str]] | None = None,
         render_indentation: bool = False,
+        list_indent_spaces: int = 0,
     ) -> None:
         """Initialize paragraph converter.
 
@@ -58,11 +59,13 @@ class ParagraphToTextConverter:
             hyperlink_urls: Dict mapping rId to URL for hyperlink rendering
             numbering_prefixes: Dict mapping (num_id, ilvl) to (prefix, suffix)
             render_indentation: Whether to render indentation as spaces
+            list_indent_spaces: Number of spaces to prepend for list indentation
         """
         self.use_markdown = use_markdown
         self.hyperlink_urls = hyperlink_urls or {}
         self.numbering_prefixes = numbering_prefixes or {}
         self.render_indentation = render_indentation
+        self.list_indent_spaces = list_indent_spaces
         self._run_converter = RunToTextConverter(use_markdown=use_markdown)
 
     def convert(self, para: Paragraph | None) -> str:
@@ -79,12 +82,16 @@ class ParagraphToTextConverter:
 
         parts: list[str] = []
 
+        # Add list indentation (spaces at the start for nested lists)
+        if self.list_indent_spaces > 0:
+            parts.append(" " * self.list_indent_spaces)
+
         # Add numbering prefix if present
         prefix = self._get_numbering_prefix(para)
         if prefix:
             parts.append(prefix)
 
-        # Add indentation if enabled
+        # Add indentation if enabled (for non-list paragraph indentation)
         if self.render_indentation:
             indent = self._get_indentation_spaces(para)
             if indent:
