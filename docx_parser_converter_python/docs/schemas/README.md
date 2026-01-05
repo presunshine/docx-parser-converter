@@ -44,7 +44,8 @@ docs/schemas/
 ├── footnotes_endnotes.xml.md # Footnotes and endnotes
 ├── comments.xml.md           # Comments/annotations
 ├── headers_footers.xml.md    # Headers and footers
-└── shared_models.md          # Models used across multiple XML files
+├── shared_models.md          # Models used across multiple XML files
+└── xml_to_css_conversion.md  # XML to CSS conversion reference
 ```
 
 ## Schema File Format

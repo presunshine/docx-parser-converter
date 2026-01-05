@@ -55,7 +55,7 @@ config = ConversionConfig(
     title="My Document",           # Document title in <title> tag
     language="en",                 # HTML lang attribute
     style_mode="inline",           # "inline", "class", or "none"
-    use_semantic_tags=True,        # Use <strong>, <em> vs <b>, <i>
+    use_semantic_tags=False,       # Use CSS spans (False) vs <strong>, <em> (True)
     fragment_only=False,           # Output just content without HTML wrapper
     custom_css="body { margin: 2em; }",  # Custom CSS to include
     responsive=True,               # Include viewport meta tag
@@ -77,7 +77,7 @@ text = docx_to_text("document.docx", config=config)
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `style_mode` | `"inline"` \| `"class"` \| `"none"` | `"inline"` | How to output CSS styles |
-| `use_semantic_tags` | `bool` | `True` | Use semantic HTML5 tags (`<strong>`, `<em>`) |
+| `use_semantic_tags` | `bool` | `False` | Use semantic tags (`<strong>`, `<em>`) vs CSS spans |
 | `preserve_whitespace` | `bool` | `False` | Preserve whitespace in content |
 | `title` | `str` | `""` | Document title for HTML output |
 | `language` | `str` | `"en"` | HTML `lang` attribute |
@@ -159,7 +159,7 @@ text = docx_to_text(None)  # Returns ""
 - Highlight colors
 - Font family, size, and color
 - All caps, small caps
-- Various underline styles (single, double, dotted, dashed, wave, etc.)
+- Various underline styles (single, double, dotted, dashed, wave, etc.) with color support
 
 ### Paragraph Formatting
 - Alignment (left, center, right, justify)
@@ -177,8 +177,10 @@ text = docx_to_text(None)  # Returns ""
 ### Tables
 - Simple and complex tables
 - Cell merging (horizontal and vertical)
-- Cell borders and shading
-- Column widths
+- Full border support (outer borders, inside grid lines, per-cell borders)
+- Cell-level border overrides (tcBorders override tblBorders)
+- Cell shading and backgrounds
+- Column widths and table alignment
 
 ### Other Elements
 - Hyperlinks (external URLs resolved from relationships)
@@ -335,3 +337,4 @@ Contributions are welcome! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) for
 - [SPECIFICATION.md](SPECIFICATION.md) - Technical specification
 - [STRUCTURE_PLAN.md](STRUCTURE_PLAN.md) - Code structure and patterns
 - [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) - Implementation progress
+- [docs/schemas/xml_to_css_conversion.md](docs/schemas/xml_to_css_conversion.md) - XML to CSS conversion reference
