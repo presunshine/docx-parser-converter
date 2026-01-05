@@ -379,6 +379,428 @@ class TestCellBorders:
 
 
 # =============================================================================
+# Inside Borders Tests
+# =============================================================================
+
+
+class TestInsideBorders:
+    """Tests for inside horizontal and vertical border conversion.
+
+    Inside borders (insideH, insideV) are table-level borders that create
+    grid lines between cells. They must be converted to cell-level borders
+    based on cell position:
+    - insideH: Apply as border-bottom to cells NOT in the last row
+    - insideV: Apply as border-right to cells NOT in the last column
+    """
+
+    def test_inside_h_applies_to_non_last_row(self) -> None:
+        """Inside horizontal border applies border-bottom to non-last-row cells."""
+        border = Border(val="single", sz=8, color="000000")
+        borders = TableBorders(inside_h=border)
+        table = Table(
+            tbl_pr=TableProperties(tbl_borders=borders),
+            tr=[
+                TableRow(tc=[make_cell("R1C1"), make_cell("R1C2")]),
+                TableRow(tc=[make_cell("R2C1"), make_cell("R2C2")]),
+            ],
+        )
+        result = table_to_html(table)
+        # First row cells should have border-bottom
+        assert "border-bottom" in result
+        # Count occurrences - should be 2 (for R1C1 and R1C2)
+        assert result.count("border-bottom") == 2
+
+    def test_inside_v_applies_to_non_last_column(self) -> None:
+        """Inside vertical border applies border-right to non-last-column cells."""
+        border = Border(val="single", sz=8, color="000000")
+        borders = TableBorders(inside_v=border)
+        table = Table(
+            tbl_pr=TableProperties(tbl_borders=borders),
+            tr=[
+                TableRow(tc=[make_cell("R1C1"), make_cell("R1C2")]),
+                TableRow(tc=[make_cell("R2C1"), make_cell("R2C2")]),
+            ],
+        )
+        result = table_to_html(table)
+        # First column cells should have border-right
+        assert "border-right" in result
+        # Count occurrences - should be 2 (for R1C1 and R2C1)
+        assert result.count("border-right") == 2
+
+    def test_inside_h_and_v_creates_grid(self) -> None:
+        """Both inside borders create a complete internal grid."""
+        border = Border(val="single", sz=8, color="FF0000")
+        borders = TableBorders(inside_h=border, inside_v=border)
+        table = Table(
+            tbl_pr=TableProperties(tbl_borders=borders),
+            tr=[
+                TableRow(tc=[make_cell("A"), make_cell("B")]),
+                TableRow(tc=[make_cell("C"), make_cell("D")]),
+            ],
+        )
+        result = table_to_html(table)
+        # Cell A (0,0): border-bottom + border-right
+        # Cell B (0,1): border-bottom only (last column)
+        # Cell C (1,0): border-right only (last row)
+        # Cell D (1,1): no inside borders (last row + last column)
+        assert "border-bottom" in result
+        assert "border-right" in result
+        assert "FF0000" in result
+
+    def test_inside_borders_3x3_table(self) -> None:
+        """Inside borders on 3x3 table - verify correct application."""
+        border = Border(val="single", sz=8, color="000000")
+        borders = TableBorders(inside_h=border, inside_v=border)
+        table = Table(
+            tbl_pr=TableProperties(tbl_borders=borders),
+            tr=[
+                TableRow(tc=[make_cell("A"), make_cell("B"), make_cell("C")]),
+                TableRow(tc=[make_cell("D"), make_cell("E"), make_cell("F")]),
+                TableRow(tc=[make_cell("G"), make_cell("H"), make_cell("I")]),
+            ],
+        )
+        result = table_to_html(table)
+        # border-bottom should appear 6 times (rows 0 and 1, 3 cells each)
+        # border-right should appear 6 times (columns 0 and 1, 3 cells each)
+        assert result.count("border-bottom") == 6
+        assert result.count("border-right") == 6
+
+    def test_inside_borders_single_row_no_horizontal(self) -> None:
+        """Single row table - inside_h should not apply (no rows below)."""
+        border = Border(val="single", sz=8, color="000000")
+        borders = TableBorders(inside_h=border, inside_v=border)
+        table = Table(
+            tbl_pr=TableProperties(tbl_borders=borders),
+            tr=[TableRow(tc=[make_cell("A"), make_cell("B"), make_cell("C")])],
+        )
+        result = table_to_html(table)
+        # No border-bottom (only one row)
+        assert "border-bottom" not in result
+        # border-right should appear 2 times (columns 0 and 1)
+        assert result.count("border-right") == 2
+
+    def test_inside_borders_single_column_no_vertical(self) -> None:
+        """Single column table - inside_v should not apply (no columns to right)."""
+        border = Border(val="single", sz=8, color="000000")
+        borders = TableBorders(inside_h=border, inside_v=border)
+        table = Table(
+            tbl_pr=TableProperties(tbl_borders=borders),
+            tr=[
+                TableRow(tc=[make_cell("A")]),
+                TableRow(tc=[make_cell("B")]),
+                TableRow(tc=[make_cell("C")]),
+            ],
+        )
+        result = table_to_html(table)
+        # No border-right (only one column)
+        assert "border-right" not in result
+        # border-bottom should appear 2 times (rows 0 and 1)
+        assert result.count("border-bottom") == 2
+
+    def test_inside_borders_with_colspan(self) -> None:
+        """Inside vertical border respects colspan - no border-right if spans to last column."""
+        border = Border(val="single", sz=8, color="000000")
+        borders = TableBorders(inside_v=border)
+        # First row: cell spans both columns (colspan=2)
+        # Second row: two separate cells
+        table = Table(
+            tbl_pr=TableProperties(tbl_borders=borders),
+            tbl_grid=TableGrid(grid_col=[TableGridColumn(w=1440), TableGridColumn(w=1440)]),
+            tr=[
+                TableRow(tc=[make_cell("Spanning", TableCellProperties(grid_span=2))]),
+                TableRow(tc=[make_cell("Left"), make_cell("Right")]),
+            ],
+        )
+        result = table_to_html(table)
+        # "Spanning" cell spans to last column, so no border-right
+        # "Left" cell should have border-right
+        # "Right" cell is in last column, no border-right
+        assert result.count("border-right") == 1
+
+    def test_inside_borders_with_rowspan(self) -> None:
+        """Inside horizontal border respects rowspan - no border-bottom if spans to last row."""
+        border = Border(val="single", sz=8, color="000000")
+        borders = TableBorders(inside_h=border)
+        table = Table(
+            tbl_pr=TableProperties(tbl_borders=borders),
+            tr=[
+                TableRow(
+                    tc=[
+                        make_cell("Spanning", TableCellProperties(v_merge="restart")),
+                        make_cell("Top"),
+                    ]
+                ),
+                TableRow(
+                    tc=[
+                        make_cell("", TableCellProperties(v_merge="continue")),
+                        make_cell("Bottom"),
+                    ]
+                ),
+            ],
+        )
+        result = table_to_html(table)
+        # "Spanning" cell spans to last row (rowspan=2), so no border-bottom
+        # "Top" cell should have border-bottom
+        # "Bottom" cell is in last row, no border-bottom
+        assert result.count("border-bottom") == 1
+
+    def test_cell_border_takes_precedence_over_inside_border(self) -> None:
+        """Cell-level borders should take precedence over table inside borders."""
+        inside_border = Border(val="single", sz=8, color="000000")  # Black
+        cell_border = Border(val="single", sz=16, color="FF0000")  # Red, thicker
+        borders = TableBorders(inside_h=inside_border, inside_v=inside_border)
+
+        # Cell with its own border-bottom and border-right
+        cell_with_border = make_cell(
+            "Custom",
+            TableCellProperties(tc_borders=TableBorders(bottom=cell_border, right=cell_border)),
+        )
+
+        table = Table(
+            tbl_pr=TableProperties(tbl_borders=borders),
+            tr=[
+                TableRow(tc=[cell_with_border, make_cell("Normal")]),
+                TableRow(tc=[make_cell("Below"), make_cell("Corner")]),
+            ],
+        )
+        result = table_to_html(table)
+        # Cell "Custom" should have red border (FF0000), not black (000000) for bottom/right
+        # The red border should appear in the first cell's style
+        assert "FF0000" in result
+
+    def test_inside_borders_only_no_outer_borders(self) -> None:
+        """Table with only inside borders (no outer borders) - creates grid only."""
+        border = Border(val="single", sz=8, color="0000FF")
+        borders = TableBorders(inside_h=border, inside_v=border)
+        table = Table(
+            tbl_pr=TableProperties(tbl_borders=borders),
+            tr=[
+                TableRow(tc=[make_cell("A"), make_cell("B")]),
+                TableRow(tc=[make_cell("C"), make_cell("D")]),
+            ],
+        )
+        result = table_to_html(table)
+        # Should have cell borders from inside_h/inside_v
+        assert "border-bottom" in result
+        assert "border-right" in result
+        # Table element should NOT have border-top/border-left etc.
+        # (checking the table style specifically)
+        table_start = result.find("<table")
+        table_end = result.find(">", table_start)
+        table_style = result[table_start:table_end]
+        assert "border-top" not in table_style
+        assert "border-left" not in table_style
+
+    def test_inside_borders_with_outer_borders(self) -> None:
+        """Table with both inside and outer borders."""
+        border = Border(val="single", sz=8, color="000000")
+        borders = TableBorders(
+            top=border,
+            bottom=border,
+            left=border,
+            right=border,
+            inside_h=border,
+            inside_v=border,
+        )
+        table = Table(
+            tbl_pr=TableProperties(tbl_borders=borders),
+            tr=[
+                TableRow(tc=[make_cell("A"), make_cell("B")]),
+                TableRow(tc=[make_cell("C"), make_cell("D")]),
+            ],
+        )
+        result = table_to_html(table)
+        # Should have both table-level outer borders and cell-level inside borders
+        # Table element should have outer borders
+        assert "border-top" in result
+        # Cells should have inside borders
+        assert "border-bottom" in result
+        assert "border-right" in result
+
+
+# =============================================================================
+# Outer Border Tests
+# =============================================================================
+
+
+class TestOuterBorders:
+    """Tests for outer table border conversion to edge cells."""
+
+    def test_outer_borders_applied_to_edge_cells(self) -> None:
+        """Outer borders from tblBorders are applied to edge cells."""
+        border = Border(val="single", sz=8, color="000000")
+        borders = TableBorders(top=border, bottom=border, left=border, right=border)
+        table = Table(
+            tbl_pr=TableProperties(tbl_borders=borders),
+            tr=[
+                TableRow(tc=[make_cell("TL"), make_cell("TR")]),
+                TableRow(tc=[make_cell("BL"), make_cell("BR")]),
+            ],
+        )
+        result = table_to_html(table)
+        # Each edge cell should have appropriate outer borders
+        # All cells should have at least some borders
+        assert result.count("border-top") == 2  # Top row cells
+        assert result.count("border-bottom") == 2  # Bottom row cells
+        assert result.count("border-left") == 2  # Left column cells
+        assert result.count("border-right") == 2  # Right column cells
+
+    def test_outer_borders_not_on_table_element(self) -> None:
+        """Outer borders should NOT be applied to the table element itself."""
+        border = Border(val="single", sz=8, color="FF0000")
+        borders = TableBorders(top=border, bottom=border, left=border, right=border)
+        table = Table(
+            tbl_pr=TableProperties(tbl_borders=borders),
+            tr=[TableRow(tc=[make_cell("A")])],
+        )
+        result = table_to_html(table)
+        # Find the table element's style attribute
+        table_start = result.find("<table")
+        table_end = result.find(">", table_start)
+        table_tag = result[table_start:table_end]
+        # Table should not have border styles (they go to cells)
+        assert "border-top:" not in table_tag
+        assert "border-bottom:" not in table_tag
+        assert "border-left:" not in table_tag
+        assert "border-right:" not in table_tag
+
+    def test_cell_border_overrides_table_outer_border(self) -> None:
+        """Cell-level tcBorders override table-level outer borders."""
+        table_border = Border(val="single", sz=8, color="000000")  # Black
+        cell_border = Border(val="single", sz=16, color="FF0000")  # Red
+        cell_none_border = Border(val="nil")  # None
+
+        # Create cell with explicit red border-top
+        cell_with_red_top = make_cell(
+            "Red",
+            TableCellProperties(tc_borders=TableBorders(top=cell_border)),
+        )
+        # Create cell with explicit none border-top
+        cell_with_none_top = make_cell(
+            "None",
+            TableCellProperties(tc_borders=TableBorders(top=cell_none_border)),
+        )
+
+        table = Table(
+            tbl_pr=TableProperties(
+                tbl_borders=TableBorders(
+                    top=table_border, bottom=table_border, left=table_border, right=table_border
+                )
+            ),
+            tr=[TableRow(tc=[cell_with_red_top, cell_with_none_top])],
+        )
+        result = table_to_html(table)
+        # The red border should appear (cell override)
+        assert "FF0000" in result
+
+    def test_outer_borders_only_no_inside(self) -> None:
+        """Table with only outer borders - no grid inside."""
+        border = Border(val="single", sz=8, color="0000FF")
+        borders = TableBorders(top=border, bottom=border, left=border, right=border)
+        table = Table(
+            tbl_pr=TableProperties(tbl_borders=borders),
+            tr=[
+                TableRow(tc=[make_cell("A"), make_cell("B")]),
+                TableRow(tc=[make_cell("C"), make_cell("D")]),
+            ],
+        )
+        result = table_to_html(table)
+        # Edge cells should have outer borders
+        # Interior cells should not have inner borders
+        # Count: top row has border-top (2), bottom row has border-bottom (2)
+        # Left column has border-left (2), right column has border-right (2)
+        assert result.count("border-top") == 2
+        assert result.count("border-bottom") == 2
+
+    def test_outer_borders_with_colspan_top_row(self) -> None:
+        """Cell spanning multiple columns in top row gets full border-top."""
+        border = Border(val="single", sz=8, color="000000")
+        borders = TableBorders(top=border, bottom=border, left=border, right=border)
+        table = Table(
+            tbl_pr=TableProperties(tbl_borders=borders),
+            tbl_grid=TableGrid(grid_col=[TableGridColumn(w=1440), TableGridColumn(w=1440)]),
+            tr=[
+                TableRow(tc=[make_cell("Spanning", TableCellProperties(grid_span=2))]),
+                TableRow(tc=[make_cell("L"), make_cell("R")]),
+            ],
+        )
+        result = table_to_html(table)
+        # Spanning cell should have border-top, border-left, border-right (top row, spans full width)
+        # Bottom row cells should have border-bottom
+        assert "border-top" in result
+        assert "border-bottom" in result
+
+    def test_outer_borders_with_rowspan_left_column(self) -> None:
+        """Cell spanning multiple rows in left column gets full border-left."""
+        border = Border(val="single", sz=8, color="000000")
+        borders = TableBorders(top=border, bottom=border, left=border, right=border)
+        table = Table(
+            tbl_pr=TableProperties(tbl_borders=borders),
+            tr=[
+                TableRow(
+                    tc=[
+                        make_cell("Spanning", TableCellProperties(v_merge="restart")),
+                        make_cell("Top"),
+                    ]
+                ),
+                TableRow(
+                    tc=[
+                        make_cell("", TableCellProperties(v_merge="continue")),
+                        make_cell("Bottom"),
+                    ]
+                ),
+            ],
+        )
+        result = table_to_html(table)
+        # Spanning cell should have border-top, border-left, border-bottom (spans full height)
+        assert "border-left" in result
+        assert "border-bottom" in result
+
+    def test_single_cell_table_all_outer_borders(self) -> None:
+        """Single cell table should have all four outer borders on that cell."""
+        border = Border(val="single", sz=8, color="FF00FF")
+        borders = TableBorders(top=border, bottom=border, left=border, right=border)
+        table = Table(
+            tbl_pr=TableProperties(tbl_borders=borders),
+            tr=[TableRow(tc=[make_cell("Only")])],
+        )
+        result = table_to_html(table)
+        # Single cell should have all 4 borders
+        assert "border-top" in result
+        assert "border-bottom" in result
+        assert "border-left" in result
+        assert "border-right" in result
+        # All with the magenta color
+        assert result.count("FF00FF") == 4
+
+    def test_outer_and_inside_borders_together(self) -> None:
+        """Table with both outer and inside borders - full grid."""
+        border = Border(val="single", sz=8, color="000000")
+        borders = TableBorders(
+            top=border,
+            bottom=border,
+            left=border,
+            right=border,
+            inside_h=border,
+            inside_v=border,
+        )
+        table = Table(
+            tbl_pr=TableProperties(tbl_borders=borders),
+            tr=[
+                TableRow(tc=[make_cell("A"), make_cell("B")]),
+                TableRow(tc=[make_cell("C"), make_cell("D")]),
+            ],
+        )
+        result = table_to_html(table)
+        # All cells should have all borders creating a full grid
+        # Each cell has: top/bottom from outer or inside, left/right from outer or inside
+        assert result.count("border-top") >= 2
+        assert result.count("border-bottom") >= 2
+        assert result.count("border-left") >= 2
+        assert result.count("border-right") >= 2
+
+
+# =============================================================================
 # Cell Width Tests
 # =============================================================================
 

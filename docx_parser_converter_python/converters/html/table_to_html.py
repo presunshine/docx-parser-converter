@@ -15,6 +15,7 @@ from converters.html.css_generator import (
     width_to_css,
 )
 from converters.html.paragraph_to_html import paragraph_to_html
+from models.common.border import Border
 from models.document.paragraph import Paragraph
 from models.document.table import Table, TableProperties
 from models.document.table_cell import TableCell
@@ -85,40 +86,21 @@ def table_properties_to_css(tbl_pr: TableProperties | None) -> dict[str, str]:
 def table_borders_to_css(tbl_pr: TableProperties | None) -> dict[str, str]:
     """Convert table borders to CSS.
 
+    Note: Outer borders (top, bottom, left, right) are NOT applied to the table
+    element. They are applied to edge cells instead, so that cell-level border
+    overrides (tcBorders) work correctly. Only inside borders would go here,
+    but those are also handled at cell level.
+
     Args:
         tbl_pr: Table properties
 
     Returns:
-        Dictionary of CSS border properties
+        Dictionary of CSS border properties (empty - borders applied to cells)
     """
-    result: dict[str, str] = {}
-
-    if tbl_pr is None or tbl_pr.tbl_borders is None:
-        return result
-
-    borders = tbl_pr.tbl_borders
-
-    if borders.top:
-        top_css = border_to_css(borders.top)
-        if top_css:
-            result["border-top"] = top_css
-
-    if borders.bottom:
-        bottom_css = border_to_css(borders.bottom)
-        if bottom_css:
-            result["border-bottom"] = bottom_css
-
-    if borders.left:
-        left_css = border_to_css(borders.left)
-        if left_css:
-            result["border-left"] = left_css
-
-    if borders.right:
-        right_css = border_to_css(borders.right)
-        if right_css:
-            result["border-right"] = right_css
-
-    return result
+    # Outer borders are applied to edge cells, not the table element.
+    # This matches Word behavior where cell-level tcBorders can override
+    # table-level tblBorders.
+    return {}
 
 
 # =============================================================================
@@ -221,7 +203,7 @@ def cell_content_to_html(
     content: list,
     *,
     relationships: dict[str, str] | None = None,
-    use_semantic_tags: bool = True,
+    use_semantic_tags: bool = False,
     css_generator: CSSGenerator | None = None,
     style_resolver: "StyleResolver | None" = None,
 ) -> str:
@@ -274,8 +256,18 @@ def cell_to_html(
     is_header: bool = False,
     colspan: int | None = None,
     rowspan: int | None = None,
+    row_idx: int = 0,
+    col_idx: int = 0,
+    num_rows: int = 1,
+    num_cols: int = 1,
+    border_top: Border | None = None,
+    border_bottom: Border | None = None,
+    border_left: Border | None = None,
+    border_right: Border | None = None,
+    inside_h: Border | None = None,
+    inside_v: Border | None = None,
     relationships: dict[str, str] | None = None,
-    use_semantic_tags: bool = True,
+    use_semantic_tags: bool = False,
     css_generator: CSSGenerator | None = None,
     style_resolver: "StyleResolver | None" = None,
 ) -> str:
@@ -286,6 +278,16 @@ def cell_to_html(
         is_header: Whether this is a header cell
         colspan: Colspan value (from gridSpan)
         rowspan: Rowspan value (from vMerge)
+        row_idx: Row index (0-based)
+        col_idx: Column index (0-based)
+        num_rows: Total number of rows in table
+        num_cols: Total number of columns in table
+        border_top: Table outer top border (applied to first row cells)
+        border_bottom: Table outer bottom border (applied to last row cells)
+        border_left: Table outer left border (applied to first column cells)
+        border_right: Table outer right border (applied to last column cells)
+        inside_h: Inside horizontal border (between rows)
+        inside_v: Inside vertical border (between columns)
         relationships: Relationship map
         use_semantic_tags: Use semantic tags
         css_generator: CSS generator
@@ -316,6 +318,61 @@ def cell_to_html(
 
     # CSS from cell properties
     css_props = table_cell_properties_to_css(cell.tc_pr)
+
+    # Calculate effective spans for border position logic
+    effective_colspan = colspan or 1
+    effective_rowspan = rowspan or 1
+
+    # Apply outer borders to edge cells (from table-level tblBorders)
+    # Only apply if cell doesn't already have that border defined (tcBorders override)
+    # This matches Word behavior where cell-level tcBorders can override tblBorders
+
+    # Top border: apply to cells in the first row
+    if border_top and row_idx == 0:
+        if "border-top" not in css_props:
+            border_top_css = border_to_css(border_top)
+            if border_top_css:
+                css_props["border-top"] = border_top_css
+
+    # Bottom border: apply to cells that reach the last row
+    if border_bottom and (row_idx + effective_rowspan) == num_rows:
+        if "border-bottom" not in css_props:
+            border_bottom_css = border_to_css(border_bottom)
+            if border_bottom_css:
+                css_props["border-bottom"] = border_bottom_css
+
+    # Left border: apply to cells in the first column
+    if border_left and col_idx == 0:
+        if "border-left" not in css_props:
+            border_left_css = border_to_css(border_left)
+            if border_left_css:
+                css_props["border-left"] = border_left_css
+
+    # Right border: apply to cells that reach the last column
+    if border_right and (col_idx + effective_colspan) == num_cols:
+        if "border-right" not in css_props:
+            border_right_css = border_to_css(border_right)
+            if border_right_css:
+                css_props["border-right"] = border_right_css
+
+    # Apply inside borders based on cell position
+    # Only apply if cell doesn't already have that border defined
+
+    # Inside horizontal border: apply as bottom border to cells not in the last row
+    # Account for rowspan - a cell spanning to the last row shouldn't get inside_h
+    if inside_h and (row_idx + effective_rowspan) < num_rows:
+        if "border-bottom" not in css_props:
+            inside_h_css = border_to_css(inside_h)
+            if inside_h_css:
+                css_props["border-bottom"] = inside_h_css
+
+    # Inside vertical border: apply as right border to cells not in the last column
+    # Account for colspan - a cell spanning to the last column shouldn't get inside_v
+    if inside_v and (col_idx + effective_colspan) < num_cols:
+        if "border-right" not in css_props:
+            inside_v_css = border_to_css(inside_v)
+            if inside_v_css:
+                css_props["border-right"] = inside_v_css
 
     # Generate style attribute
     style = gen.generate_inline_style(css_props)
@@ -352,8 +409,16 @@ def row_to_html(
     *,
     is_header_row: bool = False,
     rowspans: dict[tuple[int, int], int] | None = None,
+    num_rows: int = 1,
+    num_cols: int = 1,
+    border_top: Border | None = None,
+    border_bottom: Border | None = None,
+    border_left: Border | None = None,
+    border_right: Border | None = None,
+    inside_h: Border | None = None,
+    inside_v: Border | None = None,
     relationships: dict[str, str] | None = None,
-    use_semantic_tags: bool = True,
+    use_semantic_tags: bool = False,
     css_generator: CSSGenerator | None = None,
     style_resolver: "StyleResolver | None" = None,
 ) -> str:
@@ -364,6 +429,14 @@ def row_to_html(
         row_idx: Row index in table
         is_header_row: Whether this is a header row
         rowspans: Pre-calculated rowspan values
+        num_rows: Total number of rows in table
+        num_cols: Total number of columns in table
+        border_top: Table outer top border
+        border_bottom: Table outer bottom border
+        border_left: Table outer left border
+        border_right: Table outer right border
+        inside_h: Inside horizontal border (between rows)
+        inside_v: Inside vertical border (between columns)
         relationships: Relationship map
         use_semantic_tags: Use semantic tags
         css_generator: CSS generator
@@ -385,11 +458,16 @@ def row_to_html(
         attrs.append(f'style="{style}"')
     attr_str = f" {' '.join(attrs)}" if attrs else ""
 
-    # Convert cells
+    # Convert cells - track logical column position (grid column)
     cells_html = []
+    logical_col = 0  # Tracks position in the grid (accounts for colspan)
+
     for cell_idx, cell in enumerate(row.tc):
         # Skip cells that continue a vertical merge
         if is_merged_cell(cell):
+            # Still need to advance logical column for merged cells
+            colspan = cell.tc_pr.grid_span if cell.tc_pr else 1
+            logical_col += colspan or 1
             continue
 
         # Get colspan from gridSpan
@@ -403,12 +481,25 @@ def row_to_html(
             is_header=is_header_row,
             colspan=colspan,
             rowspan=rowspan,
+            row_idx=row_idx,
+            col_idx=logical_col,
+            num_rows=num_rows,
+            num_cols=num_cols,
+            border_top=border_top,
+            border_bottom=border_bottom,
+            border_left=border_left,
+            border_right=border_right,
+            inside_h=inside_h,
+            inside_v=inside_v,
             relationships=relationships,
             use_semantic_tags=use_semantic_tags,
             css_generator=gen,
             style_resolver=style_resolver,
         )
         cells_html.append(cell_html)
+
+        # Advance logical column by colspan
+        logical_col += colspan or 1
 
     return f"<tr{attr_str}>{''.join(cells_html)}</tr>"
 
@@ -422,7 +513,7 @@ def table_to_html(
     table: Table | None,
     *,
     relationships: dict[str, str] | None = None,
-    use_semantic_tags: bool = True,
+    use_semantic_tags: bool = False,
     css_generator: CSSGenerator | None = None,
     style_resolver: "StyleResolver | None" = None,
 ) -> str:
@@ -448,6 +539,34 @@ def table_to_html(
 
     # Calculate rowspans for vMerge
     rowspans = calculate_rowspans(table)
+
+    # Calculate table dimensions
+    num_rows = len(table.tr)
+    # Number of columns is determined by grid or first row
+    num_cols = 0
+    if table.tbl_grid and table.tbl_grid.grid_col:
+        num_cols = len(table.tbl_grid.grid_col)
+    elif table.tr:
+        # Count columns from first row (accounting for colspan)
+        for cell in table.tr[0].tc:
+            colspan = cell.tc_pr.grid_span if cell.tc_pr and cell.tc_pr.grid_span else 1
+            num_cols += colspan
+
+    # Extract all borders from table properties
+    # These will be applied to cells based on position
+    border_top: Border | None = None
+    border_bottom: Border | None = None
+    border_left: Border | None = None
+    border_right: Border | None = None
+    inside_h: Border | None = None
+    inside_v: Border | None = None
+    if table.tbl_pr and table.tbl_pr.tbl_borders:
+        border_top = table.tbl_pr.tbl_borders.top
+        border_bottom = table.tbl_pr.tbl_borders.bottom
+        border_left = table.tbl_pr.tbl_borders.left
+        border_right = table.tbl_pr.tbl_borders.right
+        inside_h = table.tbl_pr.tbl_borders.inside_h
+        inside_v = table.tbl_pr.tbl_borders.inside_v
 
     # CSS from table properties
     css_props = table_properties_to_css(table.tbl_pr)
@@ -498,6 +617,14 @@ def table_to_html(
             row_idx,
             is_header_row=bool(is_header),
             rowspans=rowspans,
+            num_rows=num_rows,
+            num_cols=num_cols,
+            border_top=border_top,
+            border_bottom=border_bottom,
+            border_left=border_left,
+            border_right=border_right,
+            inside_h=inside_h,
+            inside_v=inside_v,
             relationships=relationships,
             use_semantic_tags=use_semantic_tags,
             css_generator=gen,
@@ -533,7 +660,7 @@ class TableToHTMLConverter:
     def __init__(
         self,
         *,
-        use_semantic_tags: bool = True,
+        use_semantic_tags: bool = False,
         use_classes: bool = False,
         use_inline_styles: bool = True,
         css_generator: CSSGenerator | None = None,
