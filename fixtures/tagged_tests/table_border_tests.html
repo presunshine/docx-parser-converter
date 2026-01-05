@@ -1,0 +1,16 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title></title><meta name="generator" content="docx-parser-converter"><style>body {
+    font-family: 'Calibri', 'Arial', sans-serif;
+    line-height: 1.5;
+    margin: 0 auto;
+    padding: 20px;
+}
+.page-break {
+    page-break-after: always;
+    break-after: page;
+}
+
+@media print {
+    .page-break {
+        page-break-after: always;
+    }
+}</style></head><body><main id="content" role="main"><p style="font-size: 14pt; font-weight: bold; color: #365F91; margin-top: 24pt; margin-bottom: 0pt; page-break-after: avoid; page-break-inside: avoid">Table Border Test Suite</p><p>Tests for different table border styles.</p><p></p><p>◆TEST:tbl-border-single-001:Table with single border◆</p><table style="width: auto; border-collapse: collapse"><colgroup><col style="width: 216.0pt"><col style="width: 216.0pt"></colgroup><tr><td style="width: 216pt"><p>Cell 1</p></td><td style="width: 216pt"><p>Cell 2</p></td></tr><tr><td style="width: 216pt"><p>Cell 3</p></td><td style="width: 216pt"><p>Cell 4</p></td></tr></table><p>◆EXPECT:semantic◆</p><p>element: table</p><p>◆/EXPECT◆</p><p>◆/TEST◆</p><p></p><p>◆TEST:tbl-border-none-001:Table with no borders◆</p><table style="width: auto; border-collapse: collapse"><colgroup><col style="width: 216.0pt"><col style="width: 216.0pt"></colgroup><tr><td style="width: 216pt"><p>No border 1</p></td><td style="width: 216pt"><p>No border 2</p></td></tr><tr><td style="width: 216pt"><p>No border 3</p></td><td style="width: 216pt"><p>No border 4</p></td></tr></table><p>◆EXPECT:semantic◆</p><p>element: table</p><p>◆/EXPECT◆</p><p>◆/TEST◆</p><p></p></main></body></html>

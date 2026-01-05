@@ -1,0 +1,16 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title></title><meta name="generator" content="docx-parser-converter"><style>body {
+    font-family: 'Calibri', 'Arial', sans-serif;
+    line-height: 1.5;
+    margin: 0 auto;
+    padding: 20px;
+}
+.page-break {
+    page-break-after: always;
+    break-after: page;
+}
+
+@media print {
+    .page-break {
+        page-break-after: always;
+    }
+}</style></head><body><main id="content" role="main"><p style="font-size: 14pt; font-weight: bold; color: #365F91; margin-top: 24pt; margin-bottom: 0pt; page-break-after: avoid; page-break-inside: avoid">Numbered List Test Suite</p><p>Tests for numbered lists with different formats.</p><p></p><p>◆TEST:list-number-basic-001:Basic numbered list◆</p><p>First numbered item</p><p>Second numbered item</p><p>Third numbered item</p><p>◆EXPECT:semantic◆</p><p>element: p</p><p>contains: First numbered item</p><p>◆/EXPECT◆</p><p>◆/TEST◆</p><p></p><p>◆TEST:list-number-level2-001:Nested numbered list level 2◆</p><p>Parent numbered item</p><p>Child numbered item</p><p>◆EXPECT:semantic◆</p><p>element: p</p><p>contains: Child numbered</p><p>◆/EXPECT◆</p><p>◆/TEST◆</p><p></p><p>◆TEST:list-number-multilevel-001:Multi-level numbered list◆</p><p>Level 1 number</p><p>Level 2 number</p><p>Level 3 number</p><p>Back to level 1</p><p>◆EXPECT:semantic◆</p><p>element: p</p><p>contains: Level 1 number</p><p>◆/EXPECT◆</p><p>◆/TEST◆</p><p></p></main></body></html>

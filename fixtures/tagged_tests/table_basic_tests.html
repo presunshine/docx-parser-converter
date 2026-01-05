@@ -1,0 +1,16 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title></title><meta name="generator" content="docx-parser-converter"><style>body {
+    font-family: 'Calibri', 'Arial', sans-serif;
+    line-height: 1.5;
+    margin: 0 auto;
+    padding: 20px;
+}
+.page-break {
+    page-break-after: always;
+    break-after: page;
+}
+
+@media print {
+    .page-break {
+        page-break-after: always;
+    }
+}</style></head><body><main id="content" role="main"><p style="font-size: 14pt; font-weight: bold; color: #365F91; margin-top: 24pt; margin-bottom: 0pt; page-break-after: avoid; page-break-inside: avoid">Basic Table Test Suite</p><p>Tests for basic table structure.</p><p></p><p>◆TEST:tbl-basic-2x2-001:Basic 2x2 table◆</p><table style="width: auto; border-collapse: collapse"><colgroup><col style="width: 216.0pt"><col style="width: 216.0pt"></colgroup><tr><td style="width: 216pt"><p>A1</p></td><td style="width: 216pt"><p>A2</p></td></tr><tr><td style="width: 216pt"><p>B1</p></td><td style="width: 216pt"><p>B2</p></td></tr></table><p>◆EXPECT:semantic◆</p><p>element: table</p><p>◆/EXPECT◆</p><p>◆/TEST◆</p><p></p><p>◆TEST:tbl-basic-3x3-001:Basic 3x3 table◆</p><table style="width: auto; border-collapse: collapse"><colgroup><col style="width: 144.0pt"><col style="width: 144.0pt"><col style="width: 144.0pt"></colgroup><tr><td style="width: 144pt"><p>R1C1</p></td><td style="width: 144pt"><p>R1C2</p></td><td style="width: 144pt"><p>R1C3</p></td></tr><tr><td style="width: 144pt"><p>R2C1</p></td><td style="width: 144pt"><p>R2C2</p></td><td style="width: 144pt"><p>R2C3</p></td></tr><tr><td style="width: 144pt"><p>R3C1</p></td><td style="width: 144pt"><p>R3C2</p></td><td style="width: 144pt"><p>R3C3</p></td></tr></table><p>◆EXPECT:semantic◆</p><p>element: table</p><p>◆/EXPECT◆</p><p>◆/TEST◆</p><p></p><p>◆TEST:tbl-header-001:Table with header row◆</p><table style="width: auto; border-collapse: collapse"><colgroup><col style="width: 144.0pt"><col style="width: 144.0pt"><col style="width: 144.0pt"></colgroup><tr><td style="width: 144pt"><p><span style="font-weight: bold">Name</span></p></td><td style="width: 144pt"><p><span style="font-weight: bold">Age</span></p></td><td style="width: 144pt"><p><span style="font-weight: bold">City</span></p></td></tr><tr><td style="width: 144pt"><p>Alice</p></td><td style="width: 144pt"><p>25</p></td><td style="width: 144pt"><p>NYC</p></td></tr><tr><td style="width: 144pt"><p>Bob</p></td><td style="width: 144pt"><p>30</p></td><td style="width: 144pt"><p>LA</p></td></tr></table><p>◆EXPECT:semantic◆</p><p>element: table</p><p>◆/EXPECT◆</p><p>◆/TEST◆</p><p></p></main></body></html>

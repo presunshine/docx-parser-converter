@@ -1,0 +1,16 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title></title><meta name="generator" content="docx-parser-converter"><style>body {
+    font-family: 'Calibri', 'Arial', sans-serif;
+    line-height: 1.5;
+    margin: 0 auto;
+    padding: 20px;
+}
+.page-break {
+    page-break-after: always;
+    break-after: page;
+}
+
+@media print {
+    .page-break {
+        page-break-after: always;
+    }
+}</style></head><body><main id="content" role="main"><p style="font-size: 14pt; font-weight: bold; color: #365F91; margin-top: 24pt; margin-bottom: 0pt; page-break-after: avoid; page-break-inside: avoid">Text Output Test Suite</p><p>Tests for plain text output conversion.</p><p></p><p>◆TEST:text-simple-001:Simple plain text◆</p><p>This is simple plain text content.</p><p>◆EXPECT:text◆</p><p>This is simple plain text content.</p><p>◆/EXPECT◆</p><p>◆/TEST◆</p><p></p><p>◆TEST:text-formatted-001:Formatted text becomes plain◆</p><p>Text with <span style="font-weight: bold">bold</span> and <span style="font-style: italic">italic</span> formatting.</p><p>◆EXPECT:text◆</p><p>Text with bold and italic formatting.</p><p>◆/EXPECT◆</p><p>◆/TEST◆</p><p></p><p>◆TEST:text-multipara-001:Multiple paragraphs to text◆</p><p>First paragraph content here.</p><p>Second paragraph content here.</p><p>◆EXPECT:text◆</p><p>First paragraph content here. Second paragraph content here.</p><p>◆/EXPECT◆</p><p>◆/TEST◆</p><p></p></main></body></html>
