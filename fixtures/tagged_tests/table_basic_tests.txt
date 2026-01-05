@@ -1,0 +1,44 @@
+Basic Table Test Suite
+
+Tests for basic table structure.
+
+◆TEST:tbl-basic-2x2-001:Basic 2x2 table◆
+
+A1	A2
+B1	B2
+
+◆EXPECT:semantic◆
+
+element: table
+
+◆/EXPECT◆
+
+◆/TEST◆
+
+◆TEST:tbl-basic-3x3-001:Basic 3x3 table◆
+
+R1C1	R1C2	R1C3
+R2C1	R2C2	R2C3
+R3C1	R3C2	R3C3
+
+◆EXPECT:semantic◆
+
+element: table
+
+◆/EXPECT◆
+
+◆/TEST◆
+
+◆TEST:tbl-header-001:Table with header row◆
+
+Name	Age	City
+Alice	25	NYC
+Bob	30	LA
+
+◆EXPECT:semantic◆
+
+element: table
+
+◆/EXPECT◆
+
+◆/TEST◆

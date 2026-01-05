@@ -1,0 +1,57 @@
+Bullet List Test Suite
+
+Tests for bullet lists at different levels.
+
+◆TEST:list-bullet-basic-001:Basic bullet list◆
+
+First bullet item
+
+Second bullet item
+
+Third bullet item
+
+◆EXPECT:semantic◆
+
+element: p
+
+contains: First bullet item
+
+◆/EXPECT◆
+
+◆/TEST◆
+
+◆TEST:list-bullet-level2-001:Nested bullet list level 2◆
+
+Parent item
+
+Child item level 2
+
+◆EXPECT:semantic◆
+
+element: p
+
+contains: Child item
+
+◆/EXPECT◆
+
+◆/TEST◆
+
+◆TEST:list-bullet-multilevel-001:Multi-level bullet list◆
+
+Level 1 item
+
+Level 2 item
+
+Level 3 item
+
+Back to level 1
+
+◆EXPECT:semantic◆
+
+element: p
+
+contains: Level 1 item
+
+◆/EXPECT◆
+
+◆/TEST◆

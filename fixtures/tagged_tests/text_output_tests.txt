@@ -1,0 +1,41 @@
+Text Output Test Suite
+
+Tests for plain text output conversion.
+
+◆TEST:text-simple-001:Simple plain text◆
+
+This is simple plain text content.
+
+◆EXPECT:text◆
+
+This is simple plain text content.
+
+◆/EXPECT◆
+
+◆/TEST◆
+
+◆TEST:text-formatted-001:Formatted text becomes plain◆
+
+Text with bold and italic formatting.
+
+◆EXPECT:text◆
+
+Text with bold and italic formatting.
+
+◆/EXPECT◆
+
+◆/TEST◆
+
+◆TEST:text-multipara-001:Multiple paragraphs to text◆
+
+First paragraph content here.
+
+Second paragraph content here.
+
+◆EXPECT:text◆
+
+First paragraph content here. Second paragraph content here.
+
+◆/EXPECT◆
+
+◆/TEST◆
