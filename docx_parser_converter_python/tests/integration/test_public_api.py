@@ -419,7 +419,7 @@ class TestConversionConfig:
 
         # HTML defaults
         assert config.style_mode == "inline"
-        assert config.use_semantic_tags is True
+        assert config.use_semantic_tags is False
         assert config.preserve_whitespace is False
         assert config.fragment_only is False
         assert config.title == ""

@@ -40,7 +40,8 @@ class ConversionConfig:
 
     HTML Options:
         style_mode: How to output styles ("inline", "class", "none")
-        use_semantic_tags: Use <strong>, <em> instead of <b>, <i>
+        use_semantic_tags: Use semantic HTML tags (<strong>, <em>, <del>, <sub>, <sup>)
+            instead of CSS spans. Default is False for maximum styling fidelity.
         preserve_whitespace: Preserve whitespace in content
         include_default_styles: Include default CSS styles
         title: Document title for HTML output
@@ -61,7 +62,7 @@ class ConversionConfig:
 
     # HTML options
     style_mode: Literal["inline", "class", "none"] = "inline"
-    use_semantic_tags: bool = True
+    use_semantic_tags: bool = False
     preserve_whitespace: bool = False
     include_default_styles: bool = True
     title: str = ""

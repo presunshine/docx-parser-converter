@@ -28,7 +28,7 @@ def hyperlink_to_html(
     hyperlink: Hyperlink,
     *,
     relationships: dict[str, str] | None = None,
-    use_semantic_tags: bool = True,
+    use_semantic_tags: bool = False,
     css_generator: CSSGenerator | None = None,
     style_resolver: "StyleResolver | None" = None,
 ) -> str:
@@ -117,7 +117,7 @@ def paragraph_content_to_html(
     content: Any,
     *,
     relationships: dict[str, str] | None = None,
-    use_semantic_tags: bool = True,
+    use_semantic_tags: bool = False,
     css_generator: CSSGenerator | None = None,
     style_resolver: "StyleResolver | None" = None,
 ) -> str:
@@ -168,7 +168,7 @@ def paragraph_to_html(
     numbering_prefix: str | None = None,
     numbering_indent_pt: float | None = None,
     numbering_styles: dict[str, str] | None = None,
-    use_semantic_tags: bool = True,
+    use_semantic_tags: bool = False,
     use_headings: bool = False,
     css_generator: CSSGenerator | None = None,
     style_resolver: "StyleResolver | None" = None,
@@ -214,7 +214,9 @@ def paragraph_to_html(
             marker_style = gen.generate_inline_style(numbering_styles)
             content_html = f'<span class="list-marker" style="{marker_style}">{escape(numbering_prefix)}</span>{content_html}'
         else:
-            content_html = f'<span class="list-marker">{escape(numbering_prefix)}</span>{content_html}'
+            content_html = (
+                f'<span class="list-marker">{escape(numbering_prefix)}</span>{content_html}'
+            )
 
     # Determine tag to use
     tag = _get_paragraph_tag(para.p_pr, use_headings)
@@ -307,7 +309,7 @@ class ParagraphToHTMLConverter:
     def __init__(
         self,
         *,
-        use_semantic_tags: bool = True,
+        use_semantic_tags: bool = False,
         use_classes: bool = False,
         use_headings: bool = False,
         use_inline_styles: bool = True,

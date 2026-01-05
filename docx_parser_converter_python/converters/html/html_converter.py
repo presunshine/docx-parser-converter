@@ -48,7 +48,7 @@ class ConversionConfig:
     """
 
     style_mode: str = "inline"
-    use_semantic_tags: bool = True
+    use_semantic_tags: bool = False
     preserve_whitespace: bool = False
     include_default_styles: bool = True
     title: str = ""

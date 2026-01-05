@@ -63,9 +63,9 @@ class TestConversionConfigDefaults:
         assert config.style_mode == "inline"
 
     def test_default_use_semantic_tags(self) -> None:
-        """Default is to use semantic tags."""
+        """Default is to not use semantic tags (use CSS instead)."""
         config = ConversionConfig()
-        assert config.use_semantic_tags is True
+        assert config.use_semantic_tags is False
 
     def test_default_preserve_whitespace(self) -> None:
         """Default is not to preserve whitespace."""

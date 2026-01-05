@@ -984,7 +984,9 @@ class TestNumberingStyles:
                 content=[
                     Paragraph(
                         p_pr=ParagraphProperties(num_pr=NumberingProperties(num_id=27, ilvl=0)),
-                        content=[Run(r_pr=RunProperties(i=True), content=[Text(value="Italic text")])],
+                        content=[
+                            Run(r_pr=RunProperties(i=True), content=[Text(value="Italic text")])
+                        ],
                     ),
                 ]
             )
