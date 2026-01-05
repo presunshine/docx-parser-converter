@@ -1,0 +1,57 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd *)",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(grep *)",
+      "Bash(find *)",
+      "Bash(diff *)",
+      "Bash(wc *)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git branch*)",
+      "Bash(git show*)",
+      "Bash(git stash*)",
+      "Bash(pytest*)",
+      "Bash(pyright*)",
+      "Bash(ruff *)",
+      "Bash(python -c *)",
+      "Bash(python -m pytest*)",
+      "Bash(python scripts/*)",
+      "Bash(bash scripts/*)",
+      "Bash(./scripts/*)",
+      "Bash(npm run *)",
+      "Bash(npm test*)",
+      "Bash(npx *)",
+      "Bash(mkdir *)",
+      "Bash(touch *)",
+      "Bash(rm *.pyc)",
+      "Bash(rm -rf __pycache__*)",
+      "Bash(rm -rf .pytest_cache*)"
+    ],
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(rm -rf ~)",
+      "Bash(rm -rf .)",
+      "Bash(git push --force*)",
+      "Bash(git reset --hard*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'FILE=\"$CLAUDE_FILE_PATH\"; if [[ \"$FILE\" == *.py ]]; then cd /Users/omerhayun/Projects/Docx-parser-converter/docx_parser_converter_python && ruff format \"$FILE\" 2>/dev/null && ruff check \"$FILE\" --fix 2>/dev/null; fi' || true"
+          }
+        ]
+      }
+    ]
+  }
+}
