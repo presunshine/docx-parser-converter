@@ -153,6 +153,49 @@ class TestRunPropertiesToCSS:
         result = run_properties_to_css(r_pr)
         assert "text-decoration" not in result
 
+    def test_underline_color(self) -> None:
+        """Underline with color converts to text-decoration-color."""
+        r_pr = RunProperties(u=Underline(val="single", color="FF0000"))
+        result = run_properties_to_css(r_pr)
+        assert "underline" in result["text-decoration"]
+        assert result["text-decoration-color"] == "#FF0000"
+
+    def test_underline_color_lowercase(self) -> None:
+        """Underline color is normalized to uppercase hex."""
+        r_pr = RunProperties(u=Underline(val="single", color="aabbcc"))
+        result = run_properties_to_css(r_pr)
+        assert result["text-decoration-color"] == "#AABBCC"
+
+    def test_underline_color_auto_ignored(self) -> None:
+        """Underline with auto color does not set text-decoration-color."""
+        r_pr = RunProperties(u=Underline(val="single", color="auto"))
+        result = run_properties_to_css(r_pr)
+        assert "underline" in result["text-decoration"]
+        assert "text-decoration-color" not in result
+
+    def test_underline_thick_has_thickness(self) -> None:
+        """Thick underline gets text-decoration-thickness."""
+        r_pr = RunProperties(u=Underline(val="thick"))
+        result = run_properties_to_css(r_pr)
+        assert "underline" in result["text-decoration"]
+        assert result["text-decoration-thickness"] == "2.5px"
+
+    def test_underline_wavy_heavy_has_thickness(self) -> None:
+        """Heavy wavy underline gets text-decoration-thickness."""
+        r_pr = RunProperties(u=Underline(val="wavyHeavy"))
+        result = run_properties_to_css(r_pr)
+        assert "wavy" in result["text-decoration"]
+        assert result["text-decoration-thickness"] == "2.5px"
+
+    def test_underline_color_with_style_and_thickness(self) -> None:
+        """Underline with color, style, and thickness all work together."""
+        r_pr = RunProperties(u=Underline(val="wavyHeavy", color="0000FF"))
+        result = run_properties_to_css(r_pr)
+        assert "underline" in result["text-decoration"]
+        assert "wavy" in result["text-decoration"]
+        assert result["text-decoration-thickness"] == "2.5px"
+        assert result["text-decoration-color"] == "#0000FF"
+
     def test_strikethrough(self) -> None:
         """Strikethrough converts to text-decoration."""
         r_pr = RunProperties(strike=True)
@@ -651,7 +694,7 @@ class TestTableCSS:
         """Percentage table width."""
         width = Width(w=5000, type="pct")  # 100%
         result = width_to_css(width)
-        assert result == "100.0%"
+        assert result == "100%"
 
     def test_table_width_dxa(self) -> None:
         """DXA (twips) table width."""

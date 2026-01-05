@@ -234,7 +234,7 @@ def run_content_to_html(content: Any) -> str:
 def run_to_html(
     run: Run | None,
     *,
-    use_semantic_tags: bool = True,
+    use_semantic_tags: bool = False,
     css_generator: CSSGenerator | None = None,
     style_resolver: "StyleResolver | None" = None,
 ) -> str:
@@ -330,8 +330,9 @@ def _apply_semantic_tags(
         result = f"<em>{result}</em>"
         css_props.pop("font-style", None)
 
-    # Strikethrough -> <del> or <s>
-    if r_pr.strike is True or r_pr.dstrike is True:
+    # Strikethrough -> <del> for single strike only
+    # Double strikethrough uses CSS to preserve the "double" style
+    if r_pr.strike is True and r_pr.dstrike is not True:
         result = f"<del>{result}</del>"
         # Only remove if this was the only text-decoration
         if "text-decoration" in css_props:
@@ -343,6 +344,7 @@ def _apply_semantic_tags(
                 css_props["text-decoration"] = decoration.replace("line-through", "").strip()
                 if not css_props["text-decoration"]:
                     css_props.pop("text-decoration")
+    # Note: dstrike (double strikethrough) keeps CSS text-decoration for styling
 
     # Underline -> <u> (deprecated but simple)
     # Note: We don't use <u> by default since it's semantically different
@@ -374,7 +376,7 @@ class RunToHTMLConverter:
     def __init__(
         self,
         *,
-        use_semantic_tags: bool = True,
+        use_semantic_tags: bool = False,
         use_classes: bool = False,
         css_generator: CSSGenerator | None = None,
     ) -> None:

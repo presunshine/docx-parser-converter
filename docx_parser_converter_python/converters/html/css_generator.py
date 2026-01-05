@@ -89,25 +89,35 @@ BORDER_STYLES: dict[str, str] = {
 # Underline Style Mapping
 # =============================================================================
 
-# Maps DOCX underline styles to CSS text-decoration-style values
+# Maps DOCX underline styles to CSS properties
+# Each entry is (text-decoration-style, text-decoration-thickness or None, is_approximate)
+# is_approximate indicates if the CSS is an approximation of the DOCX style
+UNDERLINE_STYLE_MAP: dict[str, tuple[str, str | None, bool]] = {
+    # Standard styles - direct CSS equivalents
+    "single": ("solid", None, False),
+    "double": ("double", None, False),
+    "dotted": ("dotted", None, False),
+    "dash": ("dashed", None, False),
+    "wave": ("wavy", None, False),
+    # Thick variants - use text-decoration-thickness
+    "thick": ("solid", "2.5px", True),  # Approximate: thick single line
+    "dottedHeavy": ("dotted", "2.5px", True),  # Approximate: thick dotted
+    "dashedHeavy": ("dashed", "2.5px", True),  # Approximate: thick dashed
+    "dashLongHeavy": ("dashed", "2.5px", True),  # Approximate: thick long dashes
+    "dashDotHeavy": ("dashed", "2.5px", True),  # Approximate: thick dot-dash
+    "dashDotDotHeavy": ("dashed", "2.5px", True),  # Approximate: thick dot-dot-dash
+    "wavyHeavy": ("wavy", "2.5px", True),  # Approximate: thick wavy
+    # Special patterns - approximated with closest CSS
+    "words": ("solid", None, True),  # Approximate: underline words only (not spaces)
+    "dashLong": ("dashed", None, True),  # Approximate: long dashes
+    "dotDash": ("dashed", None, True),  # Approximate: dot-dash pattern
+    "dotDotDash": ("dashed", None, True),  # Approximate: dot-dot-dash pattern
+    "wavyDouble": ("wavy", None, True),  # Approximate: double wavy (CSS has no double-wavy)
+}
+
+# Legacy mapping for backward compatibility
 UNDERLINE_STYLES: dict[str, str] = {
-    "single": "solid",
-    "words": "solid",  # Underline only words (closest approximation)
-    "double": "double",
-    "thick": "solid",  # No CSS equivalent for thick, use solid
-    "dotted": "dotted",
-    "dottedHeavy": "dotted",
-    "dash": "dashed",
-    "dashedHeavy": "dashed",
-    "dashLong": "dashed",
-    "dashLongHeavy": "dashed",
-    "dotDash": "dashed",
-    "dashDotHeavy": "dashed",
-    "dotDotDash": "dashed",
-    "dashDotDotHeavy": "dashed",
-    "wave": "wavy",
-    "wavyHeavy": "wavy",
-    "wavyDouble": "wavy",  # No double-wavy in CSS
+    key: style for key, (style, _, _) in UNDERLINE_STYLE_MAP.items()
 }
 
 
@@ -467,6 +477,8 @@ def width_to_css(width: Width | None) -> str | None:
         # Percentage is in fiftieths of a percent
         if width.w is not None:
             pct = width.w / 50
+            if pct == int(pct):
+                return f"{int(pct)}%"
             return f"{pct}%"
         return None
 
@@ -532,19 +544,35 @@ def run_properties_to_css(r_pr: RunProperties | None) -> dict[str, str]:
     # Text decorations (underline, strikethrough)
     decorations: list[str] = []
     decoration_style: str | None = None
+    decoration_thickness: str | None = None
+
+    # Track underline color separately
+    decoration_color: str | None = None
 
     if r_pr.u and r_pr.u.val and r_pr.u.val.lower() not in ("none", ""):
         decorations.append("underline")
-        # Get the underline style (solid, double, dotted, dashed, wavy)
-        css_style = UNDERLINE_STYLES.get(r_pr.u.val)
-        if css_style and css_style != "solid":
-            decoration_style = css_style
+        # Get the underline style, thickness, and whether it's approximate
+        style_info = UNDERLINE_STYLE_MAP.get(r_pr.u.val)
+        if style_info:
+            css_style, thickness, _ = style_info
+            if css_style and css_style != "solid":
+                decoration_style = css_style
+            if thickness:
+                decoration_thickness = thickness
+
+        # Get the underline color if specified
+        if r_pr.u.color and r_pr.u.color.lower() not in ("auto", ""):
+            hex_val = r_pr.u.color.upper()
+            # Ensure proper hex format
+            if len(hex_val) == 6 and all(c in "0123456789ABCDEF" for c in hex_val):
+                decoration_color = f"#{hex_val}"
 
     if r_pr.strike is True:
         decorations.append("line-through")
 
     if r_pr.dstrike is True:
         decorations.append("line-through")
+        decoration_style = "double"  # Double strikethrough gets double style
 
     if decorations:
         # Build text-decoration value with style if not solid
@@ -552,6 +580,14 @@ def run_properties_to_css(r_pr: RunProperties | None) -> dict[str, str]:
             result["text-decoration"] = f"{' '.join(decorations)} {decoration_style}"
         else:
             result["text-decoration"] = " ".join(decorations)
+
+        # Add thickness for heavy/thick variants
+        if decoration_thickness:
+            result["text-decoration-thickness"] = decoration_thickness
+
+        # Add underline color if specified
+        if decoration_color:
+            result["text-decoration-color"] = decoration_color
 
     # Text transform (caps)
     if r_pr.caps is True:
