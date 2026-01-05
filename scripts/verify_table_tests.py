@@ -1,0 +1,607 @@
+#!/usr/bin/env python3
+"""
+Verify table tests using the simplified tagged test format.
+
+Test format in DOCX:
+    Test #1: {Test Name}
+    {Description of what styles/properties to expect}
+    Expected: {JSON with expected properties}
+
+    [TABLE CONTENT HERE]
+
+    Test #2: {Next Test Name}
+    ...
+
+Expected JSON properties for tables:
+
+Structure:
+    - rows: int - number of rows
+    - cols: int - number of columns (in first row)
+    - cells: list[str] - expected cell text contents in order
+    - has_colspan: bool - whether any cell has colspan > 1
+    - has_rowspan: bool - whether any cell has rowspan > 1
+
+Table styles:
+    - table_border_top: str - e.g., "0.5pt solid #000000" or "none"
+    - table_border_bottom: str
+    - table_border_left: str
+    - table_border_right: str
+    - table_width: str - e.g., "100%" or "500pt"
+
+Cell styles (checked on first cell unless specified):
+    - cell_border_top: str - e.g., "1pt solid #000000" or "none"
+    - cell_border_bottom: str
+    - cell_border_left: str
+    - cell_border_right: str
+    - cell_bg: str - background color e.g., "#FFFF00"
+    - cell_valign: str - "top", "middle", "bottom"
+    - cell_width: str - e.g., "200pt"
+
+Text styles (checked on first text in first cell):
+    - text_bold: bool
+    - text_italic: bool
+    - text_underline: bool - or str for style like "double"
+    - text_color: str - e.g., "#FF0000"
+    - text_size: str - e.g., "12pt"
+    - text_font: str - e.g., "Arial"
+"""
+
+import json
+import re
+import sys
+from pathlib import Path
+
+# Add the package to path
+sys.path.insert(0, str(Path(__file__).parent.parent / "docx_parser_converter_python"))
+
+from api import docx_to_html, _parse_docx
+
+
+def extract_tests_from_docx(docx_path: str) -> list[dict]:
+    """Extract test definitions from DOCX file.
+
+    Returns list of tests with:
+        - name: test name
+        - description: test description
+        - expected: parsed JSON of expected properties
+        - table_index: which table (0-indexed) belongs to this test
+    """
+    doc, meta = _parse_docx(docx_path)
+
+    tests = []
+    current_test = None
+    table_index = 0
+
+    if doc is None or doc.body is None:
+        return tests
+
+    for item in doc.body.content:
+        # Check if it's a paragraph
+        if hasattr(item, "content"):
+            # Extract text from paragraph
+            text = ""
+            for run in item.content:
+                if hasattr(run, "content"):
+                    for content_item in run.content:
+                        if hasattr(content_item, "value"):
+                            text += content_item.value
+
+            text = text.strip()
+
+            # Check for test header: "Test #N: Name"
+            test_match = re.match(
+                r"^Test\s*#?\s*(\d+)\s*:\s*(.+)$", text, re.IGNORECASE
+            )
+            if test_match:
+                # Save previous test if exists
+                if current_test:
+                    tests.append(current_test)
+
+                current_test = {
+                    "number": int(test_match.group(1)),
+                    "name": test_match.group(2).strip(),
+                    "description": "",
+                    "expected": {},
+                    "table_index": None,
+                }
+                continue
+
+            # Check for Expected: {JSON}
+            expected_match = re.match(r"^Expected\s*:\s*(\{.+\})\s*$", text)
+            if expected_match and current_test:
+                try:
+                    current_test["expected"] = json.loads(expected_match.group(1))
+                except json.JSONDecodeError as e:
+                    print(
+                        f"Warning: Invalid JSON in test #{current_test['number']}: {e}"
+                    )
+                continue
+
+            # If we have a current test and this is description text
+            if current_test and text and not current_test["description"]:
+                current_test["description"] = text
+
+        # Check if it's a table (has 'tr' for table rows)
+        elif hasattr(item, "tr"):
+            if current_test and current_test["table_index"] is None:
+                current_test["table_index"] = table_index
+            table_index += 1
+
+    # Don't forget the last test
+    if current_test:
+        tests.append(current_test)
+
+    return tests
+
+
+def parse_style_attribute(style_str: str) -> dict[str, str]:
+    """Parse a style attribute string into a dict."""
+    styles = {}
+    if not style_str:
+        return styles
+
+    for part in style_str.split(";"):
+        part = part.strip()
+        if ":" in part:
+            key, value = part.split(":", 1)
+            styles[key.strip()] = value.strip()
+
+    return styles
+
+
+def normalize_border(border_str: str | None) -> str:
+    """Normalize border string for comparison."""
+    if not border_str or border_str.lower() == "none":
+        return "none"
+
+    # Remove extra spaces
+    border_str = " ".join(border_str.split())
+
+    # Normalize pt values: "1.0pt" -> "1pt", "0.5pt" stays as "0.5pt"
+    def normalize_pt(match: re.Match) -> str:
+        value = float(match.group(1))
+        if value == int(value):
+            return f"{int(value)}pt"
+        return f"{value}pt"
+
+    border_str = re.sub(r"(\d+\.?\d*)pt", normalize_pt, border_str)
+
+    # Normalize color to uppercase
+    color_match = re.search(r"#([0-9a-fA-F]{6})", border_str)
+    if color_match:
+        border_str = border_str.replace(
+            color_match.group(0), color_match.group(0).upper()
+        )
+
+    return border_str
+
+
+def normalize_color(color_str: str | None) -> str | None:
+    """Normalize color string for comparison."""
+    if not color_str:
+        return None
+    return color_str.upper()
+
+
+def normalize_dimension(dim_str: str | None) -> str | None:
+    """Normalize dimension string for comparison (handles pt and %)."""
+    if not dim_str:
+        return None
+
+    dim_str = dim_str.strip()
+
+    # Normalize percentage values: "100.0%" -> "100%"
+    pct_match = re.match(r"^(\d+\.?\d*)%$", dim_str)
+    if pct_match:
+        value = float(pct_match.group(1))
+        if value == int(value):
+            return f"{int(value)}%"
+        return f"{value}%"
+
+    # Normalize pt values: "100.0pt" -> "100pt"
+    pt_match = re.match(r"^(\d+\.?\d*)pt$", dim_str)
+    if pt_match:
+        value = float(pt_match.group(1))
+        if value == int(value):
+            return f"{int(value)}pt"
+        return f"{value}pt"
+
+    return dim_str
+
+
+def extract_tables_from_html(html: str) -> list[dict]:
+    """Extract detailed table information from HTML output."""
+    tables = []
+
+    # Find all tables with their full HTML
+    table_pattern = re.compile(r"<table([^>]*)>(.*?)</table>", re.DOTALL)
+
+    for table_match in table_pattern.finditer(html):
+        table_attrs = table_match.group(1)
+        table_content = table_match.group(2)
+
+        info = {
+            # Structure
+            "rows": 0,
+            "cols": 0,
+            "cells": [],
+            "has_colspan": False,
+            "has_rowspan": False,
+            # Table styles
+            "table_border_top": "none",
+            "table_border_bottom": "none",
+            "table_border_left": "none",
+            "table_border_right": "none",
+            "table_width": None,
+            # Cell styles (first cell)
+            "cell_border_top": "none",
+            "cell_border_bottom": "none",
+            "cell_border_left": "none",
+            "cell_border_right": "none",
+            "cell_bg": None,
+            "cell_valign": None,
+            "cell_width": None,
+            # Text styles (first text in first cell)
+            "text_bold": False,
+            "text_italic": False,
+            "text_underline": False,
+            "text_color": None,
+            "text_size": None,
+            "text_font": None,
+        }
+
+        # Parse table styles
+        table_style_match = re.search(r'style="([^"]*)"', table_attrs)
+        if table_style_match:
+            table_styles = parse_style_attribute(table_style_match.group(1))
+            info["table_width"] = normalize_dimension(table_styles.get("width"))
+
+        # Count rows and extract cells
+        rows = re.findall(r"<tr[^>]*>(.*?)</tr>", table_content, re.DOTALL)
+        info["rows"] = len(rows)
+
+        # Parse all cells to get their styles for outer border detection
+        all_row_cells: list[list[tuple[str, str]]] = []
+        for row_content in rows:
+            cells = re.findall(r"<td([^>]*)>(.*?)</td>", row_content, re.DOTALL)
+            all_row_cells.append(cells)
+
+        # Extract outer borders from edge cells
+        # (outer borders are now applied to edge cells, not the table element)
+        if all_row_cells:
+            # Top border: from first row, first cell
+            if all_row_cells[0]:
+                first_cell_attrs = all_row_cells[0][0][0]
+                style_match = re.search(r'style="([^"]*)"', first_cell_attrs)
+                if style_match:
+                    styles = parse_style_attribute(style_match.group(1))
+                    info["table_border_top"] = normalize_border(
+                        styles.get("border-top")
+                    )
+                    info["table_border_left"] = normalize_border(
+                        styles.get("border-left")
+                    )
+
+            # Bottom border: from last row, first cell
+            if all_row_cells[-1]:
+                last_row_first_cell_attrs = all_row_cells[-1][0][0]
+                style_match = re.search(r'style="([^"]*)"', last_row_first_cell_attrs)
+                if style_match:
+                    styles = parse_style_attribute(style_match.group(1))
+                    info["table_border_bottom"] = normalize_border(
+                        styles.get("border-bottom")
+                    )
+
+            # Right border: from first row, last cell
+            if all_row_cells[0]:
+                first_row_last_cell_attrs = all_row_cells[0][-1][0]
+                style_match = re.search(r'style="([^"]*)"', first_row_last_cell_attrs)
+                if style_match:
+                    styles = parse_style_attribute(style_match.group(1))
+                    info["table_border_right"] = normalize_border(
+                        styles.get("border-right")
+                    )
+
+        first_row = True
+        first_cell_processed = False
+
+        for row_content in rows:
+            cells = re.findall(r"<td([^>]*)>(.*?)</td>", row_content, re.DOTALL)
+
+            if first_row:
+                info["cols"] = len(cells)
+                first_row = False
+
+            for cell_attrs, cell_content in cells:
+                # Extract text content (strip HTML tags for cell text)
+                cell_text = re.sub(r"<[^>]+>", "", cell_content).strip()
+                info["cells"].append(cell_text)
+
+                # Check for colspan/rowspan
+                colspan_match = re.search(r'colspan="(\d+)"', cell_attrs)
+                if colspan_match and int(colspan_match.group(1)) > 1:
+                    info["has_colspan"] = True
+
+                rowspan_match = re.search(r'rowspan="(\d+)"', cell_attrs)
+                if rowspan_match and int(rowspan_match.group(1)) > 1:
+                    info["has_rowspan"] = True
+
+                # Process first cell styles
+                if not first_cell_processed:
+                    cell_style_match = re.search(r'style="([^"]*)"', cell_attrs)
+                    if cell_style_match:
+                        cell_styles = parse_style_attribute(cell_style_match.group(1))
+
+                        info["cell_border_top"] = normalize_border(
+                            cell_styles.get("border-top")
+                        )
+                        info["cell_border_bottom"] = normalize_border(
+                            cell_styles.get("border-bottom")
+                        )
+                        info["cell_border_left"] = normalize_border(
+                            cell_styles.get("border-left")
+                        )
+                        info["cell_border_right"] = normalize_border(
+                            cell_styles.get("border-right")
+                        )
+                        info["cell_bg"] = normalize_color(
+                            cell_styles.get("background-color")
+                        )
+                        info["cell_valign"] = cell_styles.get("vertical-align")
+                        info["cell_width"] = normalize_dimension(
+                            cell_styles.get("width")
+                        )
+
+                    # Extract text styles from first span in cell
+                    span_match = re.search(r'<span\s+style="([^"]*)"', cell_content)
+                    if span_match:
+                        text_styles = parse_style_attribute(span_match.group(1))
+
+                        # Bold
+                        if text_styles.get("font-weight") == "bold":
+                            info["text_bold"] = True
+
+                        # Italic
+                        if text_styles.get("font-style") == "italic":
+                            info["text_italic"] = True
+
+                        # Underline
+                        text_decoration = text_styles.get("text-decoration", "")
+                        if "underline" in text_decoration:
+                            if "double" in text_decoration:
+                                info["text_underline"] = "double"
+                            elif "wavy" in text_decoration:
+                                info["text_underline"] = "wavy"
+                            elif "dotted" in text_decoration:
+                                info["text_underline"] = "dotted"
+                            elif "dashed" in text_decoration:
+                                info["text_underline"] = "dashed"
+                            else:
+                                info["text_underline"] = True
+
+                        # Color
+                        info["text_color"] = normalize_color(text_styles.get("color"))
+
+                        # Font size
+                        info["text_size"] = text_styles.get("font-size")
+
+                        # Font family
+                        font_family = text_styles.get("font-family")
+                        if font_family:
+                            # Remove quotes and get first font
+                            font_family = font_family.replace("'", "").replace('"', "")
+                            info["text_font"] = font_family.split(",")[0].strip()
+
+                    first_cell_processed = True
+
+        tables.append(info)
+
+    return tables
+
+
+def verify_test(test: dict, table_info: dict) -> tuple[bool, list[str]]:
+    """Verify a single test against table info.
+
+    Returns (passed, list of failure messages).
+    """
+    expected = test["expected"]
+    failures = []
+
+    for key, expected_value in expected.items():
+        if key not in table_info:
+            failures.append(f"Unknown expected property: {key}")
+            continue
+
+        actual_value = table_info[key]
+
+        # Special handling for cells - check contents match
+        if key == "cells":
+            if isinstance(expected_value, list):
+                if len(expected_value) != len(actual_value):
+                    failures.append(
+                        f"Cell count mismatch: expected {len(expected_value)}, got {len(actual_value)}"
+                    )
+                else:
+                    for i, (exp_cell, act_cell) in enumerate(
+                        zip(expected_value, actual_value)
+                    ):
+                        if exp_cell != act_cell:
+                            failures.append(
+                                f"Cell {i} mismatch: expected '{exp_cell}', got '{act_cell}'"
+                            )
+
+        # Border comparison (normalize both)
+        elif (
+            key.endswith("_border_top")
+            or key.endswith("_border_bottom")
+            or key.endswith("_border_left")
+            or key.endswith("_border_right")
+        ):
+            exp_normalized = normalize_border(expected_value)
+            act_normalized = normalize_border(actual_value)
+            if exp_normalized != act_normalized:
+                failures.append(
+                    f"{key}: expected '{exp_normalized}', got '{act_normalized}'"
+                )
+
+        # Color comparison (case-insensitive)
+        elif key in ("cell_bg", "text_color"):
+            exp_normalized = normalize_color(expected_value)
+            act_normalized = normalize_color(actual_value)
+            if exp_normalized != act_normalized:
+                failures.append(
+                    f"{key}: expected '{exp_normalized}', got '{act_normalized}'"
+                )
+
+        # Dimension comparison (normalize pt and % values)
+        elif key in ("table_width", "cell_width", "text_size"):
+            exp_normalized = normalize_dimension(expected_value)
+            act_normalized = normalize_dimension(actual_value)
+            if exp_normalized != act_normalized:
+                failures.append(
+                    f"{key}: expected '{exp_normalized}', got '{act_normalized}'"
+                )
+
+        # Direct comparison for everything else
+        elif expected_value != actual_value:
+            failures.append(
+                f"{key}: expected {repr(expected_value)}, got {repr(actual_value)}"
+            )
+
+    return len(failures) == 0, failures
+
+
+def verify_docx_file(docx_path: str, verbose: bool = False) -> tuple[int, int]:
+    """Verify all tests in a DOCX file.
+
+    Returns (passed_count, total_count).
+    """
+    print(f"\n{'=' * 60}")
+    print(f"  Verifying: {Path(docx_path).name}")
+    print(f"{'=' * 60}\n")
+
+    # Extract tests from DOCX
+    tests = extract_tests_from_docx(docx_path)
+
+    if not tests:
+        print("  No tests found in document.")
+        return 0, 0
+
+    # Convert to HTML and extract table info
+    html = docx_to_html(docx_path)
+    tables = extract_tables_from_html(html)
+
+    print(f"  Found {len(tests)} tests and {len(tables)} tables\n")
+
+    passed = 0
+    total = len(tests)
+
+    for test in tests:
+        test_name = f"Test #{test['number']}: {test['name']}"
+
+        if test["table_index"] is None:
+            print(f"  \033[31m✗\033[0m {test_name}")
+            print("      No table found for this test")
+            continue
+
+        if test["table_index"] >= len(tables):
+            print(f"  \033[31m✗\033[0m {test_name}")
+            print(f"      Table index {test['table_index']} out of range")
+            continue
+
+        table_info = tables[test["table_index"]]
+        success, failures = verify_test(test, table_info)
+
+        if success:
+            print(f"  \033[32m✓\033[0m {test_name}")
+            passed += 1
+        else:
+            print(f"  \033[31m✗\033[0m {test_name}")
+            for failure in failures:
+                print(f"      {failure}")
+
+        if verbose:
+            print(f"      Description: {test['description']}")
+            print(f"      Expected: {json.dumps(test['expected'], indent=8)}")
+            # Show relevant actual values
+            relevant_actual = {
+                k: v for k, v in table_info.items() if k in test["expected"]
+            }
+            print(f"      Actual: {json.dumps(relevant_actual, indent=8)}")
+
+    print(f"\n{'-' * 60}")
+    if passed == total:
+        print(f"  \033[32mPassed: {passed}/{total}\033[0m")
+    else:
+        print(f"  \033[31mPassed: {passed}/{total}\033[0m")
+    print(f"{'-' * 60}\n")
+
+    return passed, total
+
+
+def main():
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Verify table tests in DOCX files")
+    parser.add_argument("files", nargs="*", help="DOCX files to verify")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
+    parser.add_argument(
+        "--all", action="store_true", help="Verify all table test files"
+    )
+    parser.add_argument(
+        "--show-html", action="store_true", help="Show generated HTML for debugging"
+    )
+
+    args = parser.parse_args()
+
+    # Determine files to verify
+    if args.all:
+        fixtures_dir = Path(__file__).parent.parent / "fixtures" / "tagged_tests"
+        files = list(fixtures_dir.glob("table_*.docx"))
+    elif args.files:
+        files = [Path(f) for f in args.files]
+    else:
+        # Default: look for table test files
+        fixtures_dir = Path(__file__).parent.parent / "fixtures" / "tagged_tests"
+        files = list(fixtures_dir.glob("table_*.docx"))
+
+    if not files:
+        print("No test files found.")
+        print("\nUsage:")
+        print("  python verify_table_tests.py [files...]")
+        print("  python verify_table_tests.py --all")
+        print("\nExpected test format in DOCX:")
+        print("  Test #1: Test Name")
+        print("  Description of what to expect")
+        print('  Expected: {"rows": 2, "cols": 2, "text_bold": true}')
+        print("  [TABLE HERE]")
+        return 1
+
+    total_passed = 0
+    total_tests = 0
+
+    for file_path in sorted(files):
+        if args.show_html:
+            html = docx_to_html(str(file_path))
+            print(f"\n--- HTML for {file_path.name} ---")
+            print(html)
+            print("--- End HTML ---\n")
+
+        p, t = verify_docx_file(str(file_path), verbose=args.verbose)
+        total_passed += p
+        total_tests += t
+
+    if len(files) > 1:
+        print(f"\n{'=' * 60}")
+        print("  FINAL SUMMARY")
+        if total_passed == total_tests:
+            print(f"  \033[32mTotal: {total_passed}/{total_tests} tests passed\033[0m")
+        else:
+            print(f"  \033[31mTotal: {total_passed}/{total_tests} tests passed\033[0m")
+        print(f"{'=' * 60}\n")
+
+    return 0 if total_passed == total_tests else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
