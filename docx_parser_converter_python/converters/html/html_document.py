@@ -15,8 +15,10 @@ body {
     font-family: 'Calibri', 'Arial', sans-serif;
     line-height: 1.5;
     margin: 0 auto;
-    padding: 20px;
 }
+p { margin: 0; }
+main > *:first-child { margin-top: 0; }
+main > *:last-child { margin-bottom: 0; }
 """
 
 PAGE_BREAK_STYLES = """
@@ -72,6 +74,7 @@ class HTMLDocument:
         scripts: list[str] | None = None,
         responsive: bool = True,
         page_width: float | None = None,
+        page_margins: tuple[float, float, float, float] | None = None,
         direction: str | None = None,
         minify: bool = False,
         pretty: bool = False,
@@ -93,6 +96,7 @@ class HTMLDocument:
             scripts: External script URLs
             responsive: Include viewport meta tag
             page_width: Page width in points for max-width
+            page_margins: Page margins in points (top, right, bottom, left)
             direction: Text direction (ltr, rtl)
             minify: Minify output
             pretty: Pretty-print output with indentation
@@ -111,6 +115,7 @@ class HTMLDocument:
         self.scripts = scripts or []
         self.responsive = responsive
         self.page_width = page_width
+        self.page_margins = page_margins
         self.direction = direction
         self.minify = minify
         self.pretty = pretty
@@ -181,6 +186,16 @@ class HTMLDocument:
 
         # Default body styles
         parts.append(DEFAULT_BODY_STYLES.strip())
+
+        # Page margins from document section properties
+        if self.page_margins:
+            top, right, bottom, left = self.page_margins
+            parts.append(
+                f"body {{ padding: {top:.0f}pt {right:.0f}pt {bottom:.0f}pt {left:.0f}pt; }}"
+            )
+        else:
+            # Default padding when no margins specified
+            parts.append("body { padding: 20px; }")
 
         # Page width constraint
         if self.page_width:
@@ -307,6 +322,7 @@ class HTMLDocumentBuilder:
         self._scripts: list[str] = []
         self._responsive: bool = True
         self._page_width: float | None = None
+        self._page_margins: tuple[float, float, float, float] | None = None
         self._direction: str | None = None
         self._minify: bool = False
         self._pretty: bool = False
@@ -457,6 +473,23 @@ class HTMLDocumentBuilder:
         self._page_width = width
         return self
 
+    def set_page_margins(
+        self, top: float, right: float, bottom: float, left: float
+    ) -> "HTMLDocumentBuilder":
+        """Set page margins.
+
+        Args:
+            top: Top margin in points
+            right: Right margin in points
+            bottom: Bottom margin in points
+            left: Left margin in points
+
+        Returns:
+            Self for chaining
+        """
+        self._page_margins = (top, right, bottom, left)
+        return self
+
     def set_direction(self, direction: str) -> "HTMLDocumentBuilder":
         """Set text direction.
 
@@ -531,6 +564,7 @@ class HTMLDocumentBuilder:
             scripts=self._scripts if self._scripts else None,
             responsive=self._responsive,
             page_width=self._page_width,
+            page_margins=self._page_margins,
             direction=self._direction,
             minify=self._minify,
             pretty=self._pretty,

@@ -4,10 +4,15 @@ Provides the docx_to_html() function and HTMLConverter class for
 converting DOCX documents to HTML.
 """
 
+from __future__ import annotations
+
 from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import BinaryIO
+from typing import TYPE_CHECKING, BinaryIO
+
+if TYPE_CHECKING:
+    from models.document.section import SectionProperties
 
 from converters.common.numbering_tracker import NumberingTracker
 from converters.common.style_resolver import StyleResolver
@@ -135,7 +140,7 @@ class HTMLConverter:
             Complete HTML string
         """
         if document is None:
-            return self._wrap_content("")
+            return self._wrap_content("", None)
 
         # Reset numbering tracker for new document
         self._numbering_tracker.reset()
@@ -156,7 +161,10 @@ class HTMLConverter:
         if self.config.fragment_only:
             return content_html
 
-        return self._wrap_content(content_html)
+        # Extract section properties for page margins
+        sect_pr = document.body.sect_pr if document.body else None
+
+        return self._wrap_content(content_html, sect_pr)
 
     def convert_paragraph(self, paragraph: Paragraph | None) -> str:
         """Convert Paragraph model to HTML.
@@ -169,9 +177,7 @@ class HTMLConverter:
         """
         # Get numbering prefix, indentation, and styles if applicable
         numbering_prefix = self._get_numbering_prefix(paragraph)
-        numbering_indent_pt, numbering_hanging_pt = self._get_numbering_indentation(
-            paragraph
-        )
+        numbering_indent_pt, numbering_hanging_pt = self._get_numbering_indentation(paragraph)
         numbering_styles = self._get_numbering_styles(paragraph)
 
         return paragraph_to_html(
@@ -336,20 +342,36 @@ class HTMLConverter:
             # If model conversion fails, return None
             return None
 
-    def _wrap_content(self, content: str) -> str:
+    def _wrap_content(
+        self,
+        content: str,
+        sect_pr: SectionProperties | None = None,
+    ) -> str:
         """Wrap content in HTML document structure.
 
         Args:
             content: HTML content to wrap
+            sect_pr: Section properties for page margins
 
         Returns:
             Complete HTML document
         """
+
         builder = HTMLDocumentBuilder()
         builder.set_content(content)
         builder.set_title(self.config.title)
         builder.set_language(self.config.language)
         builder.set_responsive(self.config.responsive)
+
+        # Apply page margins from section properties
+        if sect_pr and sect_pr.pg_mar:
+            pg_mar = sect_pr.pg_mar
+            # Convert twips to points (1 point = 20 twips)
+            top_pt = (pg_mar.top or 1440) / 20
+            right_pt = (pg_mar.right or 1440) / 20
+            bottom_pt = (pg_mar.bottom or 1440) / 20
+            left_pt = (pg_mar.left or 1440) / 20
+            builder.set_page_margins(top_pt, right_pt, bottom_pt, left_pt)
 
         if self.config.custom_css:
             builder.add_css(self.config.custom_css)

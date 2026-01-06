@@ -277,7 +277,10 @@ def paragraph_to_html(
 
     attr_str = f" {' '.join(attrs)}" if attrs else ""
 
-    # Empty paragraph still gets a tag (for spacing)
+    # Empty paragraph gets a <br> to preserve vertical space
+    if not content_html:
+        content_html = "<br>"
+
     return f"<{tag}{attr_str}>{content_html}</{tag}>"
 
 

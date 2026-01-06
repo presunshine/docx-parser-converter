@@ -314,7 +314,7 @@ Before committing changes:
 2. **Lint**: `ruff check .` - must pass
 3. **Tests**: `pytest` - all 1,493 tests must pass
 4. **Output Verification**: `python scripts/verify_outputs.py` - must pass
-5. **Tagged Tests**: `python scripts/verify_tests.py --all` - all 38 tests must pass
+5. **Tagged Tests**: `python scripts/verify_tests.py --all` - all 44 tests must pass
 
 **Note:** A `PostToolUse` hook automatically runs all verification checks after any Python file is modified (Write/Edit). See `.claude/settings.json` for hook configuration.
 
@@ -376,6 +376,9 @@ python scripts/verify_tests.py --all -v
 | - | List numbering incorrect | Maintain NumberingContext across paragraphs |
 | - | Font names with spaces breaking CSS | Use single quotes around font names |
 | - | Underline variants not rendering | Handle all underline types in style mapping |
+| - | Page margins not applied to HTML | Extract from `sect_pr.pg_mar` and apply as body padding |
+| - | Browser default `<p>` margins causing extra space | Add `p { margin: 0; }` CSS reset |
+| - | Empty paragraphs invisible in HTML | Add `<br>` to empty paragraphs to preserve vertical space |
 
 ---
 

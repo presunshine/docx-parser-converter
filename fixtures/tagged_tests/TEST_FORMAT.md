@@ -38,6 +38,7 @@ python scripts/verify_tests.py --show-html fixtures/tagged_tests/table_tests_v2.
 | `table_tests_v2.docx` | 20 | Table structure, borders, spans, cells |
 | `list_tests.docx` | 6 | Numbered lists, nesting, markers |
 | `formatting_tests.docx` | 12 | Bold, italic, underline, colors, fonts |
+| `margin_tests.docx` | 6 | Paragraph alignment (left, right, center, justify) |
 
 ## Expected Properties
 
