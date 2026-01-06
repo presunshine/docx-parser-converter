@@ -37,12 +37,12 @@ build-backend = "pdm.backend"
 distribution = true
 
 [tool.pdm.build]
-packages = ["core", "models", "parsers", "converters"]
+packages = ["core", "models", "parsers", "converters", "docx_parser_converter"]
 
 [tool.pyright]
 pythonVersion = "3.10"
 typeCheckingMode = "basic"
-include = ["core", "models", "parsers", "converters", "tests"]
+include = ["core", "models", "parsers", "converters", "docx_parser_converter", "tests"]
 exclude = ["**/__pycache__"]
 reportMissingTypeStubs = false
 
@@ -65,7 +65,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["core", "models", "parsers", "converters"]
+known-first-party = ["core", "models", "parsers", "converters", "docx_parser_converter"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
