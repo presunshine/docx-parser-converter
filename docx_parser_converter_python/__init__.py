@@ -14,8 +14,8 @@ Example:
     >>> text = docx_to_text("document.docx", config=config)
 """
 
-from api import ConversionConfig, docx_to_html, docx_to_text
-from core import (
+from .api import ConversionConfig, docx_to_html, docx_to_text
+from .core import (
     DocxEncryptedError,
     DocxMissingPartError,
     DocxNotFoundError,
@@ -25,7 +25,7 @@ from core import (
     XmlParseError,
 )
 
-__version__ = "0.1.0"
+__version__ = "1.0.0"
 
 __all__ = [
     # Version

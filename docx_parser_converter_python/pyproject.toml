@@ -1,6 +1,6 @@
 [project]
 name = "docx-parser-converter"
-version = "0.1.0"
+version = "1.0.0"
 description = "A library for converting DOCX files to HTML and plain text"
 authors = [
     {name = "Omer Hayun", email = "omerha86@gmail.com"},
@@ -12,6 +12,26 @@ dependencies = [
 requires-python = ">=3.10"
 readme = "README.md"
 license = {text = "MIT"}
+keywords = ["docx", "parser", "converter", "html", "text", "word", "document", "office", "ooxml"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Operating System :: OS Independent",
+    "Topic :: Office/Business",
+    "Topic :: Text Processing :: Markup :: HTML",
+    "Typing :: Typed",
+]
+
+[project.urls]
+Homepage = "https://github.com/omer-go/docx-parser-converter"
+Repository = "https://github.com/omer-go/docx-parser-converter"
+Issues = "https://github.com/omer-go/docx-parser-converter/issues"
 
 [project.optional-dependencies]
 dev = [
@@ -19,6 +39,7 @@ dev = [
     "pyright>=1.1.400",
     "ruff>=0.8.0",
     "lxml-stubs>=0.5.0",
+    "setuptools>=70.0.0",
 ]
 
 [dependency-groups]
@@ -27,6 +48,7 @@ dev = [
     "pyright>=1.1.400",
     "ruff>=0.8.0",
     "lxml-stubs>=0.5.0",
+    "setuptools>=70.0.0",
 ]
 
 [build-system]
