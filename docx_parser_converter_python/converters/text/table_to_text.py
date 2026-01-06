@@ -95,10 +95,16 @@ def _is_border_visible(border) -> bool:
     return border is not None and border.val is not None and border.val not in ("none", "nil")
 
 
+def _is_border_explicitly_none(border) -> bool:
+    """Check if a border is explicitly set to none/nil."""
+    return border is not None and border.val is not None and border.val in ("none", "nil")
+
+
 def detect_borders(table: Table) -> BorderInfo:
     """Detect which borders are present on the table.
 
-    Checks both table-level borders and cell-level borders.
+    Cell-level borders override table-level borders in OOXML.
+    Checks cell borders first, then falls back to table borders.
 
     Args:
         table: Table element
@@ -108,46 +114,91 @@ def detect_borders(table: Table) -> BorderInfo:
     """
     info = BorderInfo()
 
-    # Check table-level borders
+    if not table.tr:
+        return info
+
+    # Track whether all cells explicitly set borders to none (override table borders)
+    all_cells_have_no_top = True
+    all_cells_have_no_bottom = True
+    all_cells_have_no_left = True
+    all_cells_have_no_right = True
+    all_cells_have_no_inside_h = True
+    all_cells_have_no_inside_v = True
+
+    # First pass: check all cell-level borders
+    for row_idx, row in enumerate(table.tr):
+        for col_idx, cell in enumerate(row.tc):
+            if cell.tc_pr and cell.tc_pr.tc_borders:
+                cb = cell.tc_pr.tc_borders
+
+                # Check if cell has visible borders
+                if row_idx == 0 and _is_border_visible(cb.top):
+                    info.top = True
+                if row_idx == len(table.tr) - 1 and _is_border_visible(cb.bottom):
+                    info.bottom = True
+                if col_idx == 0 and _is_border_visible(cb.left):
+                    info.left = True
+                if col_idx == len(row.tc) - 1 and _is_border_visible(cb.right):
+                    info.right = True
+                if row_idx < len(table.tr) - 1 and _is_border_visible(cb.bottom):
+                    info.inside_h = True
+                if row_idx > 0 and _is_border_visible(cb.top):
+                    info.inside_h = True
+                if col_idx < len(row.tc) - 1 and _is_border_visible(cb.right):
+                    info.inside_v = True
+                if col_idx > 0 and _is_border_visible(cb.left):
+                    info.inside_v = True
+
+                # Track if NOT explicitly none (means we can't override table borders)
+                if row_idx == 0 and not _is_border_explicitly_none(cb.top):
+                    all_cells_have_no_top = False
+                if row_idx == len(table.tr) - 1 and not _is_border_explicitly_none(cb.bottom):
+                    all_cells_have_no_bottom = False
+                if col_idx == 0 and not _is_border_explicitly_none(cb.left):
+                    all_cells_have_no_left = False
+                if col_idx == len(row.tc) - 1 and not _is_border_explicitly_none(cb.right):
+                    all_cells_have_no_right = False
+                if row_idx < len(table.tr) - 1 and not _is_border_explicitly_none(cb.bottom):
+                    all_cells_have_no_inside_h = False
+                if row_idx > 0 and not _is_border_explicitly_none(cb.top):
+                    all_cells_have_no_inside_h = False
+                if col_idx < len(row.tc) - 1 and not _is_border_explicitly_none(cb.right):
+                    all_cells_have_no_inside_v = False
+                if col_idx > 0 and not _is_border_explicitly_none(cb.left):
+                    all_cells_have_no_inside_v = False
+            else:
+                # Cell doesn't define borders - can't override table borders
+                if row_idx == 0:
+                    all_cells_have_no_top = False
+                if row_idx == len(table.tr) - 1:
+                    all_cells_have_no_bottom = False
+                if col_idx == 0:
+                    all_cells_have_no_left = False
+                if col_idx == len(row.tc) - 1:
+                    all_cells_have_no_right = False
+                all_cells_have_no_inside_h = False
+                all_cells_have_no_inside_v = False
+
+    # If cells already detected visible borders, return early
+    if info.has_any:
+        return info
+
+    # If all cells explicitly set borders to none, those override table borders
+    # Only fall back to table borders for border types not explicitly set to none
     if table.tbl_pr and table.tbl_pr.tbl_borders:
         borders = table.tbl_pr.tbl_borders
-        info.top = _is_border_visible(borders.top)
-        info.bottom = _is_border_visible(borders.bottom)
-        info.left = _is_border_visible(borders.left)
-        info.right = _is_border_visible(borders.right)
-        info.inside_h = _is_border_visible(borders.inside_h)
-        info.inside_v = _is_border_visible(borders.inside_v)
-
-    # Check cell-level borders if table borders not set
-    if not info.has_any and table.tr:
-        for row_idx, row in enumerate(table.tr):
-            for col_idx, cell in enumerate(row.tc):
-                if cell.tc_pr and cell.tc_pr.tc_borders:
-                    cb = cell.tc_pr.tc_borders
-                    # Top row cells with top border -> table has top border
-                    if row_idx == 0 and _is_border_visible(cb.top):
-                        info.top = True
-                    # Bottom row cells with bottom border -> table has bottom border
-                    if row_idx == len(table.tr) - 1 and _is_border_visible(cb.bottom):
-                        info.bottom = True
-                    # Left column cells with left border -> table has left border
-                    if col_idx == 0 and _is_border_visible(cb.left):
-                        info.left = True
-                    # Right column cells with right border -> table has right border
-                    if col_idx == len(row.tc) - 1 and _is_border_visible(cb.right):
-                        info.right = True
-                    # Any cell with bottom border (not last row) -> inside_h
-                    if row_idx < len(table.tr) - 1 and _is_border_visible(cb.bottom):
-                        info.inside_h = True
-                    # Any cell with top border (not first row) -> inside_h
-                    if row_idx > 0 and _is_border_visible(cb.top):
-                        info.inside_h = True
-                    # Any cell with right border (not last col) -> inside_v
-                    if col_idx < len(row.tc) - 1 and _is_border_visible(cb.right):
-                        info.inside_v = True
-                    # Any cell with left border (not first col) -> inside_v
-                    if col_idx > 0 and _is_border_visible(cb.left):
-                        info.inside_v = True
+        if not all_cells_have_no_top:
+            info.top = _is_border_visible(borders.top)
+        if not all_cells_have_no_bottom:
+            info.bottom = _is_border_visible(borders.bottom)
+        if not all_cells_have_no_left:
+            info.left = _is_border_visible(borders.left)
+        if not all_cells_have_no_right:
+            info.right = _is_border_visible(borders.right)
+        if not all_cells_have_no_inside_h:
+            info.inside_h = _is_border_visible(borders.inside_h)
+        if not all_cells_have_no_inside_v:
+            info.inside_v = _is_border_visible(borders.inside_v)
 
     return info
 

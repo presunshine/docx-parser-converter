@@ -14,47 +14,33 @@ Tables Demonstration
 
 A clean table without any borders:
 
-+----------+-------+
-| Name     | Value |
-+----------+-------+
-| Item One | 100   |
-+----------+-------+
-| Item Two | 200   |
-+----------+-------+
+Name	Value
+Item One	100
+Item Two	200
 
 3. Single-Side Border Tables
 
 Top Border Only
 
-+----------+----------+----------+
-| Column 1 | Column 2 | Column 3 |
-+----------+----------+----------+
-| Data 1   | Data 2   | Data 3   |
-+----------+----------+----------+
+----------------------------------
+  Column 1   Column 2   Column 3  
+  Data 1     Data 2     Data 3    
 
 Bottom Border Only
 
-+-----------+-----------+
-| Header 1  | Header 2  |
-+-----------+-----------+
-| Content A | Content B |
-+-----------+-----------+
+  Header 1    Header 2   
+-------------------------
+  Content A   Content B  
 
 Left Border Only
 
-+------------------+-------------+
-| Important Item 1 | Description |
-+------------------+-------------+
-| Important Item 2 | Description |
-+------------------+-------------+
+| Important Item 1   Description  
+| Important Item 2   Description  
 
 Right Border Only
 
-+---------------+---------------+
-| Label         | Value         |
-+---------------+---------------+
-| Another Label | Another Value |
-+---------------+---------------+
+  Label           Value         |
+  Another Label   Another Value |
 
 4. Tables with Merged Cells
 

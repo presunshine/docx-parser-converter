@@ -161,11 +161,10 @@ Table has thin outer border, first cell has thick inner border.
 
 Expected: {"rows": 2, "cols": 2, "table_border_top": "2pt solid #FF0000", "cell_border_top": "2pt solid #FF0000", "table_width": "100%"}
 
-+-----------+--------+
-| ThickCell | Normal |
-+-----------+--------+
-| Normal    | Normal |
-+-----------+--------+
++-----------+---------
+| ThickCell | Normal  
++-----------+---------
+| Normal    | Normal  
 
 Test #18: Multiple Background Colors
 
