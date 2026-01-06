@@ -182,9 +182,6 @@ def apply_markdown_formatting(text: str, r_pr: RunProperties | None) -> str:
     # Check for strikethrough
     is_strike = r_pr.strike is True
 
-    # Check for underline (use HTML <u> tag since Markdown has no native underline)
-    is_underline = r_pr.u is not None and r_pr.u.val is not None and r_pr.u.val not in ("none", "")
-
     # Check for monospace font (code)
     is_code = False
     if r_pr.r_fonts:
@@ -193,10 +190,7 @@ def apply_markdown_formatting(text: str, r_pr: RunProperties | None) -> str:
         elif is_monospace_font(r_pr.r_fonts.h_ansi):
             is_code = True
 
-    # Apply formatting in order (innermost first)
-    if is_code and not (is_bold or is_italic or is_strike or is_underline):
-        result = f"`{result}`"
-
+    # Apply formatting in order
     if is_strike:
         result = f"~~{result}~~"
 
@@ -207,9 +201,8 @@ def apply_markdown_formatting(text: str, r_pr: RunProperties | None) -> str:
     elif is_italic:
         result = f"*{result}*"
 
-    # Apply underline last (outermost) using HTML tag
-    if is_underline:
-        result = f"<u>{result}</u>"
+    if is_code and not (is_bold or is_italic or is_strike):
+        result = f"`{result}`"
 
     return result
 
