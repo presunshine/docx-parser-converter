@@ -48,7 +48,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'FILE=\"$CLAUDE_FILE_PATH\"; if [[ \"$FILE\" == *.py ]]; then cd /Users/omerhayun/Projects/Docx-parser-converter/docx_parser_converter_python && ruff format \"$FILE\" 2>/dev/null && ruff check \"$FILE\" --fix 2>/dev/null; fi' || true"
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/scripts/post_edit_verify.py\"",
+            "timeout": 300
           }
         ]
       }
