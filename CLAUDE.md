@@ -20,7 +20,7 @@ Converts `.docx` files to HTML or plain text while preserving formatting, styles
 - **Language**: Python 3.10+
 - **Package Manager**: PDM
 - **Core Dependencies**: lxml, pydantic v2
-- **Testing**: pytest (1,369+ tests)
+- **Testing**: pytest (1,493 tests)
 - **Type Checking**: pyright (basic mode)
 - **Linting**: ruff
 
@@ -47,8 +47,8 @@ Converts `.docx` files to HTML or plain text while preserving formatting, styles
 ├── docx_parser_converter_ts/        # TypeScript implementation
 │   └── src/
 ├── fixtures/                        # Test data
-│   ├── test_docx_files/             # Input .docx files
-│   └── outputs-python/              # Expected HTML/TXT outputs
+│   ├── test_docx_files/             # Input .docx files + expected outputs
+│   └── tagged_tests/                # Tagged test DOCX files (Test #N format)
 └── docs/                            # Documentation
 ```
 
@@ -291,11 +291,18 @@ def test_something(make_element):
 
 ### Output Verification
 
-Expected outputs are in `fixtures/outputs-python/`. When changing converter behavior:
+Expected outputs are in `fixtures/test_docx_files/` alongside the input files. When changing converter behavior:
 1. Run conversion on test files
-2. Compare with expected outputs
-3. If intentional change, update expected outputs
+2. Compare with expected outputs using `python scripts/verify_outputs.py`
+3. If intentional change, update expected outputs with `--update` flag
 4. If unintentional, fix the bug
+
+### Tagged Tests
+
+For testing specific formatting features, use the tagged test system in `fixtures/tagged_tests/`:
+```bash
+python scripts/verify_tests.py --all
+```
 
 ---
 
@@ -305,8 +312,11 @@ Before committing changes:
 
 1. **Type Check**: `pyright` - must pass with no errors
 2. **Lint**: `ruff check .` - must pass
-3. **Tests**: `pytest` - all 1,369+ tests must pass
-4. **Output Comparison**: Compare generated outputs with `fixtures/outputs-python/`
+3. **Tests**: `pytest` - all 1,493 tests must pass
+4. **Output Verification**: `python scripts/verify_outputs.py` - must pass
+5. **Tagged Tests**: `python scripts/verify_tests.py --all` - all 38 tests must pass
+
+**Note:** A `PostToolUse` hook automatically runs all verification checks after any Python file is modified (Write/Edit). See `.claude/settings.json` for hook configuration.
 
 ---
 
@@ -349,14 +359,11 @@ print(f"Font: {resolved.font_name}, Size: {resolved.font_size}")
 ### Compare Outputs
 
 ```bash
-# Generate output
-python -c "
-from docx_parser_converter_python import docx_to_html
-print(docx_to_html('fixtures/test_docx_files/test.docx'))
-" > actual.html
+# Verify all outputs match expected
+python scripts/verify_outputs.py --verbose
 
-# Compare
-diff fixtures/outputs-python/test.html actual.html
+# Verify tagged tests (formatting, tables, lists)
+python scripts/verify_tests.py --all -v
 ```
 
 ---
@@ -382,7 +389,8 @@ diff fixtures/outputs-python/test.html actual.html
 | Models | `docx_parser_converter_python/models/` |
 | HTML Converter | `docx_parser_converter_python/converters/html/` |
 | Test Fixtures | `fixtures/test_docx_files/` |
-| Expected Outputs | `fixtures/outputs-python/` |
+| Expected Outputs | `fixtures/test_docx_files/*-python.html/txt` |
+| Tagged Tests | `fixtures/tagged_tests/` |
 
 ### Key Classes
 
@@ -395,3 +403,45 @@ diff fixtures/outputs-python/test.html actual.html
 | `StyleResolver` | Resolves style inheritance |
 | `HTMLConverter` | Converts to HTML |
 | `TextConverter` | Converts to plain text |
+
+### Table Text Conversion
+
+The `table_to_text` function supports multiple rendering modes:
+
+| Mode | Description |
+|------|-------------|
+| `ascii` | Full ASCII box with all borders (`+`, `-`, `\|`) |
+| `tabs` | Tab-separated columns, newline-separated rows (no borders) |
+| `plain` | Space-separated columns, newline-separated rows (no borders) |
+| `auto` | Chooses `ascii` or `tabs` based on border detection (default) |
+
+**Border Detection (auto mode)**:
+- Checks table-level borders (`tbl_pr.tbl_borders`)
+- Falls back to cell-level borders (`tc_pr.tc_borders`) if no table borders
+- Supports partial borders: top only, bottom only, outer only, inside only
+- Borders with `val="none"` or `val="nil"` are treated as invisible
+
+**Partial Border Rendering**:
+When `mode="auto"` and the table has partial borders, only the defined borders are rendered:
+```
+# Table with top and bottom borders only (no sides):
+-----------
+  A     B
+  C     D
+-----------
+
+# Table with outer borders only (no inside grid):
++---------+
+| A     B |
+| C     D |
++---------+
+
+# Table with inside borders only (grid lines, no outer):
+  A | B
+----+----
+  C | D
+```
+
+**Explicit vs Auto Mode**:
+- `mode="ascii"`: Always renders full borders regardless of table definition
+- `mode="auto"`: Renders only the borders defined in the DOCX
