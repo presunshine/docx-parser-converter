@@ -1,0 +1,16 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title></title><meta name="generator" content="docx-parser-converter"><style>body {
+    font-family: 'Calibri', 'Arial', sans-serif;
+    line-height: 1.5;
+    margin: 0 auto;
+    padding: 20px;
+}
+.page-break {
+    page-break-after: always;
+    break-after: page;
+}
+
+@media print {
+    .page-break {
+        page-break-after: always;
+    }
+}</style></head><body><main id="content" role="main"><p><span style="font-size: 16pt; font-weight: bold">Formatting Tests</span></p><p></p><p>Test #1: Bold Text</p><p>Text with bold formatting.</p><p>Expected: {&quot;text_bold&quot;: true}</p><p></p><p><span style="font-weight: bold">This is bold text</span></p><p></p><p>Test #2: Italic Text</p><p>Text with italic formatting.</p><p>Expected: {&quot;text_italic&quot;: true}</p><p></p><p><span style="font-style: italic">This is italic text</span></p><p></p><p>Test #3: Bold and Italic</p><p>Text with both bold and italic.</p><p>Expected: {&quot;text_bold&quot;: true, &quot;text_italic&quot;: true}</p><p></p><p><span style="font-weight: bold; font-style: italic">Bold and italic</span></p><p></p><p>Test #4: Single Underline</p><p>Text with single underline.</p><p>Expected: {&quot;text_underline&quot;: true}</p><p></p><p><span style="text-decoration: underline">Underlined text</span></p><p></p><p>Test #5: Double Underline</p><p>Text with double underline.</p><p>Expected: {&quot;text_underline&quot;: &quot;double&quot;}</p><p></p><p><span style="text-decoration: underline double">Double underline</span></p><p></p><p>Test #6: Strikethrough</p><p>Text with strikethrough.</p><p>Expected: {&quot;text_strike&quot;: true}</p><p></p><p><span style="text-decoration: line-through">Strikethrough text</span></p><p></p><p>Test #7: Red Color</p><p>Text in red color.</p><p>Expected: {&quot;text_color&quot;: &quot;#FF0000&quot;}</p><p></p><p><span style="color: #FF0000">Red text</span></p><p></p><p>Test #8: Blue Color</p><p>Text in blue color.</p><p>Expected: {&quot;text_color&quot;: &quot;#0000FF&quot;}</p><p></p><p><span style="color: #0000FF">Blue text</span></p><p></p><p>Test #9: Yellow Highlight</p><p>Text with yellow highlight.</p><p>Expected: {&quot;text_highlight&quot;: &quot;#FFFF00&quot;}</p><p></p><p><span style="background-color: #FFFF00">Highlighted</span></p><p></p><p>Test #10: 24pt Font Size</p><p>Text in 24 point size.</p><p>Expected: {&quot;text_size&quot;: &quot;24pt&quot;}</p><p></p><p><span style="font-size: 24pt">Large text</span></p><p></p><p>Test #11: Arial Font</p><p>Text in Arial font.</p><p>Expected: {&quot;text_font&quot;: &quot;Arial&quot;}</p><p></p><p><span style="font-family: Arial">Arial text</span></p><p></p><p>Test #12: Combined Formatting</p><p>Bold, red, 16pt Arial.</p><p>Expected: {&quot;text_bold&quot;: true, &quot;text_color&quot;: &quot;#FF0000&quot;, &quot;text_size&quot;: &quot;16pt&quot;, &quot;text_font&quot;: &quot;Arial&quot;}</p><p></p><p><span style="font-family: Arial; font-size: 16pt; font-weight: bold; color: #FF0000">Combined styles</span></p><p></p></main></body></html>

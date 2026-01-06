@@ -1,0 +1,16 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title></title><meta name="generator" content="docx-parser-converter"><style>body {
+    font-family: 'Calibri', 'Arial', sans-serif;
+    line-height: 1.5;
+    margin: 0 auto;
+    padding: 20px;
+}
+.page-break {
+    page-break-after: always;
+    break-after: page;
+}
+
+@media print {
+    .page-break {
+        page-break-after: always;
+    }
+}</style></head><body><main id="content" role="main"><p><span style="font-size: 16pt; font-weight: bold">List Tests</span></p><p></p><p>Test #1: Numbered List</p><p>A decimal numbered list with proper indentation.</p><p>Expected: {&quot;list_marker&quot;: &quot;1.\t&quot;, &quot;list_indent&quot;: &quot;36pt&quot;, &quot;has_hanging_indent&quot;: true}</p><p></p><p style="margin-left: 36.0pt; text-indent: -18.0pt"><span class="list-marker">1.	</span>First numbered item</p><p></p><p>Test #2: Second Numbered Item</p><p>The second item should show 2.</p><p>Expected: {&quot;list_marker&quot;: &quot;2.\t&quot;, &quot;list_indent&quot;: &quot;36pt&quot;, &quot;has_hanging_indent&quot;: true}</p><p></p><p style="margin-left: 36.0pt; text-indent: -18.0pt"><span class="list-marker">2.	</span>Second numbered item</p><p></p><p>Test #3: Nested Letter List</p><p>A nested list using lowercase letters.</p><p>Expected: {&quot;list_marker&quot;: &quot;a.\t&quot;, &quot;list_indent&quot;: &quot;72pt&quot;, &quot;has_hanging_indent&quot;: true}</p><p></p><p style="margin-left: 36.0pt; text-indent: -18.0pt"><span class="list-marker">3.	</span>Parent item</p><p style="margin-left: 72.0pt; text-indent: -18.0pt"><span class="list-marker">a.	</span>Nested letter a</p><p></p><p>Test #4: Roman Numerals</p><p>A list using uppercase Roman numerals.</p><p>Expected: {&quot;list_marker&quot;: &quot;I.\t&quot;, &quot;list_indent&quot;: &quot;36pt&quot;, &quot;has_hanging_indent&quot;: true}</p><p></p><p style="margin-left: 36.0pt; text-indent: -18.0pt"><span class="list-marker">I.	</span>Roman one</p><p></p><p>Test #5: Roman Numeral Two</p><p>Second Roman numeral should be II.</p><p>Expected: {&quot;list_marker&quot;: &quot;II.\t&quot;, &quot;list_indent&quot;: &quot;36pt&quot;, &quot;has_hanging_indent&quot;: true}</p><p></p><p style="margin-left: 36.0pt; text-indent: -18.0pt"><span class="list-marker">II.	</span>Roman two</p><p></p><p>Test #6: Deeply Nested List</p><p>Third level nesting with roman numerals.</p><p>Expected: {&quot;list_marker&quot;: &quot;i.\t&quot;, &quot;list_indent&quot;: &quot;108pt&quot;, &quot;has_hanging_indent&quot;: true}</p><p></p><p style="margin-left: 36.0pt; text-indent: -18.0pt"><span class="list-marker">4.	</span>Level 1</p><p style="margin-left: 72.0pt; text-indent: -18.0pt"><span class="list-marker">a.	</span>Level 2</p><p style="margin-left: 108.0pt; text-indent: -18.0pt"><span class="list-marker">i.	</span>Level 3 roman</p><p></p></main></body></html>
