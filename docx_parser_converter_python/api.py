@@ -18,8 +18,11 @@ from core.exceptions import DocxNotFoundError, DocxReadError, DocxValidationErro
 from core.xml_extractor import (
     extract_document_xml,
     extract_external_hyperlinks,
+    extract_image_relationships,
     extract_numbering_xml,
     extract_styles_xml,
+    get_media_content_type,
+    read_media_file,
 )
 from models.document.document import Document
 from parsers.document import parse_document
@@ -147,6 +150,15 @@ def _parse_docx(
             numbering_xml = extract_numbering_xml(zf)
             relationships = extract_external_hyperlinks(zf)
 
+            # Extract image relationships and pre-load image data
+            image_relationships = extract_image_relationships(zf)
+            image_data: dict[str, tuple[bytes, str]] = {}
+            for rel_id, media_path in image_relationships.items():
+                data = read_media_file(zf, media_path)
+                if data:
+                    content_type = get_media_content_type(media_path)
+                    image_data[rel_id] = (data, content_type)
+
             # Parse to Pydantic models
             document = parse_document(doc_xml)
             styles = parse_styles(styles_xml) if styles_xml is not None else None
@@ -156,6 +168,8 @@ def _parse_docx(
                 "styles": styles,
                 "numbering": numbering,
                 "relationships": relationships,
+                "image_relationships": image_relationships,
+                "image_data": image_data,
             }
     except (DocxNotFoundError, DocxReadError, DocxValidationError):
         # Re-raise our custom exceptions as-is
@@ -232,6 +246,7 @@ def docx_to_html(
         styles=metadata["styles"],
         numbering=metadata["numbering"],
         relationships=metadata["relationships"],
+        image_data=metadata["image_data"],
     )
     result = converter.convert(document)
 

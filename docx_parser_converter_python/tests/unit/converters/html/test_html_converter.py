@@ -12,6 +12,7 @@ from converters.html.html_converter import (
     docx_to_html,
 )
 from models.document.document import Body, Document
+from models.document.drawing import Drawing
 from models.document.paragraph import Paragraph, ParagraphProperties
 from models.document.run import Run, RunProperties
 from models.document.run_content import Text
@@ -1191,29 +1192,136 @@ class TestHyperlinkConversion:
 
 
 class TestImageConversion:
-    """Tests for image conversion."""
+    """Tests for image conversion through HTMLConverter.
 
-    def test_inline_image(self) -> None:
-        """Inline image in paragraph."""
-        # Images require relationship resolution
-        converter = HTMLConverter()
-        assert converter is not None
+    Note: Detailed image conversion tests are in test_image_to_html.py.
+    These tests verify integration with the main HTMLConverter.
+    """
 
-    def test_floating_image(self) -> None:
-        """Floating/anchored image."""
-        # Floating images need special handling
-        converter = HTMLConverter()
-        assert converter is not None
+    def _make_image_data(self, rel_id: str = "rId1") -> dict[str, tuple[bytes, str]]:
+        """Create test image data dict with a 1x1 red PNG."""
+        import base64
 
-    def test_image_size(self) -> None:
-        """Image dimensions preserved."""
-        converter = HTMLConverter()
-        assert converter is not None
+        png_bytes = base64.b64decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4"
+            "2mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg=="
+        )
+        return {rel_id: (png_bytes, "image/png")}
 
-    def test_image_alt_text(self) -> None:
-        """Image alt text preserved."""
-        converter = HTMLConverter()
-        assert converter is not None
+    def _make_inline_drawing(
+        self, embed: str = "rId1", width: int = 952500, height: int = 952500
+    ) -> Drawing:
+        """Create a test inline drawing."""
+        from models.document.drawing import (
+            Blip,
+            BlipFill,
+            Drawing,
+            DrawingExtent,
+            DrawingProperties,
+            Graphic,
+            GraphicData,
+            InlineDrawing,
+            Picture,
+        )
+
+        return Drawing(
+            inline=InlineDrawing(
+                extent=DrawingExtent(cx=width, cy=height),
+                doc_pr=DrawingProperties(id=1, name="Test Image", descr="Alt text"),
+                graphic=Graphic(
+                    graphic_data=GraphicData(
+                        pic=Picture(blip_fill=BlipFill(blip=Blip(embed=embed)))
+                    )
+                ),
+            )
+        )
+
+    def _make_anchor_drawing(self, embed: str = "rId1", h_align: str = "left") -> Drawing:
+        """Create a test anchor drawing."""
+        from models.document.drawing import (
+            AnchorDrawing,
+            Blip,
+            BlipFill,
+            Drawing,
+            DrawingExtent,
+            DrawingProperties,
+            Graphic,
+            GraphicData,
+            Picture,
+        )
+
+        return Drawing(
+            anchor=AnchorDrawing(
+                extent=DrawingExtent(cx=952500, cy=952500),
+                doc_pr=DrawingProperties(id=1, name="Floating", descr="Float alt"),
+                graphic=Graphic(
+                    graphic_data=GraphicData(
+                        pic=Picture(blip_fill=BlipFill(blip=Blip(embed=embed)))
+                    )
+                ),
+                h_align=h_align,
+            )
+        )
+
+    def test_inline_image_in_paragraph(self) -> None:
+        """Inline image in paragraph produces img tag."""
+        drawing = self._make_inline_drawing()
+        doc = Document(body=Body(content=[Paragraph(content=[Run(content=[drawing])])]))
+        image_data = self._make_image_data()
+        converter = HTMLConverter(image_data=image_data)
+
+        result = converter.convert(doc)
+
+        assert "<img " in result
+        assert 'src="data:image/png;base64,' in result
+        assert 'alt="Alt text"' in result
+
+    def test_floating_image_with_alignment(self) -> None:
+        """Floating/anchored image has float styling."""
+        drawing = self._make_anchor_drawing(h_align="left")
+        doc = Document(body=Body(content=[Paragraph(content=[Run(content=[drawing])])]))
+        image_data = self._make_image_data()
+        converter = HTMLConverter(image_data=image_data)
+
+        result = converter.convert(doc)
+
+        assert "<img " in result
+        assert "float: left" in result
+
+    def test_image_dimensions_in_style(self) -> None:
+        """Image dimensions are included in style."""
+        # 952500 EMU = 100 pixels
+        drawing = self._make_inline_drawing(width=952500, height=476250)
+        doc = Document(body=Body(content=[Paragraph(content=[Run(content=[drawing])])]))
+        image_data = self._make_image_data()
+        converter = HTMLConverter(image_data=image_data)
+
+        result = converter.convert(doc)
+
+        assert "width: 100px" in result
+        assert "height: 50px" in result
+
+    def test_image_alt_text_preserved(self) -> None:
+        """Image alt text is included in img tag."""
+        drawing = self._make_inline_drawing()
+        doc = Document(body=Body(content=[Paragraph(content=[Run(content=[drawing])])]))
+        image_data = self._make_image_data()
+        converter = HTMLConverter(image_data=image_data)
+
+        result = converter.convert(doc)
+
+        assert 'alt="Alt text"' in result
+
+    def test_image_without_data_produces_no_img(self) -> None:
+        """Image without matching data produces no img tag."""
+        drawing = self._make_inline_drawing(embed="rId999")
+        doc = Document(body=Body(content=[Paragraph(content=[Run(content=[drawing])])]))
+        # No image data provided
+        converter = HTMLConverter(image_data={})
+
+        result = converter.convert(doc)
+
+        assert "<img " not in result
 
 
 # =============================================================================

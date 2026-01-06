@@ -19,6 +19,7 @@ from models.document.run_content import (
     TabChar,
     Text,
 )
+from parsers.document.drawing_parser import parse_drawing
 from parsers.utils import (
     get_attribute,
     get_bool_attribute,
@@ -257,6 +258,7 @@ _RUN_CONTENT_PARSERS = {
     "instrText": parse_instr_text,
     "footnoteReference": parse_footnote_reference,
     "endnoteReference": parse_endnote_reference,
+    "drawing": parse_drawing,
 }
 
 

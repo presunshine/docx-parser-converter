@@ -320,10 +320,27 @@ Before committing changes:
 
 ---
 
+## Image Format Support
+
+Images are embedded as base64 data URLs. Browser support varies:
+
+| Format | Browser Support |
+|--------|-----------------|
+| PNG, JPEG, GIF, WebP, SVG, BMP | ✅ Full |
+| TIFF | ⚠️ Safari only |
+| EMF, WMF | ❌ Not supported (Windows vector formats) |
+
+Key files:
+- `models/document/drawing.py` - Pydantic models for Drawing elements
+- `parsers/document/drawing_parser.py` - Parses `<w:drawing>` XML
+- `converters/html/image_to_html.py` - Converts to `<img>` with base64 data URL
+- `core/xml_extractor.py` - `get_media_content_type()` maps extensions to MIME types
+
+---
+
 ## Known Limitations
 
 The parser intentionally does NOT support:
-- Image extraction
 - Headers/footers
 - Footnotes/endnotes
 - Comments

@@ -55,6 +55,14 @@ Paragraph styles:
     - list_marker: str - the bullet/number marker text
     - list_indent: str - margin-left value e.g., "36pt"
     - has_hanging_indent: bool - whether text-indent is negative
+
+=== IMAGE TESTS ===
+    - image_type: str - "inline" or "anchor"
+    - width: int - image width in pixels
+    - height: int - image height in pixels
+    - alt_text: str - alt attribute text
+    - h_align: str - horizontal alignment for anchor images ("left", "right", "center")
+    - image_count: int - number of images in paragraph
 """
 
 import json
@@ -486,6 +494,173 @@ def extract_tables_from_html(html: str) -> list[dict]:
     return tables
 
 
+def extract_images_from_html(html: str) -> list[dict]:
+    """Extract image information from HTML output.
+
+    Returns a list of dicts, each representing an image with its properties.
+    """
+    images = []
+
+    # Find all img tags
+    img_pattern = re.compile(r"<img\s+([^>]+)>", re.DOTALL)
+
+    for img_match in img_pattern.finditer(html):
+        img_attrs = img_match.group(1)
+
+        info = {
+            "image_type": "inline",  # Default to inline
+            "width": None,
+            "height": None,
+            "alt_text": "",
+            "h_align": None,
+        }
+
+        # Extract alt text
+        alt_match = re.search(r'alt="([^"]*)"', img_attrs)
+        if alt_match:
+            info["alt_text"] = alt_match.group(1)
+
+        # Extract styles
+        style_match = re.search(r'style="([^"]*)"', img_attrs)
+        if style_match:
+            styles = parse_style_attribute(style_match.group(1))
+
+            # Extract width (e.g., "100px" -> 100)
+            width_str = styles.get("width", "")
+            width_match = re.match(r"(\d+)px", width_str)
+            if width_match:
+                info["width"] = int(width_match.group(1))
+
+            # Extract height
+            height_str = styles.get("height", "")
+            height_match = re.match(r"(\d+)px", height_str)
+            if height_match:
+                info["height"] = int(height_match.group(1))
+
+            # Detect image type and alignment from styles
+            if "float" in styles:
+                info["image_type"] = "anchor"
+                float_val = styles.get("float")
+                if float_val == "left":
+                    info["h_align"] = "left"
+                elif float_val == "right":
+                    info["h_align"] = "right"
+            elif styles.get("display") == "block" and "margin-left" in styles:
+                # Centered image (display: block with auto margins)
+                if styles.get("margin-left") == "auto" and styles.get("margin-right") == "auto":
+                    info["image_type"] = "anchor"
+                    info["h_align"] = "center"
+
+        images.append(info)
+
+    return images
+
+
+def extract_image_paragraphs_from_html(html: str) -> list[dict]:
+    """Extract paragraph-level image information from HTML.
+
+    Groups images by paragraph and includes surrounding text context.
+    """
+    paragraphs = []
+
+    # Find all paragraphs that might contain images
+    para_pattern = re.compile(r"<p([^>]*)>(.*?)</p>", re.DOTALL)
+
+    for para_match in para_pattern.finditer(html):
+        para_content = para_match.group(2)
+
+        # Find all images in this paragraph
+        img_pattern = re.compile(r"<img\s+([^>]+)>", re.DOTALL)
+        img_matches = list(img_pattern.finditer(para_content))
+
+        if not img_matches:
+            continue
+
+        # Also check for div-wrapped images (floating images use clearfix wrapper)
+        div_img_pattern = re.compile(r"<div[^>]*><img\s+([^>]+)></div>", re.DOTALL)
+        div_matches = list(div_img_pattern.finditer(para_content))
+
+        # Combine matches (div-wrapped images are also captured by img_pattern)
+        total_images = len(img_matches)
+
+        info = {
+            "image_count": total_images,
+            "images": [],
+            "text_before": None,
+            "text_after": None,
+        }
+
+        # Extract info for each image
+        for img_match in img_matches:
+            img_attrs = img_match.group(1)
+            img_info = {
+                "image_type": "inline",
+                "width": None,
+                "height": None,
+                "alt_text": "",
+                "h_align": None,
+            }
+
+            # Extract alt text
+            alt_match = re.search(r'alt="([^"]*)"', img_attrs)
+            if alt_match:
+                img_info["alt_text"] = alt_match.group(1)
+
+            # Extract styles
+            style_match = re.search(r'style="([^"]*)"', img_attrs)
+            if style_match:
+                styles = parse_style_attribute(style_match.group(1))
+
+                # Extract width
+                width_str = styles.get("width", "")
+                width_match = re.match(r"(\d+)px", width_str)
+                if width_match:
+                    img_info["width"] = int(width_match.group(1))
+
+                # Extract height
+                height_str = styles.get("height", "")
+                height_match = re.match(r"(\d+)px", height_str)
+                if height_match:
+                    img_info["height"] = int(height_match.group(1))
+
+                # Detect image type and alignment
+                if "float" in styles:
+                    img_info["image_type"] = "anchor"
+                    float_val = styles.get("float")
+                    if float_val == "left":
+                        img_info["h_align"] = "left"
+                    elif float_val == "right":
+                        img_info["h_align"] = "right"
+                elif styles.get("display") == "block":
+                    if styles.get("margin-left") == "auto" and styles.get("margin-right") == "auto":
+                        img_info["image_type"] = "anchor"
+                        img_info["h_align"] = "center"
+
+            info["images"].append(img_info)
+
+        # Check for text before/after image (for inline images in text)
+        if total_images == 1:
+            # Get text before the image (preserve leading/trailing whitespace)
+            img_start = img_matches[0].start()
+            text_before = re.sub(r"<[^>]+>", "", para_content[:img_start])
+            # Only strip leading whitespace, keep trailing
+            text_before = text_before.lstrip()
+            if text_before:
+                info["text_before"] = text_before
+
+            # Get text after the image (preserve leading/trailing whitespace)
+            img_end = img_matches[0].end()
+            text_after = re.sub(r"<[^>]+>", "", para_content[img_end:])
+            # Only strip trailing whitespace, keep leading
+            text_after = text_after.rstrip()
+            if text_after:
+                info["text_after"] = text_after
+
+        paragraphs.append(info)
+
+    return paragraphs
+
+
 def verify_test(test: dict, table_info: dict) -> tuple[bool, list[str]]:
     """Verify a single test against table info.
 
@@ -549,7 +724,7 @@ def verify_test(test: dict, table_info: dict) -> tuple[bool, list[str]]:
 
 
 def detect_test_type(expected: dict) -> str:
-    """Detect whether a test is for tables, paragraphs, or lists."""
+    """Detect whether a test is for tables, paragraphs, lists, or images."""
     table_keys = {
         "rows",
         "cols",
@@ -563,11 +738,24 @@ def detect_test_type(expected: dict) -> str:
     }
     list_keys = {"list_marker", "list_indent", "has_hanging_indent"}
     para_keys = {"para_align", "para_margin_left", "para_margin_top", "para_line_height"}
+    image_keys = {
+        "image_type",
+        "width",
+        "height",
+        "alt_text",
+        "h_align",
+        "image_count",
+        "wrap",
+        "text_before",
+        "text_after",
+    }
 
     exp_keys = set(expected.keys())
 
     if exp_keys & table_keys:
         return "table"
+    if exp_keys & image_keys:
+        return "image"
     if exp_keys & list_keys:
         return "list"
     if exp_keys & para_keys:
@@ -597,13 +785,19 @@ def verify_docx_file(docx_path: str, verbose: bool = False) -> tuple[int, int]:
     html = docx_to_html(docx_path)
     tables = extract_tables_from_html(html)
     paragraphs = extract_paragraphs_from_html(html)
+    image_paragraphs = extract_image_paragraphs_from_html(html)
 
     # Count test types
     table_tests = sum(1 for t in tests if detect_test_type(t["expected"]) == "table")
-    para_tests = len(tests) - table_tests
+    image_tests = sum(1 for t in tests if detect_test_type(t["expected"]) == "image")
+    para_tests = len(tests) - table_tests - image_tests
 
-    print(f"  Found {len(tests)} tests ({table_tests} table, {para_tests} paragraph/list)")
-    print(f"  Extracted {len(tables)} tables, {len(paragraphs)} paragraphs\n")
+    print(
+        f"  Found {len(tests)} tests ({table_tests} table, {image_tests} image, {para_tests} paragraph/list)"
+    )
+    print(
+        f"  Extracted {len(tables)} tables, {len(image_paragraphs)} image paragraphs, {len(paragraphs)} paragraphs\n"
+    )
 
     passed = 0
     total = len(tests)
@@ -625,6 +819,43 @@ def verify_docx_file(docx_path: str, verbose: bool = False) -> tuple[int, int]:
                 continue
 
             content_info = tables[test["table_index"]]
+        elif test_type == "image":
+            # Image test - find the image paragraph for this test
+            content_info = None
+
+            # Image tests are numbered 1-8 and image paragraphs appear in order
+            # We need to find the Nth image paragraph (where N = test number)
+            img_para_idx = test["number"] - 1  # 0-indexed
+
+            if img_para_idx < len(image_paragraphs):
+                img_para = image_paragraphs[img_para_idx]
+
+                # Build content_info dict with first image's properties
+                # plus paragraph-level properties
+                if img_para["images"]:
+                    first_img = img_para["images"][0]
+                    # Determine wrap type based on h_align (approximation since HTML
+                    # doesn't preserve exact Word wrap type)
+                    wrap_type = None
+                    if first_img["h_align"] in ("left", "right"):
+                        wrap_type = "square"  # Default for floated images
+
+                    content_info = {
+                        "image_type": first_img["image_type"],
+                        "width": first_img["width"],
+                        "height": first_img["height"],
+                        "alt_text": first_img["alt_text"],
+                        "h_align": first_img["h_align"],
+                        "wrap": wrap_type,
+                        "image_count": img_para["image_count"],
+                        "text_before": img_para.get("text_before"),
+                        "text_after": img_para.get("text_after"),
+                    }
+
+            if content_info is None:
+                print(f"  \033[31m✗\033[0m {test_name}")
+                print(f"      No image paragraph found for test #{test['number']}")
+                continue
         else:
             # Paragraph/list test - find the test content paragraph
             content_info = None

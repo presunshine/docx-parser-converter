@@ -184,6 +184,104 @@ def extract_external_hyperlinks(zf: zipfile.ZipFile) -> dict[str, str]:
     return result
 
 
+# Package relationships namespace (used in .rels files)
+PACKAGE_REL_NS_URI = "http://schemas.openxmlformats.org/package/2006/relationships"
+
+
+def extract_image_relationships(zf: zipfile.ZipFile) -> dict[str, str]:
+    """Extract image relationships from the document.
+
+    Filters relationships to include only image references
+    (those with Type ending in '/image').
+
+    Args:
+        zf: An open ZipFile containing the DOCX.
+
+    Returns:
+        Dictionary mapping relationship IDs to image paths (relative to word/).
+
+    Example:
+        >>> imgs = extract_image_relationships(zf)
+        >>> imgs.get("rId4")
+        'media/image1.png'
+    """
+    rels_elem = extract_xml_safe(zf, RELS_XML_PATH)
+    if rels_elem is None:
+        return {}
+
+    result: dict[str, str] = {}
+    # Package relationships use the package namespace, not the office document namespace
+    ns = f"{{{PACKAGE_REL_NS_URI}}}"
+
+    for rel in rels_elem.findall(f"{ns}Relationship"):
+        rel_type = rel.get("Type") or ""
+        # Image relationships have type ending in /image
+        if rel_type.endswith("/image"):
+            rel_id = rel.get("Id")
+            target = rel.get("Target")
+            if rel_id and target:
+                result[rel_id] = target
+
+    return result
+
+
+def read_media_file(zf: zipfile.ZipFile, media_path: str) -> bytes | None:
+    """Read a media file from the DOCX archive.
+
+    Args:
+        zf: An open ZipFile containing the DOCX.
+        media_path: Path to the media file relative to word/ (e.g., "media/image1.png").
+
+    Returns:
+        The file contents as bytes, or None if not found.
+
+    Example:
+        >>> data = read_media_file(zf, "media/image1.png")
+        >>> len(data)
+        1234
+    """
+    # The path in relationships is relative to word/
+    full_path = f"word/{media_path}"
+
+    if full_path not in zf.namelist():
+        logger.warning(f"Media file not found: {full_path}")
+        return None
+
+    try:
+        return zf.read(full_path)
+    except Exception as e:
+        logger.warning(f"Failed to read media file {full_path}: {e}")
+        return None
+
+
+def get_media_content_type(filename: str) -> str:
+    """Get the MIME content type for a media file.
+
+    Args:
+        filename: The filename or path of the media file.
+
+    Returns:
+        The MIME type string.
+    """
+    ext = filename.lower().rsplit(".", 1)[-1] if "." in filename else ""
+
+    content_types = {
+        "png": "image/png",
+        "jpg": "image/jpeg",
+        "jpeg": "image/jpeg",
+        "gif": "image/gif",
+        "bmp": "image/bmp",
+        "tiff": "image/tiff",
+        "tif": "image/tiff",
+        "webp": "image/webp",
+        "svg": "image/svg+xml",
+        "emf": "image/x-emf",
+        "wmf": "image/x-wmf",
+    }
+
+    return content_types.get(ext, "application/octet-stream")
+
+
 def get_body_element(document: Element) -> Element | None:
     """Get the body element from a document.
 

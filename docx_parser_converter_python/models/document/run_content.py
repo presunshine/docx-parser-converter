@@ -5,6 +5,8 @@ These models represent elements that can appear inside a run (<w:r>).
 
 from pydantic import BaseModel
 
+from models.document.drawing import Drawing
+
 
 class Text(BaseModel):
     """Text content within a run.
@@ -186,4 +188,5 @@ RunContentItem = (
     | InstrText
     | FootnoteReference
     | EndnoteReference
+    | Drawing
 )

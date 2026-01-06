@@ -206,6 +206,7 @@ def cell_content_to_html(
     use_semantic_tags: bool = False,
     css_generator: CSSGenerator | None = None,
     style_resolver: "StyleResolver | None" = None,
+    image_data: dict[str, tuple[bytes, str]] | None = None,
 ) -> str:
     """Convert cell content to HTML.
 
@@ -215,6 +216,7 @@ def cell_content_to_html(
         use_semantic_tags: Use semantic tags
         css_generator: CSS generator
         style_resolver: Style resolver for style inheritance
+        image_data: Pre-loaded image data keyed by relationship ID
 
     Returns:
         HTML content
@@ -229,6 +231,7 @@ def cell_content_to_html(
                 use_semantic_tags=use_semantic_tags,
                 css_generator=css_generator,
                 style_resolver=style_resolver,
+                image_data=image_data,
             )
             result.append(html)
         elif isinstance(item, Table):
@@ -239,6 +242,7 @@ def cell_content_to_html(
                 use_semantic_tags=use_semantic_tags,
                 css_generator=css_generator,
                 style_resolver=style_resolver,
+                image_data=image_data,
             )
             result.append(html)
 
@@ -270,6 +274,7 @@ def cell_to_html(
     use_semantic_tags: bool = False,
     css_generator: CSSGenerator | None = None,
     style_resolver: "StyleResolver | None" = None,
+    image_data: dict[str, tuple[bytes, str]] | None = None,
 ) -> str:
     """Convert TableCell to HTML td or th element.
 
@@ -389,6 +394,7 @@ def cell_to_html(
         use_semantic_tags=use_semantic_tags,
         css_generator=gen,
         style_resolver=style_resolver,
+        image_data=image_data,
     )
 
     # If cell is empty, add non-breaking space for proper rendering
@@ -421,6 +427,7 @@ def row_to_html(
     use_semantic_tags: bool = False,
     css_generator: CSSGenerator | None = None,
     style_resolver: "StyleResolver | None" = None,
+    image_data: dict[str, tuple[bytes, str]] | None = None,
 ) -> str:
     """Convert TableRow to HTML tr element.
 
@@ -441,6 +448,7 @@ def row_to_html(
         use_semantic_tags: Use semantic tags
         css_generator: CSS generator
         style_resolver: Style resolver for style inheritance
+        image_data: Pre-loaded image data keyed by relationship ID
 
     Returns:
         HTML tr element
@@ -495,6 +503,7 @@ def row_to_html(
             use_semantic_tags=use_semantic_tags,
             css_generator=gen,
             style_resolver=style_resolver,
+            image_data=image_data,
         )
         cells_html.append(cell_html)
 
@@ -516,6 +525,7 @@ def table_to_html(
     use_semantic_tags: bool = False,
     css_generator: CSSGenerator | None = None,
     style_resolver: "StyleResolver | None" = None,
+    image_data: dict[str, tuple[bytes, str]] | None = None,
 ) -> str:
     """Convert Table element to HTML.
 
@@ -525,6 +535,7 @@ def table_to_html(
         use_semantic_tags: Use semantic tags
         css_generator: CSS generator instance
         style_resolver: Style resolver for style inheritance
+        image_data: Pre-loaded image data keyed by relationship ID
 
     Returns:
         HTML table element
@@ -629,6 +640,7 @@ def table_to_html(
             use_semantic_tags=use_semantic_tags,
             css_generator=gen,
             style_resolver=style_resolver,
+            image_data=image_data,
         )
         if is_header:
             header_rows.append(row_html)

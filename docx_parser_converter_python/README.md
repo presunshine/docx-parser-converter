@@ -7,6 +7,7 @@ A Python library for converting Microsoft Word DOCX files to HTML and plain text
 - **High-fidelity HTML conversion** with CSS styling support
 - **Plain text extraction** with optional Markdown formatting
 - **Comprehensive formatting support**: bold, italic, underline, strikethrough, subscript, superscript, highlight, and more
+- **Image support**: inline and floating images embedded as base64 data URLs with dimensions and alt text
 - **Table conversion** with cell merging (colspan/rowspan), borders, and multiple rendering modes
 - **List and numbering support**: bullets, numbered lists, multi-level lists, various number formats
 - **Hyperlink resolution** from document relationships
@@ -213,10 +214,30 @@ except DocxReadError as e:
     print(f"Error reading file: {e}")
 ```
 
+## Image Format Support
+
+Images are extracted from DOCX files and embedded in HTML as base64 data URLs. Browser rendering support varies by format:
+
+| Format | Extensions | Browser Support |
+|--------|------------|-----------------|
+| PNG | `.png` | ✅ Full |
+| JPEG | `.jpg`, `.jpeg` | ✅ Full |
+| GIF | `.gif` | ✅ Full (including animation) |
+| WebP | `.webp` | ✅ Full |
+| SVG | `.svg` | ✅ Full |
+| BMP | `.bmp` | ✅ Full |
+| TIFF | `.tif`, `.tiff` | ⚠️ Safari only |
+| EMF | `.emf` | ❌ Not supported |
+| WMF | `.wmf` | ❌ Not supported |
+
+**Notes:**
+- TIFF images will only display in Safari; other browsers will show a broken image
+- EMF/WMF are Windows vector formats that browsers cannot render natively
+- Images in plain text output are skipped (no alt text placeholders)
+
 ## Known Limitations
 
 ### Not Currently Supported
-- **Images and media**: Embedded images, drawings, and shapes are not extracted
 - **Headers and footers**: Document headers/footers are not included
 - **Footnotes and endnotes**: These are not extracted
 - **Comments and track changes**: Revision marks are not processed

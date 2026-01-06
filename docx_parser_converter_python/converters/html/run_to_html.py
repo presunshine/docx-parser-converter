@@ -7,6 +7,8 @@ from html import escape
 from typing import TYPE_CHECKING, Any
 
 from converters.html.css_generator import CSSGenerator, run_properties_to_css
+from converters.html.image_to_html import drawing_to_html
+from models.document.drawing import Drawing
 from models.document.run import Run, RunProperties
 from models.document.run_content import (
     Break,
@@ -194,11 +196,17 @@ def instr_text_to_html(it: InstrText) -> str:
     return ""
 
 
-def run_content_to_html(content: Any) -> str:
+def run_content_to_html(
+    content: Any,
+    *,
+    image_data: dict[str, tuple[bytes, str]] | None = None,
+) -> str:
     """Convert a run content element to HTML.
 
     Args:
-        content: Run content element (Text, Break, TabChar, etc.)
+        content: Run content element (Text, Break, TabChar, Drawing, etc.)
+        image_data: Pre-loaded image data keyed by relationship ID.
+            Each value is (image_bytes, content_type).
 
     Returns:
         HTML representation of the content
@@ -221,6 +229,12 @@ def run_content_to_html(content: Any) -> str:
         return field_char_to_html(content)
     elif isinstance(content, InstrText):
         return instr_text_to_html(content)
+    elif isinstance(content, Drawing):
+        # Handle drawing/image content
+        if image_data:
+            return drawing_to_html(content, image_data)
+        # If image data not available, skip the image
+        return ""
     else:
         # Unknown content type - try to get text representation
         return ""
@@ -237,6 +251,7 @@ def run_to_html(
     use_semantic_tags: bool = False,
     css_generator: CSSGenerator | None = None,
     style_resolver: "StyleResolver | None" = None,
+    image_data: dict[str, tuple[bytes, str]] | None = None,
 ) -> str:
     """Convert Run element to HTML.
 
@@ -245,6 +260,8 @@ def run_to_html(
         use_semantic_tags: Use semantic tags (<strong>, <em>) instead of spans
         css_generator: CSS generator instance (uses default if not provided)
         style_resolver: Style resolver for character style inheritance
+        image_data: Pre-loaded image data keyed by relationship ID.
+            Each value is (image_bytes, content_type).
 
     Returns:
         HTML representation of the run
@@ -256,7 +273,7 @@ def run_to_html(
         return ""
 
     # Convert all content
-    content_html = "".join(run_content_to_html(c) for c in run.content)
+    content_html = "".join(run_content_to_html(c, image_data=image_data) for c in run.content)
 
     # If no content after conversion, return empty
     if not content_html:

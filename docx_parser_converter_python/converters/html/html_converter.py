@@ -108,6 +108,8 @@ class HTMLConverter:
         styles: Styles | None = None,
         numbering: Numbering | None = None,
         relationships: dict[str, str] | None = None,
+        image_relationships: dict[str, str] | None = None,
+        image_data: dict[str, tuple[bytes, str]] | None = None,
     ) -> None:
         """Initialize HTML converter.
 
@@ -116,11 +118,15 @@ class HTMLConverter:
             styles: Document styles for style resolution
             numbering: Document numbering definitions
             relationships: Relationship map for hyperlinks
+            image_relationships: Mapping of rId to media path for images
+            image_data: Pre-loaded image data keyed by rId: (bytes, content_type)
         """
         self.config = config or ConversionConfig()
         self.styles = styles
         self.numbering = numbering
         self.relationships = relationships or {}
+        self.image_relationships = image_relationships or {}
+        self.image_data = image_data or {}
         self.css_generator = CSSGenerator()
 
         # Create numbering tracker for list counter management
@@ -190,6 +196,7 @@ class HTMLConverter:
             use_semantic_tags=self.config.use_semantic_tags,
             css_generator=self.css_generator,
             style_resolver=self.style_resolver,
+            image_data=self.image_data,
         )
 
     def convert_table(self, table: Table | None) -> str:
@@ -207,6 +214,7 @@ class HTMLConverter:
             use_semantic_tags=self.config.use_semantic_tags,
             css_generator=self.css_generator,
             style_resolver=self.style_resolver,
+            image_data=self.image_data,
         )
 
     def convert_run(self, run: Run | None) -> str:

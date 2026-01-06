@@ -499,7 +499,11 @@ def get_tagged_test_files() -> list[Path]:
     """Get all tagged test DOCX files."""
     if not TAGGED_TESTS_DIR.exists():
         return []
-    return sorted(TAGGED_TESTS_DIR.glob("*_tests*.docx"))
+    # image_tests.docx uses image-specific assertions (image_type, width, height)
+    # which require different validation than text formatting tests.
+    # Image output is verified via output_verification instead.
+    excluded = {"image_tests.docx"}
+    return sorted(f for f in TAGGED_TESTS_DIR.glob("*_tests*.docx") if f.name not in excluded)
 
 
 def collect_all_tests() -> list[tuple[Path, dict[str, Any]]]:

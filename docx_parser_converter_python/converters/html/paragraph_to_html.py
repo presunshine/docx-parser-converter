@@ -31,6 +31,7 @@ def hyperlink_to_html(
     use_semantic_tags: bool = False,
     css_generator: CSSGenerator | None = None,
     style_resolver: "StyleResolver | None" = None,
+    image_data: dict[str, tuple[bytes, str]] | None = None,
 ) -> str:
     """Convert Hyperlink element to HTML anchor.
 
@@ -40,6 +41,7 @@ def hyperlink_to_html(
         use_semantic_tags: Use semantic tags for run content
         css_generator: CSS generator instance
         style_resolver: Style resolver for style inheritance
+        image_data: Pre-loaded image data keyed by relationship ID
 
     Returns:
         HTML anchor element
@@ -65,6 +67,7 @@ def hyperlink_to_html(
             use_semantic_tags=use_semantic_tags,
             css_generator=css_generator,
             style_resolver=style_resolver,
+            image_data=image_data,
         )
         if isinstance(item, Run)
         else ""
@@ -120,6 +123,7 @@ def paragraph_content_to_html(
     use_semantic_tags: bool = False,
     css_generator: CSSGenerator | None = None,
     style_resolver: "StyleResolver | None" = None,
+    image_data: dict[str, tuple[bytes, str]] | None = None,
 ) -> str:
     """Convert a paragraph content item to HTML.
 
@@ -129,6 +133,7 @@ def paragraph_content_to_html(
         use_semantic_tags: Use semantic tags (<strong>, <em>)
         css_generator: CSS generator instance
         style_resolver: Style resolver for style inheritance
+        image_data: Pre-loaded image data keyed by relationship ID
 
     Returns:
         HTML representation of the content
@@ -139,6 +144,7 @@ def paragraph_content_to_html(
             use_semantic_tags=use_semantic_tags,
             css_generator=css_generator,
             style_resolver=style_resolver,
+            image_data=image_data,
         )
     elif isinstance(content, Hyperlink):
         return hyperlink_to_html(
@@ -147,6 +153,7 @@ def paragraph_content_to_html(
             use_semantic_tags=use_semantic_tags,
             css_generator=css_generator,
             style_resolver=style_resolver,
+            image_data=image_data,
         )
     elif isinstance(content, BookmarkStart):
         return bookmark_start_to_html(content)
@@ -173,6 +180,7 @@ def paragraph_to_html(
     use_headings: bool = False,
     css_generator: CSSGenerator | None = None,
     style_resolver: "StyleResolver | None" = None,
+    image_data: dict[str, tuple[bytes, str]] | None = None,
 ) -> str:
     """Convert Paragraph element to HTML.
 
@@ -187,6 +195,7 @@ def paragraph_to_html(
         use_headings: Use heading tags (<h1>-<h6>) for outline levels
         css_generator: CSS generator instance
         style_resolver: Style resolver for style inheritance
+        image_data: Pre-loaded image data keyed by relationship ID
 
     Returns:
         HTML representation of the paragraph
@@ -204,6 +213,7 @@ def paragraph_to_html(
             use_semantic_tags=use_semantic_tags,
             css_generator=gen,
             style_resolver=style_resolver,
+            image_data=image_data,
         )
         for item in para.content
     ]
