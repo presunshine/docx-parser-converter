@@ -3,6 +3,7 @@
 Converts Table elements to plain text in various modes (ASCII, tabs, plain).
 """
 
+from dataclasses import dataclass
 from typing import Literal
 
 from converters.text.paragraph_to_text import paragraph_to_text
@@ -17,6 +18,23 @@ from models.document.table_row import TableRow
 
 
 TableMode = Literal["ascii", "tabs", "plain", "auto"]
+
+
+@dataclass
+class BorderInfo:
+    """Information about which table borders are present."""
+
+    top: bool = False
+    bottom: bool = False
+    left: bool = False
+    right: bool = False
+    inside_h: bool = False  # Horizontal lines between rows
+    inside_v: bool = False  # Vertical lines between columns
+
+    @property
+    def has_any(self) -> bool:
+        """Check if any border is present."""
+        return any([self.top, self.bottom, self.left, self.right, self.inside_h, self.inside_v])
 
 
 # =============================================================================
@@ -72,6 +90,68 @@ def row_to_text(row: TableRow | None, separator: str = "\t") -> str:
 # =============================================================================
 
 
+def _is_border_visible(border) -> bool:
+    """Check if a single border is visible."""
+    return border is not None and border.val is not None and border.val not in ("none", "nil")
+
+
+def detect_borders(table: Table) -> BorderInfo:
+    """Detect which borders are present on the table.
+
+    Checks both table-level borders and cell-level borders.
+
+    Args:
+        table: Table element
+
+    Returns:
+        BorderInfo with flags for each border type
+    """
+    info = BorderInfo()
+
+    # Check table-level borders
+    if table.tbl_pr and table.tbl_pr.tbl_borders:
+        borders = table.tbl_pr.tbl_borders
+        info.top = _is_border_visible(borders.top)
+        info.bottom = _is_border_visible(borders.bottom)
+        info.left = _is_border_visible(borders.left)
+        info.right = _is_border_visible(borders.right)
+        info.inside_h = _is_border_visible(borders.inside_h)
+        info.inside_v = _is_border_visible(borders.inside_v)
+
+    # Check cell-level borders if table borders not set
+    if not info.has_any and table.tr:
+        for row_idx, row in enumerate(table.tr):
+            for col_idx, cell in enumerate(row.tc):
+                if cell.tc_pr and cell.tc_pr.tc_borders:
+                    cb = cell.tc_pr.tc_borders
+                    # Top row cells with top border -> table has top border
+                    if row_idx == 0 and _is_border_visible(cb.top):
+                        info.top = True
+                    # Bottom row cells with bottom border -> table has bottom border
+                    if row_idx == len(table.tr) - 1 and _is_border_visible(cb.bottom):
+                        info.bottom = True
+                    # Left column cells with left border -> table has left border
+                    if col_idx == 0 and _is_border_visible(cb.left):
+                        info.left = True
+                    # Right column cells with right border -> table has right border
+                    if col_idx == len(row.tc) - 1 and _is_border_visible(cb.right):
+                        info.right = True
+                    # Any cell with bottom border (not last row) -> inside_h
+                    if row_idx < len(table.tr) - 1 and _is_border_visible(cb.bottom):
+                        info.inside_h = True
+                    # Any cell with top border (not first row) -> inside_h
+                    if row_idx > 0 and _is_border_visible(cb.top):
+                        info.inside_h = True
+                    # Any cell with right border (not last col) -> inside_v
+                    if col_idx < len(row.tc) - 1 and _is_border_visible(cb.right):
+                        info.inside_v = True
+                    # Any cell with left border (not first col) -> inside_v
+                    if col_idx > 0 and _is_border_visible(cb.left):
+                        info.inside_v = True
+
+    return info
+
+
 def has_visible_borders(table: Table) -> bool:
     """Check if table has visible borders.
 
@@ -81,24 +161,7 @@ def has_visible_borders(table: Table) -> bool:
     Returns:
         True if table has visible borders
     """
-    if not table.tbl_pr or not table.tbl_pr.tbl_borders:
-        return False
-
-    borders = table.tbl_pr.tbl_borders
-
-    # Check all border types
-    for border in [
-        borders.top,
-        borders.bottom,
-        borders.left,
-        borders.right,
-        borders.inside_h,
-        borders.inside_v,
-    ]:
-        if border and border.val and border.val not in ("none", "nil"):
-            return True
-
-    return False
+    return detect_borders(table).has_any
 
 
 # =============================================================================
@@ -106,17 +169,22 @@ def has_visible_borders(table: Table) -> bool:
 # =============================================================================
 
 
-def table_to_ascii(table: Table) -> str:
-    """Convert table to ASCII box format.
+def table_to_ascii(table: Table, border_info: BorderInfo | None = None) -> str:
+    """Convert table to ASCII box format with partial border support.
 
     Args:
         table: Table element
+        border_info: Optional border info (detected if not provided)
 
     Returns:
-        ASCII box representation
+        ASCII box representation matching actual borders
     """
     if not table.tr:
         return ""
+
+    # Detect borders if not provided
+    if border_info is None:
+        border_info = detect_borders(table)
 
     # Extract all cell contents and calculate column widths
     rows_data: list[list[str]] = []
@@ -149,30 +217,55 @@ def table_to_ascii(table: Table) -> str:
                 max_width = max(max_width, len(row[col_idx]))
         col_widths.append(max_width)
 
-    # Build ASCII table
+    # Build ASCII table with partial borders
     lines = []
 
-    # Top border
-    top_border = "+" + "+".join("-" * (w + 2) for w in col_widths) + "+"
-    lines.append(top_border)
+    # Characters for borders
+    h_char = "-"  # Horizontal line character
+    corner = "+"
 
-    # Data rows
-    for row_idx, row in enumerate(rows_data):
-        # Row content
+    # Helper to build horizontal line
+    def build_h_line(left: bool, right: bool, inside_v: bool) -> str:
+        if inside_v:
+            inner = corner.join(h_char * (w + 2) for w in col_widths)
+        else:
+            inner = h_char * (sum(col_widths) + 3 * (max_cols - 1) + 2)
+        left_char = corner if left else h_char
+        right_char = corner if right else h_char
+        return left_char + inner + right_char
+
+    # Helper to build data row
+    def build_data_row(row: list[str], left: bool, right: bool, inside_v: bool) -> str:
         cells = []
         for col_idx, cell in enumerate(row):
             width = col_widths[col_idx]
             cells.append(f" {cell.ljust(width)} ")
-        lines.append("|" + "|".join(cells) + "|")
 
-        # Row separator (between rows)
-        if row_idx < len(rows_data) - 1:
-            separator = "+" + "+".join("-" * (w + 2) for w in col_widths) + "+"
-            lines.append(separator)
+        if inside_v:
+            inner = "|".join(cells)
+        else:
+            inner = " ".join(cells)
 
-    # Bottom border
-    bottom_border = "+" + "+".join("-" * (w + 2) for w in col_widths) + "+"
-    lines.append(bottom_border)
+        left_char = "|" if left else " "
+        right_char = "|" if right else " "
+        return left_char + inner + right_char
+
+    # Top border (only if has top border)
+    if border_info.top:
+        lines.append(build_h_line(border_info.left, border_info.right, border_info.inside_v))
+
+    # Data rows
+    for row_idx, row in enumerate(rows_data):
+        # Row content
+        lines.append(build_data_row(row, border_info.left, border_info.right, border_info.inside_v))
+
+        # Row separator (between rows) - only if has inside_h border
+        if row_idx < len(rows_data) - 1 and border_info.inside_h:
+            lines.append(build_h_line(border_info.left, border_info.right, border_info.inside_v))
+
+    # Bottom border (only if has bottom border)
+    if border_info.bottom:
+        lines.append(build_h_line(border_info.left, border_info.right, border_info.inside_v))
 
     return "\n".join(lines)
 
@@ -258,7 +351,15 @@ def table_to_text(
 
     # Convert based on mode
     if actual_mode == "ascii":
-        return table_to_ascii(table)
+        if mode == "ascii":
+            # Explicit ascii mode: use full borders
+            full_borders = BorderInfo(
+                top=True, bottom=True, left=True, right=True, inside_h=True, inside_v=True
+            )
+            return table_to_ascii(table, full_borders)
+        else:
+            # Auto mode with borders: use detected partial borders
+            return table_to_ascii(table)
     elif actual_mode == "tabs":
         return table_to_tabs(table)
     else:  # plain

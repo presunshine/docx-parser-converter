@@ -1,12 +1,27 @@
 """Unit tests for table to text converter.
 
 Tests conversion of Table elements to plain text in various modes.
+
+Modes:
+- "ascii": Full ASCII box with all borders (explicit mode)
+- "tabs": Tab-separated columns, newline-separated rows (no borders)
+- "plain": Space-separated columns, newline-separated rows (no borders)
+- "auto": Chooses ascii or tabs based on border detection
+
+Border Detection (auto mode):
+- Table-level borders: tbl_pr.tbl_borders (top, bottom, left, right, inside_h, inside_v)
+- Cell-level borders: tc_pr.tc_borders on individual cells
+- Partial borders: Only renders the borders that are actually defined
 """
 
 from converters.text.table_to_text import (
+    BorderInfo,
     TableToTextConverter,
     cell_to_text,
+    detect_borders,
+    has_visible_borders,
     row_to_text,
+    table_to_ascii,
     table_to_text,
 )
 from models.common.border import Border, TableBorders
@@ -570,3 +585,406 @@ class TestColumnWidthCalculation:
         result = converter.convert(table)
         # Should still render both columns
         assert "B" in result
+
+
+# =============================================================================
+# BorderInfo Dataclass Tests
+# =============================================================================
+
+
+class TestBorderInfo:
+    """Tests for BorderInfo dataclass."""
+
+    def test_default_values(self) -> None:
+        """All borders default to False."""
+        info = BorderInfo()
+        assert info.top is False
+        assert info.bottom is False
+        assert info.left is False
+        assert info.right is False
+        assert info.inside_h is False
+        assert info.inside_v is False
+
+    def test_has_any_false_when_all_false(self) -> None:
+        """has_any returns False when no borders set."""
+        info = BorderInfo()
+        assert info.has_any is False
+
+    def test_has_any_true_when_top_set(self) -> None:
+        """has_any returns True when top border set."""
+        info = BorderInfo(top=True)
+        assert info.has_any is True
+
+    def test_has_any_true_when_bottom_set(self) -> None:
+        """has_any returns True when bottom border set."""
+        info = BorderInfo(bottom=True)
+        assert info.has_any is True
+
+    def test_has_any_true_when_left_set(self) -> None:
+        """has_any returns True when left border set."""
+        info = BorderInfo(left=True)
+        assert info.has_any is True
+
+    def test_has_any_true_when_right_set(self) -> None:
+        """has_any returns True when right border set."""
+        info = BorderInfo(right=True)
+        assert info.has_any is True
+
+    def test_has_any_true_when_inside_h_set(self) -> None:
+        """has_any returns True when inside_h border set."""
+        info = BorderInfo(inside_h=True)
+        assert info.has_any is True
+
+    def test_has_any_true_when_inside_v_set(self) -> None:
+        """has_any returns True when inside_v border set."""
+        info = BorderInfo(inside_v=True)
+        assert info.has_any is True
+
+    def test_has_any_true_when_multiple_set(self) -> None:
+        """has_any returns True when multiple borders set."""
+        info = BorderInfo(top=True, bottom=True, left=True, right=True)
+        assert info.has_any is True
+
+    def test_full_borders(self) -> None:
+        """All borders can be set to True."""
+        info = BorderInfo(
+            top=True, bottom=True, left=True, right=True, inside_h=True, inside_v=True
+        )
+        assert info.top is True
+        assert info.bottom is True
+        assert info.left is True
+        assert info.right is True
+        assert info.inside_h is True
+        assert info.inside_v is True
+
+
+# =============================================================================
+# Border Detection Tests
+# =============================================================================
+
+
+class TestDetectBorders:
+    """Tests for detect_borders() function."""
+
+    def test_no_borders_returns_empty_info(self) -> None:
+        """Table without borders returns BorderInfo with all False."""
+        table = make_table([make_row([make_cell("Cell")])])
+        info = detect_borders(table)
+        assert info.has_any is False
+
+    def test_table_level_top_border(self) -> None:
+        """Detect table-level top border."""
+        borders = TableBorders(top=Border(val="single"))
+        table = make_table([make_row([make_cell("Cell")])], borders=borders)
+        info = detect_borders(table)
+        assert info.top is True
+        assert info.bottom is False
+
+    def test_table_level_bottom_border(self) -> None:
+        """Detect table-level bottom border."""
+        borders = TableBorders(bottom=Border(val="single"))
+        table = make_table([make_row([make_cell("Cell")])], borders=borders)
+        info = detect_borders(table)
+        assert info.bottom is True
+        assert info.top is False
+
+    def test_table_level_left_border(self) -> None:
+        """Detect table-level left border."""
+        borders = TableBorders(left=Border(val="single"))
+        table = make_table([make_row([make_cell("Cell")])], borders=borders)
+        info = detect_borders(table)
+        assert info.left is True
+
+    def test_table_level_right_border(self) -> None:
+        """Detect table-level right border."""
+        borders = TableBorders(right=Border(val="single"))
+        table = make_table([make_row([make_cell("Cell")])], borders=borders)
+        info = detect_borders(table)
+        assert info.right is True
+
+    def test_table_level_inside_h_border(self) -> None:
+        """Detect table-level inside_h border."""
+        borders = TableBorders(inside_h=Border(val="single"))
+        table = make_table([make_row([make_cell("Cell")])], borders=borders)
+        info = detect_borders(table)
+        assert info.inside_h is True
+
+    def test_table_level_inside_v_border(self) -> None:
+        """Detect table-level inside_v border."""
+        borders = TableBorders(inside_v=Border(val="single"))
+        table = make_table([make_row([make_cell("Cell")])], borders=borders)
+        info = detect_borders(table)
+        assert info.inside_v is True
+
+    def test_table_level_all_borders(self) -> None:
+        """Detect all table-level borders."""
+        borders = TableBorders(
+            top=Border(val="single"),
+            bottom=Border(val="single"),
+            left=Border(val="single"),
+            right=Border(val="single"),
+            inside_h=Border(val="single"),
+            inside_v=Border(val="single"),
+        )
+        table = make_table([make_row([make_cell("Cell")])], borders=borders)
+        info = detect_borders(table)
+        assert info.top is True
+        assert info.bottom is True
+        assert info.left is True
+        assert info.right is True
+        assert info.inside_h is True
+        assert info.inside_v is True
+
+    def test_none_border_val_not_detected(self) -> None:
+        """Border with val='none' is not detected."""
+        borders = TableBorders(top=Border(val="none"))
+        table = make_table([make_row([make_cell("Cell")])], borders=borders)
+        info = detect_borders(table)
+        assert info.top is False
+
+    def test_nil_border_val_not_detected(self) -> None:
+        """Border with val='nil' is not detected."""
+        borders = TableBorders(top=Border(val="nil"))
+        table = make_table([make_row([make_cell("Cell")])], borders=borders)
+        info = detect_borders(table)
+        assert info.top is False
+
+    def test_cell_level_top_border_first_row(self) -> None:
+        """Detect cell-level top border in first row."""
+        cell = TableCell(
+            tc_pr=TableCellProperties(tc_borders=TableBorders(top=Border(val="single"))),
+            content=[Paragraph(content=[Run(content=[Text(value="Cell")])])],
+        )
+        table = make_table([make_row([cell])])
+        info = detect_borders(table)
+        assert info.top is True
+
+    def test_cell_level_bottom_border_last_row(self) -> None:
+        """Detect cell-level bottom border in last row."""
+        cell = TableCell(
+            tc_pr=TableCellProperties(tc_borders=TableBorders(bottom=Border(val="single"))),
+            content=[Paragraph(content=[Run(content=[Text(value="Cell")])])],
+        )
+        table = make_table([make_row([cell])])
+        info = detect_borders(table)
+        assert info.bottom is True
+
+    def test_cell_level_left_border_first_column(self) -> None:
+        """Detect cell-level left border in first column."""
+        cell = TableCell(
+            tc_pr=TableCellProperties(tc_borders=TableBorders(left=Border(val="single"))),
+            content=[Paragraph(content=[Run(content=[Text(value="Cell")])])],
+        )
+        table = make_table([make_row([cell])])
+        info = detect_borders(table)
+        assert info.left is True
+
+    def test_cell_level_right_border_last_column(self) -> None:
+        """Detect cell-level right border in last column."""
+        cell = TableCell(
+            tc_pr=TableCellProperties(tc_borders=TableBorders(right=Border(val="single"))),
+            content=[Paragraph(content=[Run(content=[Text(value="Cell")])])],
+        )
+        table = make_table([make_row([cell])])
+        info = detect_borders(table)
+        assert info.right is True
+
+    def test_cell_level_inside_h_border(self) -> None:
+        """Detect cell-level inside_h border (bottom of non-last row)."""
+        cell1 = TableCell(
+            tc_pr=TableCellProperties(tc_borders=TableBorders(bottom=Border(val="single"))),
+            content=[Paragraph(content=[Run(content=[Text(value="Cell1")])])],
+        )
+        cell2 = make_cell("Cell2")
+        table = make_table([make_row([cell1]), make_row([cell2])])
+        info = detect_borders(table)
+        assert info.inside_h is True
+
+    def test_cell_level_inside_v_border(self) -> None:
+        """Detect cell-level inside_v border (right of non-last column)."""
+        cell1 = TableCell(
+            tc_pr=TableCellProperties(tc_borders=TableBorders(right=Border(val="single"))),
+            content=[Paragraph(content=[Run(content=[Text(value="Cell1")])])],
+        )
+        cell2 = make_cell("Cell2")
+        table = make_table([make_row([cell1, cell2])])
+        info = detect_borders(table)
+        assert info.inside_v is True
+
+
+class TestHasVisibleBorders:
+    """Tests for has_visible_borders() function."""
+
+    def test_returns_false_for_no_borders(self) -> None:
+        """Returns False when table has no borders."""
+        table = make_table([make_row([make_cell("Cell")])])
+        assert has_visible_borders(table) is False
+
+    def test_returns_true_for_table_borders(self) -> None:
+        """Returns True when table has table-level borders."""
+        borders = TableBorders(top=Border(val="single"))
+        table = make_table([make_row([make_cell("Cell")])], borders=borders)
+        assert has_visible_borders(table) is True
+
+    def test_returns_true_for_cell_borders(self) -> None:
+        """Returns True when table has cell-level borders."""
+        cell = TableCell(
+            tc_pr=TableCellProperties(tc_borders=TableBorders(top=Border(val="single"))),
+            content=[Paragraph(content=[Run(content=[Text(value="Cell")])])],
+        )
+        table = make_table([make_row([cell])])
+        assert has_visible_borders(table) is True
+
+
+# =============================================================================
+# Partial Border Rendering Tests
+# =============================================================================
+
+
+class TestPartialBorderRendering:
+    """Tests for rendering tables with partial borders."""
+
+    def test_top_border_only(self) -> None:
+        """Render table with only top border."""
+        info = BorderInfo(top=True)
+        table = make_table(
+            [
+                make_row([make_cell("A"), make_cell("B")]),
+                make_row([make_cell("C"), make_cell("D")]),
+            ]
+        )
+        result = table_to_ascii(table, info)
+        lines = result.strip().split("\n")
+        # First line should be border
+        assert "-" in lines[0]
+        # Last line should NOT be border (no bottom border)
+        assert "-" not in lines[-1]
+
+    def test_bottom_border_only(self) -> None:
+        """Render table with only bottom border."""
+        info = BorderInfo(bottom=True)
+        table = make_table(
+            [
+                make_row([make_cell("A"), make_cell("B")]),
+                make_row([make_cell("C"), make_cell("D")]),
+            ]
+        )
+        result = table_to_ascii(table, info)
+        lines = result.strip().split("\n")
+        # First line should NOT be border
+        assert "-" not in lines[0]
+        # Last line should be border
+        assert "-" in lines[-1]
+
+    def test_left_border_only(self) -> None:
+        """Render table with only left border."""
+        info = BorderInfo(left=True)
+        table = make_table([make_row([make_cell("A"), make_cell("B")])])
+        result = table_to_ascii(table, info)
+        # Should have | on left side
+        for line in result.strip().split("\n"):
+            if "A" in line or "B" in line:
+                assert line.startswith("|")
+
+    def test_right_border_only(self) -> None:
+        """Render table with only right border."""
+        info = BorderInfo(right=True)
+        table = make_table([make_row([make_cell("A"), make_cell("B")])])
+        result = table_to_ascii(table, info)
+        # Should have | on right side
+        for line in result.strip().split("\n"):
+            if "A" in line or "B" in line:
+                assert line.endswith("|")
+
+    def test_outer_borders_only(self) -> None:
+        """Render table with outer borders only (no inside borders)."""
+        info = BorderInfo(top=True, bottom=True, left=True, right=True)
+        table = make_table(
+            [
+                make_row([make_cell("A"), make_cell("B")]),
+                make_row([make_cell("C"), make_cell("D")]),
+            ]
+        )
+        result = table_to_ascii(table, info)
+        lines = result.strip().split("\n")
+        # Should have 3 lines: top border, 2 data rows merged, bottom border
+        # With no inside_h, data rows are not separated
+        assert "-" in lines[0]  # Top border
+        assert "-" in lines[-1]  # Bottom border
+        # Middle lines should have left/right borders but no horizontal separator
+        middle_lines = [line for line in lines if "A" in line or "C" in line]
+        for line in middle_lines:
+            assert line.startswith("|")
+            assert line.endswith("|")
+
+    def test_inside_borders_only(self) -> None:
+        """Render table with inside borders only (grid lines)."""
+        info = BorderInfo(inside_h=True, inside_v=True)
+        table = make_table(
+            [
+                make_row([make_cell("A"), make_cell("B")]),
+                make_row([make_cell("C"), make_cell("D")]),
+            ]
+        )
+        result = table_to_ascii(table, info)
+        lines = result.strip().split("\n")
+        # Should NOT have top border (first line is data)
+        assert "A" in lines[0]
+        # Should NOT have bottom border (last line is data)
+        assert "C" in lines[-1] or "D" in lines[-1]
+        # Should have separator between rows
+        separator_lines = [line for line in lines if "-" in line]
+        assert len(separator_lines) >= 1
+
+    def test_full_borders(self) -> None:
+        """Render table with all borders."""
+        info = BorderInfo(
+            top=True, bottom=True, left=True, right=True, inside_h=True, inside_v=True
+        )
+        table = make_table(
+            [
+                make_row([make_cell("A"), make_cell("B")]),
+                make_row([make_cell("C"), make_cell("D")]),
+            ]
+        )
+        result = table_to_ascii(table, info)
+        lines = result.strip().split("\n")
+        # Should have borders on all sides
+        assert "-" in lines[0]  # Top
+        assert "-" in lines[-1]  # Bottom
+        # Content lines should have | separators
+        content_lines = [line for line in lines if "A" in line or "C" in line]
+        for line in content_lines:
+            assert "|" in line
+
+    def test_explicit_ascii_mode_uses_full_borders(self) -> None:
+        """Explicit mode='ascii' always uses full borders regardless of table."""
+        table = make_table([make_row([make_cell("A"), make_cell("B")])])
+        # No borders defined on table
+        result = table_to_text(table, mode="ascii")
+        lines = result.strip().split("\n")
+        # Should have full borders
+        assert "-" in lines[0]  # Top
+        assert "-" in lines[-1]  # Bottom
+        assert "|" in lines[1]  # Content with vertical
+
+    def test_auto_mode_detects_partial_borders(self) -> None:
+        """Auto mode detects and renders partial borders."""
+        borders = TableBorders(top=Border(val="single"), bottom=Border(val="single"))
+        table = make_table(
+            [
+                make_row([make_cell("A"), make_cell("B")]),
+                make_row([make_cell("C"), make_cell("D")]),
+            ],
+            borders=borders,
+        )
+        result = table_to_text(table, mode="auto")
+        lines = result.strip().split("\n")
+        # Should have top and bottom borders
+        assert "-" in lines[0]
+        assert "-" in lines[-1]
+        # But no vertical separators (no inside_v)
+        content_lines = [line for line in lines if "A" in line]
+        for line in content_lines:
+            # Should not have | between A and B
+            assert "|" not in line or line.count("|") <= 2  # Only outer |
