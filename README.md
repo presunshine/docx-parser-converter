@@ -1,190 +1,154 @@
-# Docx Parser and Converter 📄✨
+# DOCX Parser and Converter
 
-A powerful library for converting DOCX documents into HTML and plain text, with detailed parsing of document properties and styles.
+Convert Microsoft Word DOCX files to HTML and plain text. Available for both **Python** and **TypeScript/JavaScript**.
 
-## Table of Contents
-- [Introduction 🌟](#introduction-)
-- [Project Overview 🛠️](#project-overview-)
-- [Key Features 🌟](#key-features-)
-- [Installation 💾](#installation-)
-- [Usage 🚀](#usage-)
-- [Quick Start Guide 📖](#quick-start-guide-)
-- [Supported XML Parsing Types 📄](#supported-xml-parsing-types-)
-- [General Code Flow 🔄](#general-code-flow-)
-- [Conversion Table of DOCX XML Elements to HTML](#conversion-table-of-docx-xml-elements-to-html)
-- [Examples 📚](#examples-)
-- [API Reference 📜](#api-reference-)
+## Features
 
-## Introduction 🌟
-Welcome to the Docx Parser and Converter project! This library allows you to easily convert DOCX documents into HTML and plain text formats, extracting detailed properties and styles using Pydantic models.
+- **High-fidelity HTML conversion** with CSS styling
+- **Plain text extraction** with optional Markdown formatting
+- **Rich text formatting**: bold, italic, underline, strikethrough, subscript, superscript, highlight
+- **Images**: inline and floating images (Python only)
+- **Tables**: cell merging, borders, shading
+- **Lists**: bullets, numbered, multi-level
+- **Hyperlinks**: resolved from document relationships
+- **Style inheritance**: follows Word's style chain
 
-## Project Overview 🛠️
-The project is structured to parse DOCX files, convert their content into structured data using Pydantic models, and provide conversion utilities to transform this data into HTML or plain text.
+## Installation
 
-## Key Features 🌟
-- Convert DOCX documents to HTML or plain text.
-- Parse and extract detailed document properties and styles.
-- Structured data representation using Pydantic models.
+### Python
 
-## Installation 💾
-To install the library, you can use pip. (Add the pip install command manually)
-
-```sh
+```bash
 pip install docx-parser-converter
 ```
 
-## Usage 🚀
+### TypeScript/JavaScript
 
-### Importing the Library
-To start using the library, import the necessary modules:
-
-```python
-from docx_parser_converter.docx_to_html.docx_to_html_converter import DocxToHtmlConverter
-from docx_parser_converter.docx_to_txt.docx_to_txt_converter import DocxToTxtConverter
-from docx_parser_converter.docx_parsers.utils import read_binary_from_file_path
+```bash
+npm install @omer-go/docx-parser-converter-ts
+# or
+yarn add @omer-go/docx-parser-converter-ts
 ```
 
-### Quick Start Guide 📖
-1. **Convert to HTML**:
-   ```python
-   from docx_parser_converter.docx_to_html.docx_to_html_converter import DocxToHtmlConverter
-   from docx_parser_converter.docx_parsers.utils import read_binary_from_file_path
+## Quick Start
 
-   docx_path = "path_to_your_docx_file.docx"
-   html_output_path = "output.html"
+### Python
 
-   docx_file_content = read_binary_from_file_path(docx_path)
+```python
+from docx_parser_converter import docx_to_html, docx_to_text
 
-   converter = DocxToHtmlConverter(docx_file_content, use_default_values=True)
-   html_output = converter.convert_to_html()
-   converter.save_html_to_file(html_output, html_output_path)
-   ```
+# Convert to HTML
+html = docx_to_html("document.docx")
 
-2. **Convert to Plain Text**:
-   ```python
-   from docx_parser_converter.docx_to_txt.docx_to_txt_converter import DocxToTxtConverter
-   from docx_parser_converter.docx_parsers.utils import read_binary_from_file_path
+# Convert to plain text
+text = docx_to_text("document.docx")
 
-   docx_path = "path_to_your_docx_file.docx"
-   txt_output_path = "output.txt"
+# Save directly to file
+docx_to_html("document.docx", output_path="output.html")
+```
 
-   docx_file_content = read_binary_from_file_path(docx_path)
+### TypeScript/JavaScript
 
-   converter = DocxToTxtConverter(docx_file_content, use_default_values=True)
-   txt_output = converter.convert_to_txt(indent=True)
-   converter.save_txt_to_file(txt_output, txt_output_path)
-   ```
+```typescript
+import { DocxToHtmlConverter, DocxToTxtConverter } from '@omer-go/docx-parser-converter-ts';
 
-## Supported XML Parsing Types 📄
+// In browser with file input
+const file = document.getElementById('fileInput').files[0];
+const arrayBuffer = await file.arrayBuffer();
 
-The Docx Parser and Converter library supports parsing various XML components within a DOCX file. Below is a detailed list of the supported and unsupported components:
+// Convert to HTML
+const htmlConverter = await DocxToHtmlConverter.create(arrayBuffer);
+const html = htmlConverter.convertToHtml();
 
-### Supported Components
+// Convert to plain text
+const txtConverter = await DocxToTxtConverter.create(arrayBuffer);
+const text = txtConverter.convertToTxt();
+```
 
-1. **document.xml**:
-   - **Document Parsing**: Parses the main document structure.
-   - **Paragraphs**: Extracts paragraphs and their properties.
-   - **Runs**: Extracts individual text runs within paragraphs.
-   - **Tables**: Parses table structures and properties.
-   - **Table Rows**: Extracts rows within tables.
-   - **Table Cells**: Extracts cells within rows.
-   - **List Items**: Handles both bulleted and numbered lists through paragraph properties.
+## Configuration
 
-2. **numbering.xml**:
-   - **Numbering Definitions**: Parses numbering definitions and properties for lists.
-   - **Numbering Levels**: Extracts different levels of numbering for nested lists.
+### Python
 
-3. **styles.xml**:
-   - **Paragraph Styles**: Extracts styles applied to paragraphs.
-   - **Run Styles**: Extracts styles applied to text runs.
-   - **Table Styles**: Parses styles applied to tables and table elements.
-   - **Default Styles**: Extracts default document styles for paragraphs, runs, and tables.
+```python
+from docx_parser_converter import docx_to_html, ConversionConfig
 
-### Unsupported Components
+config = ConversionConfig(
+    title="My Document",
+    style_mode="inline",       # "inline", "class", or "none"
+    use_semantic_tags=False,   # CSS spans vs <strong>, <em>
+    text_formatting="plain",   # "plain" or "markdown"
+    table_mode="auto",         # "auto", "ascii", "tabs", "plain"
+)
 
-- **Images**: Parsing and extraction of images embedded within the document.
-- **Headers and Footers**: Parsing of headers and footers content.
-- **Footnotes and Endnotes**: Handling footnotes and endnotes within the document.
-- **Comments**: Extraction and handling of comments.
-- **Custom XML Parts**: Any custom XML parts beyond the standard DOCX schema.
+html = docx_to_html("document.docx", config=config)
+```
 
-## General Code Flow 🔄
+### TypeScript/JavaScript
 
-The Docx Parser and Converter library follows a structured workflow to parse, convert, and merge document properties and styles according to DOCX specifications. Here’s a detailed overview of the technical process:
+```typescript
+const converter = await DocxToHtmlConverter.create(arrayBuffer, {
+    useDefaultValues: true
+});
+const html = converter.convertToHtml();
 
-1. **Parsing XML Files**:
-   - **Document XML Parsing**: The `DocumentParser` class reads and parses the `document.xml` file to extract the document structure, including paragraphs, tables, and runs. This data is converted into `DocumentSchema` Pydantic models.
-   - **Numbering XML Parsing**: The `NumberingParser` class parses the `numbering.xml` file to extract numbering definitions and levels, converting them into `NumberingSchema` Pydantic models.
-   - **Styles XML Parsing**: The `StylesParser` class parses the `styles.xml` file to extract styles for paragraphs, runs, and tables, converting them into `StylesSchema` Pydantic models.
+const txtConverter = await DocxToTxtConverter.create(arrayBuffer);
+const text = txtConverter.convertToTxt({ indent: true });
+```
 
-2. **Property and Style Merging**:
-   - **Hierarchical Style Application**: The library applies styles to paragraphs and runs based on a defined hierarchy. Explicit properties in the `DocumentSchema` remain unchanged, while styles are applied based on the `style_id` if present.
-   - **Default Style Application**: If no specific `style_id` is present, default styles from `StyleDefaults` are applied. Finally, any remaining null properties are filled with `default_rpr` and `default_ppr` from the `StylesSchema`.
-   - **Efficient Property Merging**: The `merge_properties` function is used to efficiently merge properties by converting Pydantic models to dictionaries, adding only non-null properties, and reassigning them to the original models.
+## Supported Elements
 
-3. **Conversion to HTML and TXT**:
-   - **DOCX to HTML**:
-     - The `DocxToHtmlConverter` class takes the parsed `DocumentSchema` and converts the document elements into HTML format.
-     - Styles and properties are translated into equivalent HTML tags and CSS attributes.
-     - The converted HTML content can be saved to a file using the `save_html_to_file` method.
-     - **WYSIWYG Support**: The conversion maintains the visual representation of the document, ensuring accurate rendering of numbering, margins, and indentations as they appear in the original DOCX file.
-   - **DOCX to TXT**:
-     - The `DocxToTxtConverter` class converts the `DocumentSchema` into plain text format.
-     - Paragraphs, lists, and tables are transformed into a readable plain text representation.
-     - The converted text content can be saved to a file using the `save_txt_to_file` method.
-     - **WYSIWYG Support**: The conversion preserves the structure of the document, maintaining numbering, margins, and indentations to ensure the text layout resembles the original document's format.
+| Element | Python | TypeScript |
+|---------|--------|------------|
+| **Text formatting** (bold, italic, underline, etc.) | ✅ | ✅ |
+| **Paragraph formatting** (alignment, spacing, indentation) | ✅ | ✅ |
+| **Lists** (bullets, numbered, multi-level) | ✅ | ✅ |
+| **Tables** (borders, merging, shading) | ✅ | ✅ |
+| **Hyperlinks** | ✅ | ✅ |
+| **Images** (inline and floating) | ✅ | ❌ |
+| **Style inheritance** | ✅ | ✅ |
 
-This detailed process ensures that the Docx Parser and Converter library accurately parses and converts DOCX documents while preserving the original document's structure and style as much as possible.
+## Known Limitations
 
-## Conversion Table of DOCX XML Elements to HTML
+**Not supported in either implementation:**
+- Headers and footers
+- Footnotes and endnotes
+- Comments and track changes
+- OLE objects (embedded Excel, etc.)
+- Text boxes and shapes
+- Password-protected files
 
+## Implementation Details
 
-| XML Element    | HTML Element                        | Notes                                                                 |
-|----------------|--------------------------------------|-----------------------------------------------------------------------|
-| w:p            | p                                    | Paragraph element                                                     |
-| w:r            | span                                 | Run element, used for inline text formatting                          |
-| w:tbl          | table                                | Table element                                                         |
-| w:tr           | tr                                   | Table row                                                             |
-| w:tc           | td                                   | Table cell                                                            |
-| w:tblGrid      | colgroup                             | Table grid, converted to colgroup for column definitions              |
-| w:gridCol      | col                                  | Grid column, converted to col for column width                        |
-| w:tblPr        | table                                | Table properties                                                      |
-| w:tblW         | table style="width:X%;"              | Table width, converted using CSS `width` property                     |
-| w:tblBorders   | table style="border:X;"              | Table borders, converted using CSS `border` property                  |
-| w:tblCellMar   | td style="padding:Xpt;"              | Table cell margins, converted using CSS `padding` property            |
-| w:tblCellSpacing | table style="border-spacing:Xpt;"  | Cell spacing, converted using CSS `border-spacing` property           |
-| w:b            | b                                    | Bold text                                                             |
-| w:i            | i                                    | Italic text                                                           |
-| w:u            | span style="text-decoration:underline;" | Underline text, converted using CSS `text-decoration` property         |
-| w:color        | span style="color:#RRGGBB;"          | Text color, converted using CSS `color` property                      |
-| w:sz           | span style="font-size:Xpt;"          | Text size, converted using CSS `font-size` property (in points)       |
-| w:jc           | p style="text-align:left|center|right|justify;" | Text alignment, converted using CSS `text-align` property             |
-| w:ind          | p style="margin-left:Xpt;"           | Regular indent, converted using CSS `margin-left` property            |
-| w:ind          | p style="text-indent:Xpt;"           | Hanging/first-line indent, converted using CSS `text-indent` property |
-| w:spacing      | p style="line-height:X%;"            | Line spacing, converted using CSS `line-height` property              |
-| w:highlight    | span style="background-color:#RRGGBB;" | Text highlight, converted using CSS `background-color` property       |
-| w:shd          | span style="background-color:#RRGGBB;" | Shading, converted using CSS `background-color` property              |
-| w:vertAlign    | span style="vertical-align:super/sub;" | Vertical alignment, converted using CSS `vertical-align` property     |
-| w:pgMar        | div style="padding: Xpt;"            | Margins, converted using CSS `padding` property                       |
-| w:rFonts       | span style="font-family:'font-name';"| Font name, converted using CSS `font-family` property                 |
+For detailed documentation specific to each implementation:
 
+- **[Python Documentation](docx_parser_converter_python/README.md)** - Configuration options, API reference, development setup
+- **[TypeScript Documentation](docx_parser_converter_ts/README.md)** - Browser usage, API reference, build options
 
-## Examples 📚
+## Technical Reference
 
-### Original DOCX File
-![Original DOCX File in LibreOffice](docs/images/docx-test-1.png)
-![Original DOCX File in LibreOffice](docs/images/docx-test-2.png)
+- [XML to CSS Conversion](docs/xml_to_css_conversion.md) - Mapping of DOCX XML elements to CSS
+- [XML Structure Guide](docs/XML_STRUCTURE_GUIDE.md) - OOXML structure reference
 
-### Converted to HTML
-![Converted HTML Output](docs/images/docx-to-html-1.png)
-![Converted HTML Output](docs/images/docx-to-html-2.png)
+## Development
 
-### Converted to Plain Text
-![Converted TXT Output](docs/images/docx-to-txt.png)
+```bash
+# Clone repository
+git clone https://github.com/omer-go/docx-parser-converter.git
 
-## API Reference 📜
+# Python development
+cd docx_parser_converter_python
+pip install pdm && pdm install -G dev
+pdm run pytest
 
-For detailed API documentation, please visit our [Read the Docs](https://docx-parser-and-converter.readthedocs.io/en/latest/) page.
+# TypeScript development
+cd docx_parser_converter_ts
+npm install
+npm run build
+```
 
+## License
 
-Enjoy using Docx Parser and Converter! 🚀✨
+MIT License
+
+## Contributing
+
+Contributions welcome! See the implementation-specific READMEs for development setup.

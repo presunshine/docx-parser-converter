@@ -1,0 +1,7 @@
+{
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/docx_parser_converter_python"
+    ],
+    "python.analysis.typeCheckingMode": "basic",
+    "python.defaultInterpreterPath": "${workspaceFolder}/docx_parser_converter_python/.venv/bin/python"
+}

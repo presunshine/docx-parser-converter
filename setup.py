@@ -1,31 +1,36 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
-with open("README.md", "r", encoding="utf8", errors="ignore") as fh:
+with open("README.md", encoding="utf8", errors="ignore") as fh:
     long_description = fh.read()
 
 setup(
     name="docx-parser-converter",
-    version="0.5.1.2",
+    version="1.0.0",
     author="Omer Hayun",
-    author_email="your.email@example.com",
-    description="A library for converting DOCX documents to HTML and plain text",
+    author_email="omerha86@gmail.com",
+    description="A library for converting DOCX files to HTML and plain text",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/omer-go/docx-html-txt",
-    packages=find_packages(),
-    # package_dir={"": "src"},
+    url="https://github.com/omer-go/docx-parser-converter",
+    packages=find_packages(where="docx_parser_converter_python"),
+    package_dir={"": "docx_parser_converter_python"},
     classifiers=[
-        "Programming Language :: Python :: 3",
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
         "Operating System :: OS Independent",
+        "Topic :: Office/Business",
+        "Topic :: Text Processing :: Markup :: HTML",
+        "Typing :: Typed",
     ],
-    python_requires=">=3.6",
+    python_requires=">=3.10",
     install_requires=[
-        "beautifulsoup4==4.12.3",
-        "bs4==0.0.2",
-        "lxml==5.2.2",
-        "pydantic==2.7.4",
-        "pydantic_core==2.18.4",
-        "regex==2024.5.15",
+        "lxml>=5.0.0",
+        "pydantic>=2.0.0",
     ],
 )
