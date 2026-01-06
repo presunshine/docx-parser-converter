@@ -1,6 +1,9 @@
 """Integration tests for the public API.
 
 Tests the main entry points: docx_to_html and docx_to_text.
+
+Note: Golden standard tests (comparing output to expected files) are in
+test_golden_standards.py. This file tests API behavior and error handling.
 """
 
 import tempfile
@@ -19,12 +22,25 @@ from core.exceptions import (
 # Fixtures Path
 # =============================================================================
 
-FIXTURES_DIR = Path(__file__).parent.parent / "fixtures"
+PROJECT_ROOT = Path(__file__).parent.parent.parent.parent
+FIXTURES_DIR = PROJECT_ROOT / "fixtures" / "test_docx_files"
 
 
-def get_fixture(category: str, name: str) -> Path:
-    """Get path to a fixture file."""
-    return FIXTURES_DIR / category / name
+def get_sample_fixture() -> Path:
+    """Get a sample fixture file for testing."""
+    fixtures = list(FIXTURES_DIR.glob("*.docx"))
+    if fixtures:
+        return fixtures[0]
+    pytest.skip("No fixtures found")
+    return Path()  # unreachable
+
+
+def get_table_fixture() -> Path:
+    """Get a fixture file that contains tables."""
+    for fixture in FIXTURES_DIR.glob("*table*.docx"):
+        return fixture
+    pytest.skip("No table fixture found")
+    return Path()  # unreachable
 
 
 # =============================================================================
@@ -37,9 +53,7 @@ class TestDocxToHtmlBasic:
 
     def test_simple_document(self) -> None:
         """Convert a simple document to HTML."""
-        fixture = get_fixture("text_formatting", "inline_formatting.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
+        fixture = get_sample_fixture()
 
         result = docx_to_html(fixture)
 
@@ -58,9 +72,7 @@ class TestDocxToHtmlBasic:
 
     def test_file_path_as_string(self) -> None:
         """Accept file path as string."""
-        fixture = get_fixture("text_formatting", "inline_formatting.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
+        fixture = get_sample_fixture()
 
         result = docx_to_html(str(fixture))
 
@@ -69,9 +81,7 @@ class TestDocxToHtmlBasic:
 
     def test_file_path_as_path_object(self) -> None:
         """Accept file path as Path object."""
-        fixture = get_fixture("text_formatting", "inline_formatting.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
+        fixture = get_sample_fixture()
 
         result = docx_to_html(fixture)
 
@@ -80,9 +90,7 @@ class TestDocxToHtmlBasic:
 
     def test_bytes_input(self) -> None:
         """Accept bytes input."""
-        fixture = get_fixture("text_formatting", "inline_formatting.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
+        fixture = get_sample_fixture()
 
         content = fixture.read_bytes()
         result = docx_to_html(content)
@@ -92,9 +100,7 @@ class TestDocxToHtmlBasic:
 
     def test_file_like_object_input(self) -> None:
         """Accept file-like object input."""
-        fixture = get_fixture("text_formatting", "inline_formatting.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
+        fixture = get_sample_fixture()
 
         content = fixture.read_bytes()
         file_obj = BytesIO(content)
@@ -137,9 +143,7 @@ class TestDocxToHtmlOutput:
 
     def test_write_to_output_path(self) -> None:
         """Write output to file path."""
-        fixture = get_fixture("text_formatting", "inline_formatting.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
+        fixture = get_sample_fixture()
 
         with tempfile.NamedTemporaryFile(suffix=".html", delete=False) as f:
             output_path = f.name
@@ -156,9 +160,7 @@ class TestDocxToHtmlOutput:
 
     def test_output_path_as_path_object(self) -> None:
         """Accept output path as Path object."""
-        fixture = get_fixture("text_formatting", "inline_formatting.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
+        fixture = get_sample_fixture()
 
         with tempfile.NamedTemporaryFile(suffix=".html", delete=False) as f:
             output_path = Path(f.name)
@@ -176,9 +178,7 @@ class TestDocxToHtmlConfig:
 
     def test_default_config(self) -> None:
         """Default configuration works."""
-        fixture = get_fixture("text_formatting", "inline_formatting.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
+        fixture = get_sample_fixture()
 
         result = docx_to_html(fixture)
 
@@ -186,9 +186,7 @@ class TestDocxToHtmlConfig:
 
     def test_fragment_only_mode(self) -> None:
         """Fragment mode outputs only content."""
-        fixture = get_fixture("text_formatting", "inline_formatting.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
+        fixture = get_sample_fixture()
 
         config = ConversionConfig(fragment_only=True)
         result = docx_to_html(fixture, config=config)
@@ -198,9 +196,7 @@ class TestDocxToHtmlConfig:
 
     def test_custom_title(self) -> None:
         """Custom title in output."""
-        fixture = get_fixture("text_formatting", "inline_formatting.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
+        fixture = get_sample_fixture()
 
         config = ConversionConfig(title="My Document")
         result = docx_to_html(fixture, config=config)
@@ -209,9 +205,7 @@ class TestDocxToHtmlConfig:
 
     def test_custom_language(self) -> None:
         """Custom language in output."""
-        fixture = get_fixture("text_formatting", "inline_formatting.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
+        fixture = get_sample_fixture()
 
         config = ConversionConfig(language="de")
         result = docx_to_html(fixture, config=config)
@@ -229,9 +223,7 @@ class TestDocxToTextBasic:
 
     def test_simple_document(self) -> None:
         """Convert a simple document to text."""
-        fixture = get_fixture("text_formatting", "inline_formatting.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
+        fixture = get_sample_fixture()
 
         result = docx_to_text(fixture)
 
@@ -246,9 +238,7 @@ class TestDocxToTextBasic:
 
     def test_file_path_as_string(self) -> None:
         """Accept file path as string."""
-        fixture = get_fixture("text_formatting", "inline_formatting.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
+        fixture = get_sample_fixture()
 
         result = docx_to_text(str(fixture))
 
@@ -257,9 +247,7 @@ class TestDocxToTextBasic:
 
     def test_file_path_as_path_object(self) -> None:
         """Accept file path as Path object."""
-        fixture = get_fixture("text_formatting", "inline_formatting.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
+        fixture = get_sample_fixture()
 
         result = docx_to_text(fixture)
 
@@ -268,9 +256,7 @@ class TestDocxToTextBasic:
 
     def test_bytes_input(self) -> None:
         """Accept bytes input."""
-        fixture = get_fixture("text_formatting", "inline_formatting.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
+        fixture = get_sample_fixture()
 
         content = fixture.read_bytes()
         result = docx_to_text(content)
@@ -280,9 +266,7 @@ class TestDocxToTextBasic:
 
     def test_file_like_object_input(self) -> None:
         """Accept file-like object input."""
-        fixture = get_fixture("text_formatting", "inline_formatting.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
+        fixture = get_sample_fixture()
 
         content = fixture.read_bytes()
         file_obj = BytesIO(content)
@@ -325,9 +309,7 @@ class TestDocxToTextOutput:
 
     def test_write_to_output_path(self) -> None:
         """Write output to file path."""
-        fixture = get_fixture("text_formatting", "inline_formatting.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
+        fixture = get_sample_fixture()
 
         with tempfile.NamedTemporaryFile(suffix=".txt", delete=False) as f:
             output_path = f.name
@@ -343,9 +325,7 @@ class TestDocxToTextOutput:
 
     def test_output_path_as_path_object(self) -> None:
         """Accept output path as Path object."""
-        fixture = get_fixture("text_formatting", "inline_formatting.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
+        fixture = get_sample_fixture()
 
         with tempfile.NamedTemporaryFile(suffix=".txt", delete=False) as f:
             output_path = Path(f.name)
@@ -363,9 +343,7 @@ class TestDocxToTextConfig:
 
     def test_default_config(self) -> None:
         """Default configuration works."""
-        fixture = get_fixture("text_formatting", "inline_formatting.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
+        fixture = get_sample_fixture()
 
         result = docx_to_text(fixture)
 
@@ -373,9 +351,7 @@ class TestDocxToTextConfig:
 
     def test_markdown_mode(self) -> None:
         """Markdown formatting mode."""
-        fixture = get_fixture("text_formatting", "inline_formatting.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
+        fixture = get_sample_fixture()
 
         config = ConversionConfig(text_formatting="markdown")
         result = docx_to_text(fixture, config=config)
@@ -384,9 +360,7 @@ class TestDocxToTextConfig:
 
     def test_table_mode_ascii(self) -> None:
         """ASCII table mode."""
-        fixture = get_fixture("tables", "tables_basic.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
+        fixture = get_table_fixture()
 
         config = ConversionConfig(table_mode="ascii")
         result = docx_to_text(fixture, config=config)
@@ -395,9 +369,7 @@ class TestDocxToTextConfig:
 
     def test_table_mode_tabs(self) -> None:
         """Tab-separated table mode."""
-        fixture = get_fixture("tables", "tables_basic.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
+        fixture = get_table_fixture()
 
         config = ConversionConfig(table_mode="tabs")
         result = docx_to_text(fixture, config=config)
@@ -481,9 +453,7 @@ class TestContentPreservation:
 
     def test_text_content_preserved_in_html(self) -> None:
         """Text content is preserved in HTML output."""
-        fixture = get_fixture("text_formatting", "inline_formatting.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
+        fixture = get_sample_fixture()
 
         result = docx_to_html(fixture)
 
@@ -492,9 +462,7 @@ class TestContentPreservation:
 
     def test_text_content_preserved_in_text(self) -> None:
         """Text content is preserved in text output."""
-        fixture = get_fixture("text_formatting", "inline_formatting.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
+        fixture = get_sample_fixture()
 
         result = docx_to_text(fixture)
 
@@ -503,9 +471,7 @@ class TestContentPreservation:
 
     def test_unicode_content_preserved(self) -> None:
         """Unicode content is preserved."""
-        fixture = get_fixture("comprehensive", "comprehensive.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
+        fixture = get_sample_fixture()
 
         html_result = docx_to_html(fixture)
         text_result = docx_to_text(fixture)
@@ -525,9 +491,7 @@ class TestMultiFormatConsistency:
 
     def test_same_source_different_formats(self) -> None:
         """Same source produces consistent HTML and text."""
-        fixture = get_fixture("text_formatting", "inline_formatting.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
+        fixture = get_sample_fixture()
 
         html_result = docx_to_html(fixture)
         text_result = docx_to_text(fixture)
@@ -541,193 +505,9 @@ class TestMultiFormatConsistency:
 
     def test_bytes_and_path_produce_same_output(self) -> None:
         """Bytes and path input produce same output."""
-        fixture = get_fixture("text_formatting", "inline_formatting.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
+        fixture = get_sample_fixture()
 
         from_path = docx_to_html(fixture)
         from_bytes = docx_to_html(fixture.read_bytes())
 
         assert from_path == from_bytes
-
-
-# =============================================================================
-# Fixture Category Tests
-# =============================================================================
-
-
-class TestTextFormattingFixtures:
-    """Tests for text formatting fixtures."""
-
-    def test_inline_formatting(self) -> None:
-        """Inline formatting fixture converts."""
-        fixture = get_fixture("text_formatting", "inline_formatting.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
-
-        html = docx_to_html(fixture)
-        text = docx_to_text(fixture)
-
-        assert len(html) > 0
-        assert len(text) > 0
-
-    def test_fonts_and_sizes(self) -> None:
-        """Fonts and sizes fixture converts."""
-        fixture = get_fixture("text_formatting", "fonts_and_sizes.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
-
-        html = docx_to_html(fixture)
-        text = docx_to_text(fixture)
-
-        assert len(html) > 0
-        assert len(text) > 0
-
-    def test_run_effects(self) -> None:
-        """Run effects fixture converts."""
-        fixture = get_fixture("text_formatting", "run_effects.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
-
-        html = docx_to_html(fixture)
-        text = docx_to_text(fixture)
-
-        assert len(html) > 0
-        assert len(text) > 0
-
-    def test_underline_styles(self) -> None:
-        """Underline styles fixture converts."""
-        fixture = get_fixture("text_formatting", "underline_styles.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
-
-        html = docx_to_html(fixture)
-        text = docx_to_text(fixture)
-
-        assert len(html) > 0
-        assert len(text) > 0
-
-
-class TestParagraphFormattingFixtures:
-    """Tests for paragraph formatting fixtures."""
-
-    def test_paragraph_control(self) -> None:
-        """Paragraph control fixture converts."""
-        fixture = get_fixture("paragraph_formatting", "paragraph_control.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
-
-        html = docx_to_html(fixture)
-        text = docx_to_text(fixture)
-
-        assert len(html) > 0
-        assert len(text) > 0
-
-    def test_paragraphs_and_fonts(self) -> None:
-        """Paragraphs and fonts fixture converts."""
-        fixture = get_fixture("paragraph_formatting", "paragraphs_and_fonts.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
-
-        html = docx_to_html(fixture)
-        text = docx_to_text(fixture)
-
-        assert len(html) > 0
-        assert len(text) > 0
-
-    def test_formatting_and_styles(self) -> None:
-        """Formatting and styles fixture converts."""
-        fixture = get_fixture("paragraph_formatting", "formatting_and_styles.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
-
-        html = docx_to_html(fixture)
-        text = docx_to_text(fixture)
-
-        assert len(html) > 0
-        assert len(text) > 0
-
-
-class TestTableFixtures:
-    """Tests for table fixtures."""
-
-    def test_tables_basic(self) -> None:
-        """Basic tables fixture converts."""
-        fixture = get_fixture("tables", "tables_basic.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
-
-        html = docx_to_html(fixture)
-        text = docx_to_text(fixture)
-
-        assert len(html) > 0
-        assert len(text) > 0
-        assert "<table" in html
-
-    def test_table_advanced(self) -> None:
-        """Advanced table fixture converts."""
-        fixture = get_fixture("tables", "table_advanced.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
-
-        html = docx_to_html(fixture)
-        text = docx_to_text(fixture)
-
-        assert len(html) > 0
-        assert len(text) > 0
-
-
-class TestListsNumberingFixtures:
-    """Tests for lists and numbering fixtures."""
-
-    def test_lists_basic(self) -> None:
-        """Basic lists fixture converts."""
-        fixture = get_fixture("lists_numbering", "lists_basic.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
-
-        html = docx_to_html(fixture)
-        text = docx_to_text(fixture)
-
-        assert len(html) > 0
-        assert len(text) > 0
-
-    def test_list_formatting(self) -> None:
-        """List formatting fixture converts."""
-        fixture = get_fixture("lists_numbering", "list_formatting.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
-
-        html = docx_to_html(fixture)
-        text = docx_to_text(fixture)
-
-        assert len(html) > 0
-        assert len(text) > 0
-
-    def test_list_with_styling(self) -> None:
-        """List with styling fixture converts."""
-        fixture = get_fixture("lists_numbering", "list_with_styling.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
-
-        html = docx_to_html(fixture)
-        text = docx_to_text(fixture)
-
-        assert len(html) > 0
-        assert len(text) > 0
-
-
-class TestComprehensiveFixtures:
-    """Tests for comprehensive fixtures."""
-
-    def test_comprehensive(self) -> None:
-        """Comprehensive fixture converts."""
-        fixture = get_fixture("comprehensive", "comprehensive.docx")
-        if not fixture.exists():
-            pytest.skip(f"Fixture not found: {fixture}")
-
-        html = docx_to_html(fixture)
-        text = docx_to_text(fixture)
-
-        assert len(html) > 0
-        assert len(text) > 0
