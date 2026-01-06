@@ -31,8 +31,7 @@ from api import docx_to_html, docx_to_text  # noqa: E402
 # Directories
 FIXTURES_DIR = PROJECT_DIR / "fixtures"
 TEST_DOCX_DIR = FIXTURES_DIR / "test_docx_files"
-# Expected outputs are stored alongside the DOCX files
-EXPECTED_OUTPUT_DIR = TEST_DOCX_DIR
+TAGGED_TESTS_DIR = FIXTURES_DIR / "tagged_tests"
 
 
 class Colors:
@@ -47,16 +46,24 @@ class Colors:
 
 
 def get_test_files(specific_file: str | None = None) -> list[Path]:
-    """Get list of test DOCX files to verify."""
+    """Get list of test DOCX files to verify from both fixture directories."""
+    all_dirs = [TEST_DOCX_DIR, TAGGED_TESTS_DIR]
+
     if specific_file:
-        # Find file matching the name
-        matches = list(TEST_DOCX_DIR.glob(f"*{specific_file}*.docx"))
+        # Find file matching the name in any directory
+        matches = []
+        for d in all_dirs:
+            matches.extend(d.glob(f"*{specific_file}*.docx"))
         if not matches:
             print(f"{Colors.RED}No files matching '{specific_file}' found{Colors.NC}")
             sys.exit(1)
         return matches
 
-    return sorted(TEST_DOCX_DIR.glob("*.docx"))
+    # Get all DOCX files from both directories
+    all_files = []
+    for d in all_dirs:
+        all_files.extend(d.glob("*.docx"))
+    return sorted(all_files)
 
 
 def normalize_output(content: str) -> str:
@@ -71,9 +78,7 @@ def normalize_output(content: str) -> str:
     return "\n".join(lines)
 
 
-def compare_outputs(
-    expected: str, actual: str, verbose: bool = False
-) -> tuple[bool, str]:
+def compare_outputs(expected: str, actual: str, verbose: bool = False) -> tuple[bool, str]:
     """
     Compare expected and actual outputs.
 
@@ -106,12 +111,8 @@ def compare_outputs(
             diff_text += f"\n... and {len(diff) - 50} more lines"
     else:
         # Count additions and deletions
-        additions = sum(
-            1 for line in diff if line.startswith("+") and not line.startswith("+++")
-        )
-        deletions = sum(
-            1 for line in diff if line.startswith("-") and not line.startswith("---")
-        )
+        additions = sum(1 for line in diff if line.startswith("+") and not line.startswith("+++"))
+        deletions = sum(1 for line in diff if line.startswith("-") and not line.startswith("---"))
         diff_text = f"{additions} additions, {deletions} deletions"
 
     return False, diff_text
@@ -146,15 +147,24 @@ def verify_file(
         result["text"] = {"status": "error", "diff": str(e)}
         return result
 
-    # Verify HTML
+    # Verify HTML - outputs stored alongside DOCX files
+    output_dir = docx_path.parent
     if check_html:
-        html_expected_path = EXPECTED_OUTPUT_DIR / f"{name}.html"
+        # Use -python suffix for Python converter outputs
+        html_expected_path = output_dir / f"{name}-python.html"
+        # Also check legacy path (without suffix) for backwards compatibility
+        html_legacy_path = output_dir / f"{name}.html"
 
         if update:
             html_expected_path.write_text(actual_html, encoding="utf-8")
             result["html"] = {"status": "updated", "diff": ""}
         elif html_expected_path.exists():
             expected_html = html_expected_path.read_text(encoding="utf-8")
+            is_match, diff = compare_outputs(expected_html, actual_html, verbose)
+            result["html"] = {"status": "pass" if is_match else "fail", "diff": diff}
+        elif html_legacy_path.exists():
+            # Migrate from legacy path
+            expected_html = html_legacy_path.read_text(encoding="utf-8")
             is_match, diff = compare_outputs(expected_html, actual_html, verbose)
             result["html"] = {"status": "pass" if is_match else "fail", "diff": diff}
         else:
@@ -164,13 +174,21 @@ def verify_file(
 
     # Verify Text
     if check_text:
-        text_expected_path = EXPECTED_OUTPUT_DIR / f"{name}.txt"
+        # Use -python suffix for Python converter outputs
+        text_expected_path = output_dir / f"{name}-python.txt"
+        # Also check legacy path (without suffix) for backwards compatibility
+        text_legacy_path = output_dir / f"{name}.txt"
 
         if update:
             text_expected_path.write_text(actual_text, encoding="utf-8")
             result["text"] = {"status": "updated", "diff": ""}
         elif text_expected_path.exists():
             expected_text = text_expected_path.read_text(encoding="utf-8")
+            is_match, diff = compare_outputs(expected_text, actual_text, verbose)
+            result["text"] = {"status": "pass" if is_match else "fail", "diff": diff}
+        elif text_legacy_path.exists():
+            # Migrate from legacy path
+            expected_text = text_legacy_path.read_text(encoding="utf-8")
             is_match, diff = compare_outputs(expected_text, actual_text, verbose)
             result["text"] = {"status": "pass" if is_match else "fail", "diff": diff}
         else:
@@ -227,24 +245,16 @@ def main():
     parser = argparse.ArgumentParser(
         description="Verify DOCX converter outputs against expected files"
     )
-    parser.add_argument(
-        "--file", "-f", help="Specific file to verify (partial name match)"
-    )
+    parser.add_argument("--file", "-f", help="Specific file to verify (partial name match)")
     parser.add_argument(
         "--update",
         "-u",
         action="store_true",
         help="Update expected output files with current outputs",
     )
-    parser.add_argument(
-        "--verbose", "-v", action="store_true", help="Show detailed diff output"
-    )
-    parser.add_argument(
-        "--html-only", action="store_true", help="Only verify HTML output"
-    )
-    parser.add_argument(
-        "--text-only", action="store_true", help="Only verify text output"
-    )
+    parser.add_argument("--verbose", "-v", action="store_true", help="Show detailed diff output")
+    parser.add_argument("--html-only", action="store_true", help="Only verify HTML output")
+    parser.add_argument("--text-only", action="store_true", help="Only verify text output")
     parser.add_argument(
         "--json", action="store_true", help="Output results as JSON (for CI/automation)"
     )
@@ -267,9 +277,7 @@ def main():
     print(f"{Colors.BLUE}{'=' * 50}{Colors.NC}")
     print(f"\n  Files to verify: {len(test_files)}")
     if args.update:
-        print(
-            f"  {Colors.YELLOW}Mode: UPDATE (will overwrite expected outputs){Colors.NC}"
-        )
+        print(f"  {Colors.YELLOW}Mode: UPDATE (will overwrite expected outputs){Colors.NC}")
     print()
 
     # Run verification
