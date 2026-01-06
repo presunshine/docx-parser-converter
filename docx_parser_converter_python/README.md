@@ -1,54 +1,15 @@
-# DOCX Parser Converter
+# DOCX Parser Converter - Python
 
-A Python library for converting Microsoft Word DOCX files to HTML and plain text formats. Built with modern Python (3.10+), Pydantic models, and comprehensive OOXML support.
+Python implementation of the DOCX parser and converter. Built with Python 3.10+, Pydantic models, and lxml.
 
-## Features
-
-- **High-fidelity HTML conversion** with CSS styling support
-- **Plain text extraction** with optional Markdown formatting
-- **Comprehensive formatting support**: bold, italic, underline, strikethrough, subscript, superscript, highlight, and more
-- **Image support**: inline and floating images embedded as base64 data URLs with dimensions and alt text
-- **Table conversion** with cell merging (colspan/rowspan), borders, and multiple rendering modes
-- **List and numbering support**: bullets, numbered lists, multi-level lists, various number formats
-- **Hyperlink resolution** from document relationships
-- **Style inheritance** following Word's style chain (character → paragraph → linked → basedOn → defaults)
-- **Flexible configuration** for customizing output
-- **Multiple input types**: file path, bytes, file-like objects, or parsed Document models
-
-## Installation
-
-```bash
-pip install docx-parser-converter
-```
-
-Or with PDM:
-
-```bash
-pdm add docx-parser-converter
-```
-
-## Quick Start
-
-```python
-from docx_parser_converter_python import docx_to_html, docx_to_text
-
-# Convert DOCX to HTML
-html = docx_to_html("document.docx")
-
-# Convert DOCX to plain text
-text = docx_to_text("document.docx")
-
-# Save output to file
-docx_to_html("document.docx", output_path="output.html")
-docx_to_text("document.docx", output_path="output.txt")
-```
+For installation and quick start, see the [main README](../README.md).
 
 ## Configuration
 
 Use `ConversionConfig` to customize the conversion:
 
 ```python
-from docx_parser_converter_python import ConversionConfig, docx_to_html, docx_to_text
+from docx_parser_converter import ConversionConfig, docx_to_html, docx_to_text
 
 # HTML conversion options
 config = ConversionConfig(
@@ -194,24 +155,16 @@ text = docx_to_text(None)  # Returns ""
 The library provides specific exceptions for different error cases:
 
 ```python
-from docx_parser_converter_python import (
-    docx_to_html,
-    DocxNotFoundError,
-    DocxReadError,
-    DocxValidationError,
-    DocxEncryptedError,
-)
+from docx_parser_converter import docx_to_html
 
 try:
     html = docx_to_html("document.docx")
-except DocxNotFoundError:
+except FileNotFoundError:
     print("File not found")
-except DocxEncryptedError:
-    print("Document is encrypted")
-except DocxValidationError as e:
+except ValueError as e:
     print(f"Invalid DOCX: {e}")
-except DocxReadError as e:
-    print(f"Error reading file: {e}")
+except Exception as e:
+    print(f"Error: {e}")
 ```
 
 ## Image Format Support
@@ -355,7 +308,5 @@ Contributions are welcome! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) for
 
 ## Related Documentation
 
-- [SPECIFICATION.md](SPECIFICATION.md) - Technical specification
-- [STRUCTURE_PLAN.md](STRUCTURE_PLAN.md) - Code structure and patterns
-- [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) - Implementation progress
-- [docs/schemas/xml_to_css_conversion.md](docs/schemas/xml_to_css_conversion.md) - XML to CSS conversion reference
+- [XML to CSS Conversion](../docs/xml_to_css_conversion.md) - XML to CSS conversion reference
+- [XML Structure Guide](../docs/XML_STRUCTURE_GUIDE.md) - OOXML structure reference
