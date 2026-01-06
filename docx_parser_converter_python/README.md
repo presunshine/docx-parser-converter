@@ -4,6 +4,31 @@ Python implementation of the DOCX parser and converter. Built with Python 3.10+,
 
 For installation and quick start, see the [main README](../README.md).
 
+## ⚠️ Breaking Changes in v1.0.0
+
+Version 1.0.0 introduces a **completely rewritten API**. If you're upgrading from a previous version, please read the [CHANGELOG.md](CHANGELOG.md) for the full migration guide.
+
+### Quick Migration
+
+**Old API (deprecated):**
+```python
+from docx_parser_converter.docx_parsers.utils import read_binary_from_file_path
+from docx_parser_converter.docx_to_html.docx_to_html_converter import DocxToHtmlConverter
+
+docx_content = read_binary_from_file_path("document.docx")
+converter = DocxToHtmlConverter(docx_content)
+html = converter.convert_to_html()
+```
+
+**New API (recommended):**
+```python
+from docx_parser_converter import docx_to_html
+
+html = docx_to_html("document.docx")
+```
+
+The old API still works but emits deprecation warnings. It will be removed in a future version.
+
 ## Configuration
 
 Use `ConversionConfig` to customize the conversion:

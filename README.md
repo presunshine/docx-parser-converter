@@ -13,6 +13,14 @@ Convert Microsoft Word DOCX files to HTML and plain text. Available for both **P
 - **Hyperlinks**: resolved from document relationships
 - **Style inheritance**: follows Word's style chain
 
+## ⚠️ Python v1.0.0 Breaking Changes
+
+The Python package (v1.0.0) has a **completely rewritten API**. If upgrading from a previous version:
+
+- See the [Python CHANGELOG](docx_parser_converter_python/CHANGELOG.md) for migration guide
+- Old API still works with deprecation warnings
+- New API: `from docx_parser_converter import docx_to_html, docx_to_text`
+
 ## Installation
 
 ### Python
