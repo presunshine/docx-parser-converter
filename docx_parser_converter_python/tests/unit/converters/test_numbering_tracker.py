@@ -5,12 +5,12 @@ Tests numbering counter tracking, formatting, and edge cases.
 
 import pytest
 
-from converters.common.numbering_tracker import NumberingTracker
-from models.numbering.abstract_numbering import AbstractNumbering
-from models.numbering.level import Level
-from models.numbering.level_override import LevelOverride
-from models.numbering.numbering import Numbering
-from models.numbering.numbering_instance import NumberingInstance
+from docx_parser_converter.converters.common.numbering_tracker import NumberingTracker
+from docx_parser_converter.models.numbering.abstract_numbering import AbstractNumbering
+from docx_parser_converter.models.numbering.level import Level
+from docx_parser_converter.models.numbering.level_override import LevelOverride
+from docx_parser_converter.models.numbering.numbering import Numbering
+from docx_parser_converter.models.numbering.numbering_instance import NumberingInstance
 
 # =============================================================================
 # Test Fixtures

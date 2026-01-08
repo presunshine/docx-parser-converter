@@ -11,7 +11,7 @@ from pathlib import Path
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent / "docx_parser_converter_python"))
 
-from api import ConversionConfig, docx_to_html, docx_to_text
+from docx_parser_converter import ConversionConfig, docx_to_html, docx_to_text
 
 # =============================================================================
 # Configuration Combinations to Test

@@ -12,7 +12,7 @@ Tests cover:
 
 from lxml import etree
 
-from models.document.drawing import (
+from docx_parser_converter.models.document.drawing import (
     AnchorDrawing,
     Blip,
     BlipFill,
@@ -25,7 +25,7 @@ from models.document.drawing import (
     Picture,
     ShapeProperties,
 )
-from parsers.document.drawing_parser import (
+from docx_parser_converter.parsers.document.drawing_parser import (
     parse_anchor_drawing,
     parse_blip,
     parse_blip_fill,

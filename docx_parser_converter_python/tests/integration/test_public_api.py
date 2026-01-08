@@ -12,8 +12,8 @@ from pathlib import Path
 
 import pytest
 
-from api import ConversionConfig, docx_to_html, docx_to_text
-from core.exceptions import (
+from docx_parser_converter.api import ConversionConfig, docx_to_html, docx_to_text
+from docx_parser_converter.core.exceptions import (
     DocxNotFoundError,
     DocxValidationError,
 )
@@ -132,7 +132,7 @@ class TestDocxToHtmlErrors:
 
     def test_invalid_docx_raises_error(self) -> None:
         """Invalid DOCX content raises error."""
-        from core.exceptions import DocxReadError
+        from docx_parser_converter.core.exceptions import DocxReadError
 
         with pytest.raises(DocxReadError):
             docx_to_html(b"not a valid docx file content")
@@ -298,7 +298,7 @@ class TestDocxToTextErrors:
 
     def test_invalid_docx_raises_error(self) -> None:
         """Invalid DOCX content raises error."""
-        from core.exceptions import DocxReadError
+        from docx_parser_converter.core.exceptions import DocxReadError
 
         with pytest.raises(DocxReadError):
             docx_to_text(b"not a valid docx file content")

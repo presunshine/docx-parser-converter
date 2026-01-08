@@ -17,7 +17,7 @@ from pathlib import Path
 
 import pytest
 
-from api import docx_to_html, docx_to_text
+from docx_parser_converter.api import docx_to_html, docx_to_text
 
 # =============================================================================
 # Paths

@@ -7,12 +7,16 @@ Each test follows the pattern:
 4. test_parse_<element>_<specific_case> - Tests specific edge cases
 """
 
-from parsers.common.border_parser import parse_border, parse_paragraph_borders, parse_table_borders
-from parsers.common.color_parser import parse_color
-from parsers.common.indentation_parser import parse_indentation
-from parsers.common.shading_parser import parse_shading
-from parsers.common.spacing_parser import parse_spacing
-from parsers.common.width_parser import parse_width
+from docx_parser_converter.parsers.common.border_parser import (
+    parse_border,
+    parse_paragraph_borders,
+    parse_table_borders,
+)
+from docx_parser_converter.parsers.common.color_parser import parse_color
+from docx_parser_converter.parsers.common.indentation_parser import parse_indentation
+from docx_parser_converter.parsers.common.shading_parser import parse_shading
+from docx_parser_converter.parsers.common.spacing_parser import parse_spacing
+from docx_parser_converter.parsers.common.width_parser import parse_width
 from tests.unit.parsers.conftest import make_element
 
 # =============================================================================

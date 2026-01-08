@@ -73,7 +73,7 @@ from pathlib import Path
 # Add the package to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "docx_parser_converter_python"))
 
-from api import _parse_docx, docx_to_html  # noqa: F401
+from docx_parser_converter.api import _parse_docx, docx_to_html  # noqa: F401
 
 
 def extract_tests_from_docx(docx_path: str) -> list[dict]:

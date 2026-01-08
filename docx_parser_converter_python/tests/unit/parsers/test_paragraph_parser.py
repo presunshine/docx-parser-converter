@@ -7,9 +7,9 @@ Tests cover:
 - Complete paragraph parsing
 """
 
-from models.document.run import Run
-from parsers.document.paragraph_parser import parse_paragraph
-from parsers.document.paragraph_properties_parser import (
+from docx_parser_converter.models.document.run import Run
+from docx_parser_converter.parsers.document.paragraph_parser import parse_paragraph
+from docx_parser_converter.parsers.document.paragraph_properties_parser import (
     parse_numbering_properties,
     parse_paragraph_properties,
     parse_tab_stop,

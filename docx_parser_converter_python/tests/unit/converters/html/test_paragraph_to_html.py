@@ -3,7 +3,7 @@
 Tests conversion of Paragraph elements to HTML p/div tags.
 """
 
-from converters.html.paragraph_to_html import (
+from docx_parser_converter.converters.html.paragraph_to_html import (
     ParagraphToHTMLConverter,
     bookmark_end_to_html,
     bookmark_start_to_html,
@@ -11,19 +11,19 @@ from converters.html.paragraph_to_html import (
     paragraph_content_to_html,
     paragraph_to_html,
 )
-from models.common.border import Border, ParagraphBorders
-from models.common.indentation import Indentation
-from models.common.shading import Shading
-from models.common.spacing import Spacing
-from models.document.hyperlink import BookmarkEnd, BookmarkStart, Hyperlink
-from models.document.paragraph import (
+from docx_parser_converter.models.common.border import Border, ParagraphBorders
+from docx_parser_converter.models.common.indentation import Indentation
+from docx_parser_converter.models.common.shading import Shading
+from docx_parser_converter.models.common.spacing import Spacing
+from docx_parser_converter.models.document.hyperlink import BookmarkEnd, BookmarkStart, Hyperlink
+from docx_parser_converter.models.document.paragraph import (
     NumberingProperties,
     Paragraph,
     ParagraphProperties,
     TabStop,
 )
-from models.document.run import Run, RunProperties
-from models.document.run_content import Text
+from docx_parser_converter.models.document.run import Run, RunProperties
+from docx_parser_converter.models.document.run_content import Text
 
 # =============================================================================
 # Basic Paragraph Conversion Tests
@@ -1077,9 +1077,9 @@ class TestParagraphStyleResolution:
 
     def test_paragraph_style_resolved_with_style_resolver(self) -> None:
         """Paragraph with p_style is resolved when style_resolver is provided."""
-        from converters.common.style_resolver import StyleResolver
-        from models.styles.style import Style
-        from models.styles.styles import Styles
+        from docx_parser_converter.converters.common.style_resolver import StyleResolver
+        from docx_parser_converter.models.styles.style import Style
+        from docx_parser_converter.models.styles.styles import Styles
 
         # Create a style with center alignment
         style = Style(
@@ -1105,9 +1105,9 @@ class TestParagraphStyleResolution:
 
     def test_paragraph_style_with_indentation(self) -> None:
         """Paragraph style with indentation is resolved."""
-        from converters.common.style_resolver import StyleResolver
-        from models.styles.style import Style
-        from models.styles.styles import Styles
+        from docx_parser_converter.converters.common.style_resolver import StyleResolver
+        from docx_parser_converter.models.styles.style import Style
+        from docx_parser_converter.models.styles.styles import Styles
 
         style = Style(
             style_id="Quote",
@@ -1131,9 +1131,9 @@ class TestParagraphStyleResolution:
 
     def test_direct_formatting_overrides_style(self) -> None:
         """Direct paragraph formatting overrides style properties."""
-        from converters.common.style_resolver import StyleResolver
-        from models.styles.style import Style
-        from models.styles.styles import Styles
+        from docx_parser_converter.converters.common.style_resolver import StyleResolver
+        from docx_parser_converter.models.styles.style import Style
+        from docx_parser_converter.models.styles.styles import Styles
 
         # Style has left alignment
         style = Style(
@@ -1159,8 +1159,8 @@ class TestParagraphStyleResolution:
 
     def test_missing_style_handled_gracefully(self) -> None:
         """Reference to missing style is handled gracefully."""
-        from converters.common.style_resolver import StyleResolver
-        from models.styles.styles import Styles
+        from docx_parser_converter.converters.common.style_resolver import StyleResolver
+        from docx_parser_converter.models.styles.styles import Styles
 
         styles = Styles(style=[])  # No styles defined
         style_resolver = StyleResolver(styles)
@@ -1190,9 +1190,9 @@ class TestParagraphStyleResolution:
 
     def test_style_with_spacing(self) -> None:
         """Paragraph style with spacing is resolved."""
-        from converters.common.style_resolver import StyleResolver
-        from models.styles.style import Style
-        from models.styles.styles import Styles
+        from docx_parser_converter.converters.common.style_resolver import StyleResolver
+        from docx_parser_converter.models.styles.style import Style
+        from docx_parser_converter.models.styles.styles import Styles
 
         style = Style(
             style_id="Spaced",
@@ -1215,9 +1215,9 @@ class TestParagraphStyleResolution:
 
     def test_style_with_border(self) -> None:
         """Paragraph style with border is resolved."""
-        from converters.common.style_resolver import StyleResolver
-        from models.styles.style import Style
-        from models.styles.styles import Styles
+        from docx_parser_converter.converters.common.style_resolver import StyleResolver
+        from docx_parser_converter.models.styles.style import Style
+        from docx_parser_converter.models.styles.styles import Styles
 
         style = Style(
             style_id="Boxed",

@@ -3,7 +3,7 @@
 Tests conversion of numbering/list prefixes to HTML format.
 """
 
-from converters.html.numbering_to_html import (
+from docx_parser_converter.converters.html.numbering_to_html import (
     NumberingToHTMLConverter,
     apply_level_text,
     format_number,

@@ -11,7 +11,7 @@ Tests cover:
 
 import base64
 
-from converters.html.image_to_html import (
+from docx_parser_converter.converters.html.image_to_html import (
     _build_img_tag,
     _get_blip_embed,
     anchor_drawing_to_html,
@@ -19,7 +19,7 @@ from converters.html.image_to_html import (
     emu_to_px,
     inline_drawing_to_html,
 )
-from models.document.drawing import (
+from docx_parser_converter.models.document.drawing import (
     AnchorDrawing,
     Blip,
     BlipFill,

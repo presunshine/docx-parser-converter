@@ -9,8 +9,8 @@ Example:
 """
 
 # Import with explicit re-export for type checkers
-from api import ConversionConfig as ConversionConfig
-from api import docx_to_html as docx_to_html
-from api import docx_to_text as docx_to_text
+from .api import ConversionConfig as ConversionConfig
+from .api import docx_to_html as docx_to_html
+from .api import docx_to_text as docx_to_text
 
 __all__ = ["docx_to_html", "docx_to_text", "ConversionConfig"]

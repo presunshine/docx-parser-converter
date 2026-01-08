@@ -5,20 +5,20 @@ Tests the docx_to_html() function and HTMLConverter class.
 
 import pytest
 
-from converters.html.html_converter import (
+from docx_parser_converter.converters.html.html_converter import (
     ConversionConfig,
     HTMLConverter,
     UnsupportedFormatError,
     docx_to_html,
 )
-from models.document.document import Body, Document
-from models.document.drawing import Drawing
-from models.document.paragraph import Paragraph, ParagraphProperties
-from models.document.run import Run, RunProperties
-from models.document.run_content import Text
-from models.document.table import Table, TableProperties
-from models.document.table_cell import TableCell
-from models.document.table_row import TableRow
+from docx_parser_converter.models.document.document import Body, Document
+from docx_parser_converter.models.document.drawing import Drawing
+from docx_parser_converter.models.document.paragraph import Paragraph, ParagraphProperties
+from docx_parser_converter.models.document.run import Run, RunProperties
+from docx_parser_converter.models.document.run_content import Text
+from docx_parser_converter.models.document.table import Table, TableProperties
+from docx_parser_converter.models.document.table_cell import TableCell
+from docx_parser_converter.models.document.table_row import TableRow
 
 # =============================================================================
 # Basic Conversion Tests
@@ -339,10 +339,10 @@ class TestHTMLListPrefixes:
 
     def test_numbered_list_prefix_in_html(self) -> None:
         """Numbered list paragraph shows number prefix in HTML."""
-        from models.numbering.abstract_numbering import AbstractNumbering
-        from models.numbering.level import Level
-        from models.numbering.numbering import Numbering
-        from models.numbering.numbering_instance import NumberingInstance
+        from docx_parser_converter.models.numbering.abstract_numbering import AbstractNumbering
+        from docx_parser_converter.models.numbering.level import Level
+        from docx_parser_converter.models.numbering.numbering import Numbering
+        from docx_parser_converter.models.numbering.numbering_instance import NumberingInstance
 
         # Create numbering definitions
         level = Level(ilvl=0, num_fmt="decimal", lvl_text="%1.")
@@ -351,7 +351,7 @@ class TestHTMLListPrefixes:
         numbering = Numbering(abstract_num=[abstract], num=[instance])
 
         # Create paragraph with numbering
-        from models.document.paragraph import NumberingProperties
+        from docx_parser_converter.models.document.paragraph import NumberingProperties
 
         doc = Document(
             body=Body(
@@ -373,10 +373,10 @@ class TestHTMLListPrefixes:
 
     def test_bulleted_list_prefix_in_html(self) -> None:
         """Bulleted list paragraph shows bullet prefix in HTML."""
-        from models.numbering.abstract_numbering import AbstractNumbering
-        from models.numbering.level import Level
-        from models.numbering.numbering import Numbering
-        from models.numbering.numbering_instance import NumberingInstance
+        from docx_parser_converter.models.numbering.abstract_numbering import AbstractNumbering
+        from docx_parser_converter.models.numbering.level import Level
+        from docx_parser_converter.models.numbering.numbering import Numbering
+        from docx_parser_converter.models.numbering.numbering_instance import NumberingInstance
 
         # Create bullet numbering
         level = Level(ilvl=0, num_fmt="bullet", lvl_text="•")
@@ -385,7 +385,7 @@ class TestHTMLListPrefixes:
         numbering = Numbering(abstract_num=[abstract], num=[instance])
 
         # Create paragraph with bullet
-        from models.document.paragraph import NumberingProperties
+        from docx_parser_converter.models.document.paragraph import NumberingProperties
 
         doc = Document(
             body=Body(
@@ -407,10 +407,10 @@ class TestHTMLListPrefixes:
 
     def test_multi_level_numbered_list(self) -> None:
         """Multi-level numbered list shows correct prefixes."""
-        from models.numbering.abstract_numbering import AbstractNumbering
-        from models.numbering.level import Level
-        from models.numbering.numbering import Numbering
-        from models.numbering.numbering_instance import NumberingInstance
+        from docx_parser_converter.models.numbering.abstract_numbering import AbstractNumbering
+        from docx_parser_converter.models.numbering.level import Level
+        from docx_parser_converter.models.numbering.numbering import Numbering
+        from docx_parser_converter.models.numbering.numbering_instance import NumberingInstance
 
         # Create multi-level numbering
         # In OOXML, %1 refers to level 0's counter, %2 to level 1's, etc.
@@ -422,7 +422,7 @@ class TestHTMLListPrefixes:
         instance = NumberingInstance(num_id=3, abstract_num_id=3)
         numbering = Numbering(abstract_num=[abstract], num=[instance])
 
-        from models.document.paragraph import NumberingProperties
+        from docx_parser_converter.models.document.paragraph import NumberingProperties
 
         doc = Document(
             body=Body(
@@ -451,17 +451,17 @@ class TestHTMLListPrefixes:
 
     def test_sequential_numbered_items(self) -> None:
         """Sequential numbered items increment correctly."""
-        from models.numbering.abstract_numbering import AbstractNumbering
-        from models.numbering.level import Level
-        from models.numbering.numbering import Numbering
-        from models.numbering.numbering_instance import NumberingInstance
+        from docx_parser_converter.models.numbering.abstract_numbering import AbstractNumbering
+        from docx_parser_converter.models.numbering.level import Level
+        from docx_parser_converter.models.numbering.numbering import Numbering
+        from docx_parser_converter.models.numbering.numbering_instance import NumberingInstance
 
         level = Level(ilvl=0, num_fmt="decimal", lvl_text="%1.")
         abstract = AbstractNumbering(abstract_num_id=4, lvl=[level])
         instance = NumberingInstance(num_id=4, abstract_num_id=4)
         numbering = Numbering(abstract_num=[abstract], num=[instance])
 
-        from models.document.paragraph import NumberingProperties
+        from docx_parser_converter.models.document.paragraph import NumberingProperties
 
         doc = Document(
             body=Body(
@@ -495,17 +495,17 @@ class TestHTMLListPrefixes:
 
     def test_roman_numeral_list(self) -> None:
         """Roman numeral list shows correct prefixes."""
-        from models.numbering.abstract_numbering import AbstractNumbering
-        from models.numbering.level import Level
-        from models.numbering.numbering import Numbering
-        from models.numbering.numbering_instance import NumberingInstance
+        from docx_parser_converter.models.numbering.abstract_numbering import AbstractNumbering
+        from docx_parser_converter.models.numbering.level import Level
+        from docx_parser_converter.models.numbering.numbering import Numbering
+        from docx_parser_converter.models.numbering.numbering_instance import NumberingInstance
 
         level = Level(ilvl=0, num_fmt="lowerRoman", lvl_text="%1.")
         abstract = AbstractNumbering(abstract_num_id=5, lvl=[level])
         instance = NumberingInstance(num_id=5, abstract_num_id=5)
         numbering = Numbering(abstract_num=[abstract], num=[instance])
 
-        from models.document.paragraph import NumberingProperties
+        from docx_parser_converter.models.document.paragraph import NumberingProperties
 
         doc = Document(
             body=Body(
@@ -526,17 +526,17 @@ class TestHTMLListPrefixes:
 
     def test_list_prefix_with_custom_separator(self) -> None:
         """List with custom separator (parenthesis) shows correctly."""
-        from models.numbering.abstract_numbering import AbstractNumbering
-        from models.numbering.level import Level
-        from models.numbering.numbering import Numbering
-        from models.numbering.numbering_instance import NumberingInstance
+        from docx_parser_converter.models.numbering.abstract_numbering import AbstractNumbering
+        from docx_parser_converter.models.numbering.level import Level
+        from docx_parser_converter.models.numbering.numbering import Numbering
+        from docx_parser_converter.models.numbering.numbering_instance import NumberingInstance
 
         level = Level(ilvl=0, num_fmt="decimal", lvl_text="%1)")
         abstract = AbstractNumbering(abstract_num_id=6, lvl=[level])
         instance = NumberingInstance(num_id=6, abstract_num_id=6)
         numbering = Numbering(abstract_num=[abstract], num=[instance])
 
-        from models.document.paragraph import NumberingProperties
+        from docx_parser_converter.models.document.paragraph import NumberingProperties
 
         doc = Document(
             body=Body(
@@ -580,10 +580,10 @@ class TestNumberingIndentation:
 
     def test_numbering_indentation_from_level(self) -> None:
         """Indentation is extracted from numbering level p_pr."""
-        from models.numbering.abstract_numbering import AbstractNumbering
-        from models.numbering.level import Level
-        from models.numbering.numbering import Numbering
-        from models.numbering.numbering_instance import NumberingInstance
+        from docx_parser_converter.models.numbering.abstract_numbering import AbstractNumbering
+        from docx_parser_converter.models.numbering.level import Level
+        from docx_parser_converter.models.numbering.numbering import Numbering
+        from docx_parser_converter.models.numbering.numbering_instance import NumberingInstance
 
         # Level with 720 twips left indent (36pt)
         level = Level(
@@ -596,7 +596,7 @@ class TestNumberingIndentation:
         instance = NumberingInstance(num_id=10, abstract_num_id=10)
         numbering = Numbering(abstract_num=[abstract], num=[instance])
 
-        from models.document.paragraph import NumberingProperties
+        from docx_parser_converter.models.document.paragraph import NumberingProperties
 
         doc = Document(
             body=Body(
@@ -618,10 +618,10 @@ class TestNumberingIndentation:
 
     def test_multi_level_indentation(self) -> None:
         """Different levels have different indentation."""
-        from models.numbering.abstract_numbering import AbstractNumbering
-        from models.numbering.level import Level
-        from models.numbering.numbering import Numbering
-        from models.numbering.numbering_instance import NumberingInstance
+        from docx_parser_converter.models.numbering.abstract_numbering import AbstractNumbering
+        from docx_parser_converter.models.numbering.level import Level
+        from docx_parser_converter.models.numbering.numbering import Numbering
+        from docx_parser_converter.models.numbering.numbering_instance import NumberingInstance
 
         levels = [
             Level(ilvl=0, num_fmt="decimal", lvl_text="%1.", p_pr={"left": 720}),
@@ -631,7 +631,7 @@ class TestNumberingIndentation:
         instance = NumberingInstance(num_id=11, abstract_num_id=11)
         numbering = Numbering(abstract_num=[abstract], num=[instance])
 
-        from models.document.paragraph import NumberingProperties
+        from docx_parser_converter.models.document.paragraph import NumberingProperties
 
         doc = Document(
             body=Body(
@@ -657,17 +657,17 @@ class TestNumberingIndentation:
 
     def test_no_indentation_when_p_pr_missing(self) -> None:
         """No indentation when level has no p_pr."""
-        from models.numbering.abstract_numbering import AbstractNumbering
-        from models.numbering.level import Level
-        from models.numbering.numbering import Numbering
-        from models.numbering.numbering_instance import NumberingInstance
+        from docx_parser_converter.models.numbering.abstract_numbering import AbstractNumbering
+        from docx_parser_converter.models.numbering.level import Level
+        from docx_parser_converter.models.numbering.numbering import Numbering
+        from docx_parser_converter.models.numbering.numbering_instance import NumberingInstance
 
         level = Level(ilvl=0, num_fmt="decimal", lvl_text="%1.")  # No p_pr
         abstract = AbstractNumbering(abstract_num_id=12, lvl=[level])
         instance = NumberingInstance(num_id=12, abstract_num_id=12)
         numbering = Numbering(abstract_num=[abstract], num=[instance])
 
-        from models.document.paragraph import NumberingProperties
+        from docx_parser_converter.models.document.paragraph import NumberingProperties
 
         doc = Document(
             body=Body(
@@ -698,10 +698,10 @@ class TestNumberingStyles:
 
     def test_bold_numbering_marker(self) -> None:
         """Bold marker from level r_pr."""
-        from models.numbering.abstract_numbering import AbstractNumbering
-        from models.numbering.level import Level
-        from models.numbering.numbering import Numbering
-        from models.numbering.numbering_instance import NumberingInstance
+        from docx_parser_converter.models.numbering.abstract_numbering import AbstractNumbering
+        from docx_parser_converter.models.numbering.level import Level
+        from docx_parser_converter.models.numbering.numbering import Numbering
+        from docx_parser_converter.models.numbering.numbering_instance import NumberingInstance
 
         # RunProperties model uses 'b' for bold
         level = Level(
@@ -715,7 +715,7 @@ class TestNumberingStyles:
         instance = NumberingInstance(num_id=20, abstract_num_id=20)
         numbering = Numbering(abstract_num=[abstract], num=[instance])
 
-        from models.document.paragraph import NumberingProperties
+        from docx_parser_converter.models.document.paragraph import NumberingProperties
 
         doc = Document(
             body=Body(
@@ -737,10 +737,10 @@ class TestNumberingStyles:
 
     def test_italic_numbering_marker(self) -> None:
         """Italic marker from level r_pr."""
-        from models.numbering.abstract_numbering import AbstractNumbering
-        from models.numbering.level import Level
-        from models.numbering.numbering import Numbering
-        from models.numbering.numbering_instance import NumberingInstance
+        from docx_parser_converter.models.numbering.abstract_numbering import AbstractNumbering
+        from docx_parser_converter.models.numbering.level import Level
+        from docx_parser_converter.models.numbering.numbering import Numbering
+        from docx_parser_converter.models.numbering.numbering_instance import NumberingInstance
 
         # RunProperties model uses 'i' for italic
         level = Level(
@@ -754,7 +754,7 @@ class TestNumberingStyles:
         instance = NumberingInstance(num_id=21, abstract_num_id=21)
         numbering = Numbering(abstract_num=[abstract], num=[instance])
 
-        from models.document.paragraph import NumberingProperties
+        from docx_parser_converter.models.document.paragraph import NumberingProperties
 
         doc = Document(
             body=Body(
@@ -775,10 +775,10 @@ class TestNumberingStyles:
 
     def test_colored_numbering_marker(self) -> None:
         """Colored marker from level r_pr."""
-        from models.numbering.abstract_numbering import AbstractNumbering
-        from models.numbering.level import Level
-        from models.numbering.numbering import Numbering
-        from models.numbering.numbering_instance import NumberingInstance
+        from docx_parser_converter.models.numbering.abstract_numbering import AbstractNumbering
+        from docx_parser_converter.models.numbering.level import Level
+        from docx_parser_converter.models.numbering.numbering import Numbering
+        from docx_parser_converter.models.numbering.numbering_instance import NumberingInstance
 
         # RunProperties.color is a Color object with a 'val' field
         level = Level(
@@ -792,7 +792,7 @@ class TestNumberingStyles:
         instance = NumberingInstance(num_id=22, abstract_num_id=22)
         numbering = Numbering(abstract_num=[abstract], num=[instance])
 
-        from models.document.paragraph import NumberingProperties
+        from docx_parser_converter.models.document.paragraph import NumberingProperties
 
         doc = Document(
             body=Body(
@@ -813,10 +813,10 @@ class TestNumberingStyles:
 
     def test_font_family_numbering_marker(self) -> None:
         """Font family on marker from level r_pr."""
-        from models.numbering.abstract_numbering import AbstractNumbering
-        from models.numbering.level import Level
-        from models.numbering.numbering import Numbering
-        from models.numbering.numbering_instance import NumberingInstance
+        from docx_parser_converter.models.numbering.abstract_numbering import AbstractNumbering
+        from docx_parser_converter.models.numbering.level import Level
+        from docx_parser_converter.models.numbering.numbering import Numbering
+        from docx_parser_converter.models.numbering.numbering_instance import NumberingInstance
 
         # RunProperties model uses 'r_fonts' for fonts
         level = Level(
@@ -830,7 +830,7 @@ class TestNumberingStyles:
         instance = NumberingInstance(num_id=23, abstract_num_id=23)
         numbering = Numbering(abstract_num=[abstract], num=[instance])
 
-        from models.document.paragraph import NumberingProperties
+        from docx_parser_converter.models.document.paragraph import NumberingProperties
 
         doc = Document(
             body=Body(
@@ -851,10 +851,10 @@ class TestNumberingStyles:
 
     def test_underline_numbering_marker(self) -> None:
         """Underline marker from level r_pr."""
-        from models.numbering.abstract_numbering import AbstractNumbering
-        from models.numbering.level import Level
-        from models.numbering.numbering import Numbering
-        from models.numbering.numbering_instance import NumberingInstance
+        from docx_parser_converter.models.numbering.abstract_numbering import AbstractNumbering
+        from docx_parser_converter.models.numbering.level import Level
+        from docx_parser_converter.models.numbering.numbering import Numbering
+        from docx_parser_converter.models.numbering.numbering_instance import NumberingInstance
 
         # RunProperties.u is an Underline object with a 'val' field
         level = Level(
@@ -868,7 +868,7 @@ class TestNumberingStyles:
         instance = NumberingInstance(num_id=24, abstract_num_id=24)
         numbering = Numbering(abstract_num=[abstract], num=[instance])
 
-        from models.document.paragraph import NumberingProperties
+        from docx_parser_converter.models.document.paragraph import NumberingProperties
 
         doc = Document(
             body=Body(
@@ -889,10 +889,10 @@ class TestNumberingStyles:
 
     def test_background_color_numbering_marker(self) -> None:
         """Background color on marker from level r_pr."""
-        from models.numbering.abstract_numbering import AbstractNumbering
-        from models.numbering.level import Level
-        from models.numbering.numbering import Numbering
-        from models.numbering.numbering_instance import NumberingInstance
+        from docx_parser_converter.models.numbering.abstract_numbering import AbstractNumbering
+        from docx_parser_converter.models.numbering.level import Level
+        from docx_parser_converter.models.numbering.numbering import Numbering
+        from docx_parser_converter.models.numbering.numbering_instance import NumberingInstance
 
         # RunProperties model uses 'shd' for shading
         level = Level(
@@ -906,7 +906,7 @@ class TestNumberingStyles:
         instance = NumberingInstance(num_id=25, abstract_num_id=25)
         numbering = Numbering(abstract_num=[abstract], num=[instance])
 
-        from models.document.paragraph import NumberingProperties
+        from docx_parser_converter.models.document.paragraph import NumberingProperties
 
         doc = Document(
             body=Body(
@@ -927,17 +927,17 @@ class TestNumberingStyles:
 
     def test_no_marker_style_when_r_pr_missing(self) -> None:
         """No marker styling when level has no r_pr."""
-        from models.numbering.abstract_numbering import AbstractNumbering
-        from models.numbering.level import Level
-        from models.numbering.numbering import Numbering
-        from models.numbering.numbering_instance import NumberingInstance
+        from docx_parser_converter.models.numbering.abstract_numbering import AbstractNumbering
+        from docx_parser_converter.models.numbering.level import Level
+        from docx_parser_converter.models.numbering.numbering import Numbering
+        from docx_parser_converter.models.numbering.numbering_instance import NumberingInstance
 
         level = Level(ilvl=0, num_fmt="decimal", lvl_text="%1.", p_pr={"left": 720})  # No r_pr
         abstract = AbstractNumbering(abstract_num_id=26, lvl=[level])
         instance = NumberingInstance(num_id=26, abstract_num_id=26)
         numbering = Numbering(abstract_num=[abstract], num=[instance])
 
-        from models.document.paragraph import NumberingProperties
+        from docx_parser_converter.models.document.paragraph import NumberingProperties
 
         doc = Document(
             body=Body(
@@ -961,10 +961,10 @@ class TestNumberingStyles:
 
     def test_marker_style_vs_text_style_separation(self) -> None:
         """Marker styling is separate from text styling."""
-        from models.numbering.abstract_numbering import AbstractNumbering
-        from models.numbering.level import Level
-        from models.numbering.numbering import Numbering
-        from models.numbering.numbering_instance import NumberingInstance
+        from docx_parser_converter.models.numbering.abstract_numbering import AbstractNumbering
+        from docx_parser_converter.models.numbering.level import Level
+        from docx_parser_converter.models.numbering.numbering import Numbering
+        from docx_parser_converter.models.numbering.numbering_instance import NumberingInstance
 
         # Bold marker (b=True), italic text
         level = Level(
@@ -978,7 +978,7 @@ class TestNumberingStyles:
         instance = NumberingInstance(num_id=27, abstract_num_id=27)
         numbering = Numbering(abstract_num=[abstract], num=[instance])
 
-        from models.document.paragraph import NumberingProperties
+        from docx_parser_converter.models.document.paragraph import NumberingProperties
 
         doc = Document(
             body=Body(
@@ -1212,7 +1212,7 @@ class TestImageConversion:
         self, embed: str = "rId1", width: int = 952500, height: int = 952500
     ) -> Drawing:
         """Create a test inline drawing."""
-        from models.document.drawing import (
+        from docx_parser_converter.models.document.drawing import (
             Blip,
             BlipFill,
             Drawing,
@@ -1238,7 +1238,7 @@ class TestImageConversion:
 
     def _make_anchor_drawing(self, embed: str = "rId1", h_align: str = "left") -> Drawing:
         """Create a test anchor drawing."""
-        from models.document.drawing import (
+        from docx_parser_converter.models.document.drawing import (
             AnchorDrawing,
             Blip,
             BlipFill,
@@ -1816,7 +1816,7 @@ class TestStreamingOutput:
 
     def test_streaming_mode(self) -> None:
         """Stream output for large documents."""
-        from converters.html.html_converter import docx_to_html_stream
+        from docx_parser_converter.converters.html.html_converter import docx_to_html_stream
 
         doc = Document(body=Body(content=[Paragraph(content=[Run(content=[Text(value="Test")])])]))
         chunks = list(docx_to_html_stream(doc))

@@ -2,6 +2,17 @@
 
 All notable changes to the Python implementation of docx-parser-converter will be documented in this file.
 
+## [1.0.3] - 2025-01-08
+
+### Fixed
+- Fixed broken imports when package is installed via pip
+- Restructured package to use proper single-package layout with relative imports
+- All source modules (`api`, `core`, `models`, `parsers`, `converters`) are now inside `docx_parser_converter/` package
+
+### Changed
+- Package structure reorganized for proper pip installation
+- Internal imports converted from absolute to relative
+
 ## [1.0.1] - 2025-01-06
 
 ### Documentation

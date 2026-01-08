@@ -2,7 +2,7 @@
 
 import pytest
 
-from core.exceptions import (
+from docx_parser_converter.core.exceptions import (
     DocxEncryptedError,
     DocxInvalidContentTypeError,
     DocxMissingPartError,

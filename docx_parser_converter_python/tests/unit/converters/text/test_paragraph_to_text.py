@@ -3,20 +3,20 @@
 Tests conversion of Paragraph elements to plain text.
 """
 
-from converters.text.paragraph_to_text import (
+from docx_parser_converter.converters.text.paragraph_to_text import (
     ParagraphToTextConverter,
     paragraph_to_text,
 )
-from models.common.indentation import Indentation
-from models.common.spacing import Spacing
-from models.document.hyperlink import Hyperlink
-from models.document.paragraph import (
+from docx_parser_converter.models.common.indentation import Indentation
+from docx_parser_converter.models.common.spacing import Spacing
+from docx_parser_converter.models.document.hyperlink import Hyperlink
+from docx_parser_converter.models.document.paragraph import (
     NumberingProperties,
     Paragraph,
     ParagraphProperties,
 )
-from models.document.run import Run, RunProperties
-from models.document.run_content import Break, TabChar, Text
+from docx_parser_converter.models.document.run import Run, RunProperties
+from docx_parser_converter.models.document.run_content import Break, TabChar, Text
 
 # =============================================================================
 # Basic Paragraph Conversion Tests

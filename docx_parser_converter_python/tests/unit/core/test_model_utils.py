@@ -3,7 +3,7 @@
 Tests deep merging of Pydantic models and property dictionaries.
 """
 
-from core.model_utils import deep_merge, merge_chain, merge_properties
+from docx_parser_converter.core.model_utils import deep_merge, merge_chain, merge_properties
 
 # =============================================================================
 # Basic Merge Tests

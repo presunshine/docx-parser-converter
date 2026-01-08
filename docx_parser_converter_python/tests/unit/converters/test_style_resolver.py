@@ -7,14 +7,14 @@ import logging
 
 import pytest
 
-from converters.common.style_resolver import StyleResolver
-from models.styles.document_defaults import (
+from docx_parser_converter.converters.common.style_resolver import StyleResolver
+from docx_parser_converter.models.styles.document_defaults import (
     DocumentDefaults,
     ParagraphPropertiesDefault,
     RunPropertiesDefault,
 )
-from models.styles.style import Style
-from models.styles.styles import Styles
+from docx_parser_converter.models.styles.style import Style
+from docx_parser_converter.models.styles.styles import Styles
 
 # =============================================================================
 # Test Fixtures

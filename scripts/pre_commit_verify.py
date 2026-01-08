@@ -117,7 +117,7 @@ def run_docx_fixture_tests() -> tuple[bool, str]:
     sys.path.insert(0, str(PYTHON_PKG))
 
     try:
-        from api import docx_to_html, docx_to_text
+        from docx_parser_converter import docx_to_html, docx_to_text
     except ImportError as e:
         return False, f"Failed to import API: {e}"
 

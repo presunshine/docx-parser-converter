@@ -3,16 +3,16 @@
 Tests conversion of Run elements to plain text.
 """
 
-from converters.text.run_to_text import (
+from docx_parser_converter.converters.text.run_to_text import (
     RunToTextConverter,
     break_to_text,
     run_to_text,
     tab_to_text,
     text_to_text,
 )
-from models.common.color import Color
-from models.document.run import Run, RunFonts, RunProperties, Underline
-from models.document.run_content import (
+from docx_parser_converter.models.common.color import Color
+from docx_parser_converter.models.document.run import Run, RunFonts, RunProperties, Underline
+from docx_parser_converter.models.document.run_content import (
     Break,
     CarriageReturn,
     NoBreakHyphen,

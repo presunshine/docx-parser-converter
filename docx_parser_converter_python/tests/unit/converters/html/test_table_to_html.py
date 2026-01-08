@@ -3,27 +3,35 @@
 Tests conversion of Table elements to HTML table structure.
 """
 
-from converters.html.table_to_html import (
+from docx_parser_converter.converters.html.table_to_html import (
     TableToHTMLConverter,
     calculate_rowspans,
     is_merged_cell,
     table_to_html,
 )
-from models.common.border import Border, TableBorders
-from models.common.shading import Shading
-from models.common.width import Width
-from models.document.paragraph import Paragraph
-from models.document.run import Run
-from models.document.run_content import Text
-from models.document.table import (
+from docx_parser_converter.models.common.border import Border, TableBorders
+from docx_parser_converter.models.common.shading import Shading
+from docx_parser_converter.models.common.width import Width
+from docx_parser_converter.models.document.paragraph import Paragraph
+from docx_parser_converter.models.document.run import Run
+from docx_parser_converter.models.document.run_content import Text
+from docx_parser_converter.models.document.table import (
     Table,
     TableGrid,
     TableGridColumn,
     TableLook,
     TableProperties,
 )
-from models.document.table_cell import TableCell, TableCellMargins, TableCellProperties
-from models.document.table_row import TableRow, TableRowHeight, TableRowProperties
+from docx_parser_converter.models.document.table_cell import (
+    TableCell,
+    TableCellMargins,
+    TableCellProperties,
+)
+from docx_parser_converter.models.document.table_row import (
+    TableRow,
+    TableRowHeight,
+    TableRowProperties,
+)
 
 # =============================================================================
 # Helper Functions
@@ -1137,7 +1145,7 @@ class TestCellContent:
 
     def test_cell_with_formatted_content(self) -> None:
         """Cell with formatted paragraph content."""
-        from models.document.run import RunProperties
+        from docx_parser_converter.models.document.run import RunProperties
 
         cell = TableCell(
             content=[

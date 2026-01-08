@@ -8,16 +8,22 @@ Tests cover:
 - Complete table parsing
 """
 
-from parsers.document.table_cell_parser import parse_table_cell
-from parsers.document.table_cell_properties_parser import (
+from docx_parser_converter.parsers.document.table_cell_parser import parse_table_cell
+from docx_parser_converter.parsers.document.table_cell_properties_parser import (
     parse_table_cell_margins,
     parse_table_cell_properties,
 )
-from parsers.document.table_grid_parser import parse_table_grid, parse_table_grid_column
-from parsers.document.table_parser import parse_table
-from parsers.document.table_properties_parser import parse_table_look, parse_table_properties
-from parsers.document.table_row_parser import parse_table_row
-from parsers.document.table_row_properties_parser import (
+from docx_parser_converter.parsers.document.table_grid_parser import (
+    parse_table_grid,
+    parse_table_grid_column,
+)
+from docx_parser_converter.parsers.document.table_parser import parse_table
+from docx_parser_converter.parsers.document.table_properties_parser import (
+    parse_table_look,
+    parse_table_properties,
+)
+from docx_parser_converter.parsers.document.table_row_parser import parse_table_row
+from docx_parser_converter.parsers.document.table_row_properties_parser import (
     parse_table_row_height,
     parse_table_row_properties,
 )

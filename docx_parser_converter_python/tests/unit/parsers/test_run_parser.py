@@ -6,7 +6,7 @@ Tests cover:
 - Complete run parsing
 """
 
-from models.document.run_content import (
+from docx_parser_converter.models.document.run_content import (
     Break,
     CarriageReturn,
     NoBreakHyphen,
@@ -14,7 +14,7 @@ from models.document.run_content import (
     TabChar,
     Text,
 )
-from parsers.document.run_content_parser import (
+from docx_parser_converter.parsers.document.run_content_parser import (
     parse_break,
     parse_carriage_return,
     parse_endnote_reference,
@@ -28,8 +28,8 @@ from parsers.document.run_content_parser import (
     parse_tab_char,
     parse_text,
 )
-from parsers.document.run_parser import parse_run
-from parsers.document.run_properties_parser import (
+from docx_parser_converter.parsers.document.run_parser import parse_run
+from docx_parser_converter.parsers.document.run_properties_parser import (
     parse_language,
     parse_run_fonts,
     parse_run_properties,

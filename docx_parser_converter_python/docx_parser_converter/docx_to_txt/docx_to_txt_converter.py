@@ -9,7 +9,7 @@ import warnings
 from io import BytesIO
 from pathlib import Path
 
-from api import docx_to_text
+from ..api import docx_to_text
 
 
 class DocxToTxtConverter:

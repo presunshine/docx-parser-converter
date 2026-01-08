@@ -3,26 +3,26 @@
 Tests the docx_to_text entry point and TextConverter class.
 """
 
-from converters.text.text_converter import (
+from docx_parser_converter.converters.text.text_converter import (
     TextConverter,
     TextConverterConfig,
     document_to_text,
 )
-from models.document.document import Body, Document
-from models.document.hyperlink import Hyperlink
-from models.document.paragraph import (
+from docx_parser_converter.models.document.document import Body, Document
+from docx_parser_converter.models.document.hyperlink import Hyperlink
+from docx_parser_converter.models.document.paragraph import (
     NumberingProperties,
     Paragraph,
     ParagraphProperties,
 )
-from models.document.run import Run, RunProperties
-from models.document.run_content import Break, Text
-from models.document.section import SectionProperties
-from models.document.table import Table
-from models.document.table_cell import TableCell
-from models.document.table_row import TableRow
-from models.numbering.numbering import Numbering
-from models.styles.styles import Styles
+from docx_parser_converter.models.document.run import Run, RunProperties
+from docx_parser_converter.models.document.run_content import Break, Text
+from docx_parser_converter.models.document.section import SectionProperties
+from docx_parser_converter.models.document.table import Table
+from docx_parser_converter.models.document.table_cell import TableCell
+from docx_parser_converter.models.document.table_row import TableRow
+from docx_parser_converter.models.numbering.numbering import Numbering
+from docx_parser_converter.models.styles.styles import Styles
 
 # =============================================================================
 # Helper Functions

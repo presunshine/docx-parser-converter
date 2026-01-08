@@ -5,9 +5,9 @@ from pathlib import Path
 import pytest
 from lxml.etree import _Element as Element
 
-from core.constants import WORD_NS
-from core.docx_reader import open_docx
-from core.xml_extractor import (
+from docx_parser_converter.core.constants import WORD_NS
+from docx_parser_converter.core.docx_reader import open_docx
+from docx_parser_converter.core.xml_extractor import (
     extract_document_xml,
     extract_external_hyperlinks,
     extract_numbering_xml,

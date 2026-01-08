@@ -3,7 +3,7 @@
 Tests conversion of numbering/list prefixes to plain text.
 """
 
-from converters.text.numbering_to_text import (
+from docx_parser_converter.converters.text.numbering_to_text import (
     NumberingToTextConverter,
     apply_level_text,
     format_number,

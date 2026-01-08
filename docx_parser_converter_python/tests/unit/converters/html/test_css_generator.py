@@ -3,7 +3,7 @@
 Tests conversion of DOCX properties to CSS styles.
 """
 
-from converters.html.css_generator import (
+from docx_parser_converter.converters.html.css_generator import (
     CSSGenerator,
     border_to_css,
     cell_margins_to_css,
@@ -23,15 +23,15 @@ from converters.html.css_generator import (
     twips_to_px,
     width_to_css,
 )
-from models.common.border import Border, ParagraphBorders
-from models.common.color import Color
-from models.common.indentation import Indentation
-from models.common.shading import Shading
-from models.common.spacing import Spacing
-from models.common.width import Width
-from models.document.paragraph import ParagraphProperties
-from models.document.run import RunFonts, RunProperties, Underline
-from models.document.table_cell import TableCellMargins
+from docx_parser_converter.models.common.border import Border, ParagraphBorders
+from docx_parser_converter.models.common.color import Color
+from docx_parser_converter.models.common.indentation import Indentation
+from docx_parser_converter.models.common.shading import Shading
+from docx_parser_converter.models.common.spacing import Spacing
+from docx_parser_converter.models.common.width import Width
+from docx_parser_converter.models.document.paragraph import ParagraphProperties
+from docx_parser_converter.models.document.run import RunFonts, RunProperties, Underline
+from docx_parser_converter.models.document.table_cell import TableCellMargins
 
 # =============================================================================
 # Color to CSS Tests

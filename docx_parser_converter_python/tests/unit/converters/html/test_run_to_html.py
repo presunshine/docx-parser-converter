@@ -3,16 +3,16 @@
 Tests conversion of Run elements to HTML spans.
 """
 
-from converters.html.run_to_html import (
+from docx_parser_converter.converters.html.run_to_html import (
     RunToHTMLConverter,
     run_to_html,
     soft_hyphen_to_html,
     tab_to_html,
     text_to_html,
 )
-from models.common.color import Color
-from models.document.run import Run, RunFonts, RunProperties, Underline
-from models.document.run_content import (
+from docx_parser_converter.models.common.color import Color
+from docx_parser_converter.models.document.run import Run, RunFonts, RunProperties, Underline
+from docx_parser_converter.models.document.run_content import (
     Break,
     CarriageReturn,
     NoBreakHyphen,
@@ -454,9 +454,9 @@ class TestRunStyleResolution:
 
     def test_run_style_resolved_with_style_resolver(self) -> None:
         """Run with r_style is resolved when style_resolver is provided."""
-        from converters.common.style_resolver import StyleResolver
-        from models.styles.style import Style
-        from models.styles.styles import Styles
+        from docx_parser_converter.converters.common.style_resolver import StyleResolver
+        from docx_parser_converter.models.styles.style import Style
+        from docx_parser_converter.models.styles.styles import Styles
 
         # Create a character style with bold
         style = Style(
@@ -483,9 +483,9 @@ class TestRunStyleResolution:
 
     def test_run_style_with_italic(self) -> None:
         """Run style with italic is resolved."""
-        from converters.common.style_resolver import StyleResolver
-        from models.styles.style import Style
-        from models.styles.styles import Styles
+        from docx_parser_converter.converters.common.style_resolver import StyleResolver
+        from docx_parser_converter.models.styles.style import Style
+        from docx_parser_converter.models.styles.styles import Styles
 
         style = Style(
             style_id="Emphasis",
@@ -509,9 +509,9 @@ class TestRunStyleResolution:
 
     def test_run_style_with_color(self) -> None:
         """Run style with text color is resolved."""
-        from converters.common.style_resolver import StyleResolver
-        from models.styles.style import Style
-        from models.styles.styles import Styles
+        from docx_parser_converter.converters.common.style_resolver import StyleResolver
+        from docx_parser_converter.models.styles.style import Style
+        from docx_parser_converter.models.styles.styles import Styles
 
         style = Style(
             style_id="RedText",
@@ -535,9 +535,9 @@ class TestRunStyleResolution:
 
     def test_run_style_with_font_size(self) -> None:
         """Run style with font size is resolved."""
-        from converters.common.style_resolver import StyleResolver
-        from models.styles.style import Style
-        from models.styles.styles import Styles
+        from docx_parser_converter.converters.common.style_resolver import StyleResolver
+        from docx_parser_converter.models.styles.style import Style
+        from docx_parser_converter.models.styles.styles import Styles
 
         style = Style(
             style_id="Large",
@@ -561,9 +561,9 @@ class TestRunStyleResolution:
 
     def test_direct_run_formatting_overrides_style(self) -> None:
         """Direct run formatting overrides style properties."""
-        from converters.common.style_resolver import StyleResolver
-        from models.styles.style import Style
-        from models.styles.styles import Styles
+        from docx_parser_converter.converters.common.style_resolver import StyleResolver
+        from docx_parser_converter.models.styles.style import Style
+        from docx_parser_converter.models.styles.styles import Styles
 
         # Style has blue color
         style = Style(
@@ -589,8 +589,8 @@ class TestRunStyleResolution:
 
     def test_missing_run_style_handled_gracefully(self) -> None:
         """Reference to missing run style is handled gracefully."""
-        from converters.common.style_resolver import StyleResolver
-        from models.styles.styles import Styles
+        from docx_parser_converter.converters.common.style_resolver import StyleResolver
+        from docx_parser_converter.models.styles.styles import Styles
 
         styles = Styles(style=[])  # No styles defined
         style_resolver = StyleResolver(styles)
@@ -619,9 +619,9 @@ class TestRunStyleResolution:
 
     def test_run_style_with_underline(self) -> None:
         """Run style with underline is resolved."""
-        from converters.common.style_resolver import StyleResolver
-        from models.styles.style import Style
-        from models.styles.styles import Styles
+        from docx_parser_converter.converters.common.style_resolver import StyleResolver
+        from docx_parser_converter.models.styles.style import Style
+        from docx_parser_converter.models.styles.styles import Styles
 
         style = Style(
             style_id="UnderlinedText",
@@ -644,9 +644,9 @@ class TestRunStyleResolution:
 
     def test_run_style_with_highlight(self) -> None:
         """Run style with highlight is resolved."""
-        from converters.common.style_resolver import StyleResolver
-        from models.styles.style import Style
-        from models.styles.styles import Styles
+        from docx_parser_converter.converters.common.style_resolver import StyleResolver
+        from docx_parser_converter.models.styles.style import Style
+        from docx_parser_converter.models.styles.styles import Styles
 
         style = Style(
             style_id="Highlighted",
@@ -669,11 +669,11 @@ class TestRunStyleResolution:
 
     def test_combined_paragraph_and_run_styles(self) -> None:
         """Test that both paragraph and run styles can be resolved together."""
-        from converters.common.style_resolver import StyleResolver
-        from converters.html.paragraph_to_html import paragraph_to_html
-        from models.document.paragraph import Paragraph, ParagraphProperties
-        from models.styles.style import Style
-        from models.styles.styles import Styles
+        from docx_parser_converter.converters.common.style_resolver import StyleResolver
+        from docx_parser_converter.converters.html.paragraph_to_html import paragraph_to_html
+        from docx_parser_converter.models.document.paragraph import Paragraph, ParagraphProperties
+        from docx_parser_converter.models.styles.style import Style
+        from docx_parser_converter.models.styles.styles import Styles
 
         # Create both paragraph and character styles
         para_style = Style(

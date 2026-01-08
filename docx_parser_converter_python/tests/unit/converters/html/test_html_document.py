@@ -3,7 +3,7 @@
 Tests generation of complete HTML5 documents.
 """
 
-from converters.html.html_document import HTMLDocument, HTMLDocumentBuilder
+from docx_parser_converter.converters.html.html_document import HTMLDocument, HTMLDocumentBuilder
 
 # =============================================================================
 # Basic HTML Structure Tests

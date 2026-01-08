@@ -6,14 +6,14 @@ Tests the API functions and ConversionConfig without actual DOCX files.
 import tempfile
 from pathlib import Path
 
-from api import ConversionConfig, docx_to_html, docx_to_text
-from models.document.document import Body, Document
-from models.document.paragraph import Paragraph
-from models.document.run import Run
-from models.document.run_content import Text
-from models.document.table import Table
-from models.document.table_cell import TableCell
-from models.document.table_row import TableRow
+from docx_parser_converter.api import ConversionConfig, docx_to_html, docx_to_text
+from docx_parser_converter.models.document.document import Body, Document
+from docx_parser_converter.models.document.paragraph import Paragraph
+from docx_parser_converter.models.document.run import Run
+from docx_parser_converter.models.document.run_content import Text
+from docx_parser_converter.models.document.table import Table
+from docx_parser_converter.models.document.table_cell import TableCell
+from docx_parser_converter.models.document.table_row import TableRow
 
 # =============================================================================
 # Helper Functions

@@ -26,7 +26,7 @@ PROJECT_DIR = SCRIPT_DIR.parent
 PYTHON_PKG = PROJECT_DIR / "docx_parser_converter_python"
 sys.path.insert(0, str(PYTHON_PKG))
 
-from api import docx_to_html, docx_to_text  # noqa: E402
+from docx_parser_converter import docx_to_html, docx_to_text  # noqa: E402
 
 # Directories
 FIXTURES_DIR = PROJECT_DIR / "fixtures"

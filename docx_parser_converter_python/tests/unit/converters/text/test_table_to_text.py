@@ -14,7 +14,7 @@ Border Detection (auto mode):
 - Partial borders: Only renders the borders that are actually defined
 """
 
-from converters.text.table_to_text import (
+from docx_parser_converter.converters.text.table_to_text import (
     BorderInfo,
     TableToTextConverter,
     cell_to_text,
@@ -24,14 +24,14 @@ from converters.text.table_to_text import (
     table_to_ascii,
     table_to_text,
 )
-from models.common.border import Border, TableBorders
-from models.common.width import Width
-from models.document.paragraph import Paragraph
-from models.document.run import Run
-from models.document.run_content import Text
-from models.document.table import Table, TableProperties
-from models.document.table_cell import TableCell, TableCellProperties
-from models.document.table_row import TableRow
+from docx_parser_converter.models.common.border import Border, TableBorders
+from docx_parser_converter.models.common.width import Width
+from docx_parser_converter.models.document.paragraph import Paragraph
+from docx_parser_converter.models.document.run import Run
+from docx_parser_converter.models.document.run_content import Text
+from docx_parser_converter.models.document.table import Table, TableProperties
+from docx_parser_converter.models.document.table_cell import TableCell, TableCellProperties
+from docx_parser_converter.models.document.table_row import TableRow
 
 # =============================================================================
 # Helper Functions

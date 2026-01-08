@@ -22,7 +22,7 @@ from typing import Any
 
 import pytest
 
-from api import _parse_docx, docx_to_html
+from docx_parser_converter.api import _parse_docx, docx_to_html
 
 # =============================================================================
 # Paths
