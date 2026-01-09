@@ -25,16 +25,20 @@
     "build": "npm run clean && tsc --project tsconfig.json --noEmit && vite build",
     "preview": "vite preview",
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
-    "test": "echo \"Warning: no test specified yet\" && exit 0",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "@types/jszip": "^3.4.0",
     "@types/node": "^22.15.29",
+    "@vitest/coverage-v8": "^4.0.16",
     "rimraf": "^6.0.1",
     "typescript": "^5.2.2",
     "vite": "^5.0.8",
-    "vite-plugin-dts": "^3.9.1"
+    "vite-plugin-dts": "^3.9.1",
+    "vitest": "^4.0.16"
   },
   "dependencies": {
     "@xmldom/xmldom": "^0.9.8",
