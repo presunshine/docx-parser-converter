@@ -29,7 +29,7 @@ export class TableGridParser {
       if (prefix === 'w') return NAMESPACE.w;
       return null;
     };
-    let gridElements: Element[] = [];
+    const gridElements: Element[] = [];
     // document.evaluate is available in browser and xmldom
     const doc = tableElement.ownerDocument || (tableElement as any).document;
     if (doc && typeof doc.evaluate === 'function') {

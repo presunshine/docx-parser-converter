@@ -105,9 +105,9 @@ export class ParagraphPropertiesParser {
   private extractIndentation(pPrElement: Element): IndentationProperties | undefined {
     const indentElement = extractElement(pPrElement, ".//w:ind");
     if (indentElement) {
-      let leftPt = this.convertToPoints(indentElement, ['left', 'start']);
-      let rightPt = this.convertToPoints(indentElement, ['right', 'end']);
-      let hangingPt = this.convertToPoints(indentElement, ['hanging']);
+      const leftPt = this.convertToPoints(indentElement, ['left', 'start']);
+      const rightPt = this.convertToPoints(indentElement, ['right', 'end']);
+      const hangingPt = this.convertToPoints(indentElement, ['hanging']);
       let firstLinePt = this.convertToPoints(indentElement, ['firstLine']);
 
       if (hangingPt !== null && hangingPt !== undefined) {
