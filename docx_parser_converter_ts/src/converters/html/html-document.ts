@@ -221,16 +221,36 @@ export class HTMLDocument {
   private getDefaultStyles(): string {
     const styles: string[] = [];
 
-    // Base body styles with optional page margins
-    const padding = this.pageMargins
-      ? `${this.pageMargins.top}pt ${this.pageMargins.right}pt ${this.pageMargins.bottom}pt ${this.pageMargins.left}pt`
-      : '20px';
+    // Base body styles - matches Python defaults
     styles.push(`body {
-  font-family: 'Calibri', Arial, sans-serif;
-  font-size: 11pt;
-  line-height: 1.15;
-  margin: 0;
-  padding: ${padding};
+    font-family: 'Calibri', 'Arial', sans-serif;
+    line-height: 1.5;
+    margin: 0 auto;
+}`);
+
+    // Paragraph reset
+    styles.push(`p { margin: 0; }`);
+
+    // Remove first/last child margins in main
+    styles.push(`main > *:first-child { margin-top: 0; }`);
+    styles.push(`main > *:last-child { margin-bottom: 0; }`);
+
+    // Page margins - applied separately to body
+    if (this.pageMargins) {
+      styles.push(`body { padding: ${this.pageMargins.top}pt ${this.pageMargins.right}pt ${this.pageMargins.bottom}pt ${this.pageMargins.left}pt; }`);
+    }
+
+    // Page break styles - matches Python
+    styles.push(`.page-break {
+    page-break-after: always;
+    break-after: page;
+}`);
+
+    // Print media query for page break
+    styles.push(`@media print {
+    .page-break {
+        page-break-after: always;
+    }
 }`);
 
     // Page width constraint
@@ -241,19 +261,6 @@ export class HTMLDocument {
   margin: 0 auto;
 }`);
     }
-
-    // Paragraph reset
-    styles.push(`p {
-  margin: 0;
-}`);
-
-    // Page break styles
-    styles.push(`.page-break {
-  page-break-after: always;
-  border: none;
-  margin: 0;
-  padding: 0;
-}`);
 
     // Skip link styles for accessibility
     if (this.includeSkipLink) {
@@ -271,14 +278,27 @@ export class HTMLDocument {
 }`);
     }
 
-    return styles.join('\n') + '\n';
+    let result = styles.join('\n');
+
+    // If minifying, compress CSS by removing newlines and extra spaces
+    if (this.minify) {
+      result = result
+        .replace(/\n\s*/g, ' ')  // Replace newlines + whitespace with single space
+        .replace(/\s*{\s*/g, '{')  // Remove spaces around {
+        .replace(/\s*}\s*/g, '}')  // Remove spaces around }
+        .replace(/;\s*/g, ';')  // Remove spaces after ;
+        .replace(/:\s*/g, ':')  // Remove spaces after :
+        .replace(/,\s*/g, ',');  // Remove spaces after ,
+    }
+
+    return result;
   }
 
   /**
    * Get print-specific styles.
    */
   private getPrintStyles(): string {
-    return `
+    const css = `
 @page {
   size: letter;
   margin: 1in;
@@ -293,6 +313,19 @@ export class HTMLDocument {
   }
 }
 `;
+
+    // If minifying, compress CSS
+    if (this.minify) {
+      return css
+        .replace(/\n\s*/g, ' ')
+        .replace(/\s*{\s*/g, '{')
+        .replace(/\s*}\s*/g, '}')
+        .replace(/;\s*/g, ';')
+        .replace(/:\s*/g, ':')
+        .trim();
+    }
+
+    return css;
   }
 
   /**

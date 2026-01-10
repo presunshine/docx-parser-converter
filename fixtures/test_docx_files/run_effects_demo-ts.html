@@ -7,22 +7,23 @@
 <meta name="generator" content="docx-parser-converter">
 <style>
 body {
-  font-family: 'Calibri', Arial, sans-serif;
-  font-size: 11pt;
-  line-height: 1.15;
-  margin: 0;
-  padding: 72pt 72pt 72pt 72pt;
+    font-family: 'Calibri', 'Arial', sans-serif;
+    line-height: 1.5;
+    margin: 0 auto;
 }
-p {
-  margin: 0;
-}
+p { margin: 0; }
+main > *:first-child { margin-top: 0; }
+main > *:last-child { margin-bottom: 0; }
+body { padding: 72pt 72pt 72pt 72pt; }
 .page-break {
-  page-break-after: always;
-  border: none;
-  margin: 0;
-  padding: 0;
+    page-break-after: always;
+    break-after: page;
 }
-</style>
+@media print {
+    .page-break {
+        page-break-after: always;
+    }
+}</style>
 </head>
 <body>
 <main id="content" role="main">

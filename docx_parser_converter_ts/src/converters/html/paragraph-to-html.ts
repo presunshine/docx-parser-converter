@@ -8,9 +8,10 @@
 import type { Paragraph, BookmarkStart, BookmarkEnd } from '../../models/document/paragraph';
 import type { Hyperlink } from '../../models/document/hyperlink';
 import type { Run } from '../../models/document/run';
-import { paragraphPropertiesToCss } from './css-generator';
+import { paragraphPropertiesToCss, runPropertiesToCss } from './css-generator';
 import { runToHtml } from './run-to-html';
 import type { StyleResolver } from '../common/style-resolver';
+import type { RunProperties } from '../../models/document/run';
 import type { ImageData } from './image-to-html';
 
 export interface ParagraphToHTMLConverterOptions {
@@ -38,7 +39,7 @@ function escapeHtml(text: string): string {
  */
 export function bookmarkStartToHtml(bookmark: BookmarkStart | null): string {
   if (!bookmark || !bookmark.name) return '';
-  return `<span id="${escapeHtml(bookmark.name)}"></span>`;
+  return `<a id="${escapeHtml(bookmark.name)}"></a>`;
 }
 
 /**
@@ -135,6 +136,7 @@ export function paragraphToHtml(
     useInlineStyles?: boolean;
     numberingPrefix?: string;
     numberingIndentPt?: number;
+    numberingHangingPt?: number;
     numberingStyles?: Record<string, string>;
     styleResolver?: StyleResolver | null;
     imageData?: ImageData;
@@ -149,6 +151,7 @@ export function paragraphToHtml(
   const styleResolver = options?.styleResolver;
   const numberingPrefix = options?.numberingPrefix;
   const numberingIndentPt = options?.numberingIndentPt;
+  const numberingHangingPt = options?.numberingHangingPt;
   const numberingStyles = options?.numberingStyles;
 
   // Determine tag type
@@ -164,6 +167,16 @@ export function paragraphToHtml(
   // Resolve styles if style resolver provided
   if (styleResolver && pPr?.pStyle) {
     const resolvedProps = styleResolver.resolveParagraphProperties(pPr.pStyle);
+
+    // First, add run properties from the style (font-family, color, font-weight, etc.)
+    // These are inherited text properties from the paragraph style
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const resolvedRPr = (resolvedProps as any).rPr;
+    if (resolvedRPr && typeof resolvedRPr === 'object') {
+      css = { ...css, ...runPropertiesToCss(resolvedRPr as RunProperties) };
+    }
+
+    // Then add paragraph properties from the style
     css = { ...css, ...paragraphPropertiesToCss(resolvedProps) };
   }
 
@@ -175,6 +188,11 @@ export function paragraphToHtml(
   // Handle numbering indent
   if (numberingIndentPt !== undefined) {
     css['margin-left'] = `${numberingIndentPt}pt`;
+  }
+
+  // Handle numbering hanging indent (negative text-indent)
+  if (numberingHangingPt !== undefined) {
+    css['text-indent'] = `-${numberingHangingPt}pt`;
   }
 
   // Build attributes

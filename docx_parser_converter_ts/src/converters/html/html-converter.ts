@@ -191,14 +191,14 @@ export class HTMLConverter {
   convertParagraph(paragraph: Paragraph | null | undefined): string {
     // Get numbering prefix, indentation, and styles if applicable
     const numberingPrefix = this._getNumberingPrefix(paragraph);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [numberingIndentPt, _numberingHangingPt] = this._getNumberingIndentation(paragraph);
+    const [numberingIndentPt, numberingHangingPt] = this._getNumberingIndentation(paragraph);
     const numberingStyles = this._getNumberingStyles(paragraph);
 
     return paragraphToHtml(paragraph, {
       relationships: this.relationships,
       numberingPrefix,
       numberingIndentPt,
+      numberingHangingPt,
       numberingStyles,
       useSemanticTags: this.config.useSemanticTags,
       styleResolver: this.styleResolver,

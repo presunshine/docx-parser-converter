@@ -285,9 +285,13 @@ export function borderToCss(border: Border | null | undefined): string | null {
   const style = BORDER_STYLES[border.val || 'single'] || 'solid';
 
   // Get border width (sz is in eighths of a point)
-  let widthPt = border.sz !== null && border.sz !== undefined ? eighthsToPt(border.sz) : 1;
-  if (widthPt === null) {
-    widthPt = 1;
+  // If sz is 0, use default of 1pt (matches Python behavior)
+  // If sz is not specified, also use default of 1pt
+  let widthPt: number;
+  if (border.sz !== null && border.sz !== undefined && border.sz > 0) {
+    widthPt = eighthsToPt(border.sz) ?? 1;
+  } else {
+    widthPt = 1; // Default to 1pt
   }
 
   // Get border color
