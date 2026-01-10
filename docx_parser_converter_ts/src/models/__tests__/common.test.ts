@@ -171,11 +171,11 @@ describe('Common Models', () => {
 
     it('should support character-based indentation', () => {
       const indent: Indentation = {
-        leftChars: 100,
-        rightChars: 50,
+        startChars: 100,
+        endChars: 50,
         firstLineChars: 200,
       };
-      expect(indent.leftChars).toBe(100);
+      expect(indent.startChars).toBe(100);
     });
   });
 

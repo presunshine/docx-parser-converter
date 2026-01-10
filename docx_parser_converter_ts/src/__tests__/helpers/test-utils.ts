@@ -40,11 +40,14 @@ export function makeElement(xml: string): Element {
 
   // Get the first child element (skip whitespace text nodes)
   const root = doc.documentElement;
+  if (!root) {
+    throw new Error('Failed to parse XML document');
+  }
   for (let i = 0; i < root.childNodes.length; i++) {
     const node = root.childNodes[i];
     if (node.nodeType === 1) {
       // Element node
-      return node as Element;
+      return node as unknown as Element;
     }
   }
 
@@ -59,7 +62,7 @@ export function makeElement(xml: string): Element {
  */
 export function parseXml(xml: string): Document {
   const parser = new DOMParser();
-  return parser.parseFromString(xml, 'text/xml');
+  return parser.parseFromString(xml, 'text/xml') as unknown as Document;
 }
 
 /**

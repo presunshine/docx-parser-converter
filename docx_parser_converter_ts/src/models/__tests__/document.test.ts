@@ -5,7 +5,6 @@ import { describe, it, expect } from 'vitest';
 import type {
   Document,
   Body,
-  BodyContentItem,
   Paragraph,
   ParagraphProperties,
   NumberingProperties,
@@ -96,14 +95,6 @@ describe('Document Models', () => {
         widowControl: true,
         suppressAutoHyphens: false,
         bidi: false,
-        adjustRightInd: true,
-        snapToGrid: true,
-        contextualSpacing: false,
-        mirrorIndents: false,
-        suppressOverlap: false,
-        wordWrap: true,
-        autoSpaceDE: true,
-        autoSpaceDN: true,
         textAlignment: 'auto',
       };
       expect(pPr.pStyle).toBe('Heading1');
@@ -156,7 +147,7 @@ describe('Document Models', () => {
   describe('Run', () => {
     it('should define Run with content', () => {
       const run: Run = {
-        content: [{ type: 'text', text: 'Hello' }],
+        content: [{ type: 'text', value: 'Hello' }],
       };
       expect(run.content).toHaveLength(1);
     });
@@ -186,19 +177,13 @@ describe('Document Models', () => {
         strike: false,
         dstrike: false,
         vanish: false,
-        webHidden: false,
         smallCaps: true,
         caps: false,
         emboss: false,
         imprint: false,
         outline: false,
         shadow: false,
-        noProof: false,
-        snapToGrid: true,
         specVanish: false,
-        oMath: false,
-        rtl: false,
-        cs: false,
         sz: 24,
         szCs: 24,
         color: { val: 'FF0000' },
@@ -236,20 +221,20 @@ describe('Document Models', () => {
       expect(fonts.ascii).toBe('Arial');
     });
 
-    it('should support theme fonts', () => {
+    it('should support font hints', () => {
       const fonts: RunFonts = {
-        asciiTheme: 'majorHAnsi',
-        hAnsiTheme: 'majorHAnsi',
+        ascii: 'Calibri',
+        hint: 'eastAsia',
       };
-      expect(fonts.asciiTheme).toBe('majorHAnsi');
+      expect(fonts.hint).toBe('eastAsia');
     });
   });
 
   describe('Run Content Items', () => {
     it('should define Text content', () => {
-      const text: Text = { type: 'text', text: 'Hello World' };
+      const text: Text = { type: 'text', value: 'Hello World' };
       expect(text.type).toBe('text');
-      expect(text.text).toBe('Hello World');
+      expect(text.value).toBe('Hello World');
     });
 
     it('should define Break content', () => {
@@ -269,13 +254,13 @@ describe('Document Models', () => {
     });
 
     it('should define Symbol content', () => {
-      const sym: Symbol = { type: 'sym', font: 'Wingdings', char: 'F0FC' };
-      expect(sym.type).toBe('sym');
+      const sym: Symbol = { type: 'symbol', font: 'Wingdings', char: 'F0FC' };
+      expect(sym.type).toBe('symbol');
       expect(sym.font).toBe('Wingdings');
     });
 
     it('should define FieldChar content', () => {
-      const fc: FieldChar = { type: 'fldChar', fldCharType: 'begin' };
+      const fc: FieldChar = { type: 'fieldChar', fldCharType: 'begin' };
       expect(fc.fldCharType).toBe('begin');
     });
 
@@ -288,14 +273,14 @@ describe('Document Models', () => {
     });
 
     it('should define FootnoteReference', () => {
-      const fn: FootnoteReference = { type: 'footnoteReference', id: 1 };
-      expect(fn.type).toBe('footnoteReference');
+      const fn: FootnoteReference = { type: 'footnoteRef', id: 1 };
+      expect(fn.type).toBe('footnoteRef');
       expect(fn.id).toBe(1);
     });
 
     it('should define EndnoteReference', () => {
-      const en: EndnoteReference = { type: 'endnoteReference', id: 1 };
-      expect(en.type).toBe('endnoteReference');
+      const en: EndnoteReference = { type: 'endnoteRef', id: 1 };
+      expect(en.type).toBe('endnoteRef');
       expect(en.id).toBe(1);
     });
   });
@@ -303,6 +288,7 @@ describe('Document Models', () => {
   describe('Hyperlink', () => {
     it('should define Hyperlink with content', () => {
       const link: Hyperlink = {
+        type: 'hyperlink',
         content: [],
       };
       expect(link.content).toBeDefined();
@@ -310,6 +296,7 @@ describe('Document Models', () => {
 
     it('should support external reference', () => {
       const link: Hyperlink = {
+        type: 'hyperlink',
         rId: 'rId1',
         content: [],
       };
@@ -318,6 +305,7 @@ describe('Document Models', () => {
 
     it('should support internal anchor', () => {
       const link: Hyperlink = {
+        type: 'hyperlink',
         anchor: 'bookmark1',
         content: [],
       };
