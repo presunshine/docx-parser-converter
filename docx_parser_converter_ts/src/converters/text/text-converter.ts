@@ -77,7 +77,6 @@ export class TextConverter {
 
   private _numberingCounters: Map<string, number> = new Map();
   private _numberingTracker: NumberingTracker;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private __paragraphConverter: ParagraphToTextConverter;
   private _tableConverter: TableToTextConverter;
 

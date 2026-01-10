@@ -26,7 +26,6 @@ import {
 /**
  * Remove null values from an object (shallow).
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function removeNulls<T>(obj: T): Partial<T> {
   const result: Partial<T> = {};
   for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
