@@ -9,6 +9,8 @@ import type { Paragraph } from '../../models/document/paragraph';
 import { findChild, getLocalName, iterChildren } from '../utils';
 import { parseParagraph } from './paragraph-parser';
 import { parseTableCellProperties } from './table-cell-properties-parser';
+// Import for nested table support - TypeScript handles circular deps at module level
+import { parseTable } from './table-parser';
 
 /** Union type for table cell content items */
 type TableCellContentItem = Paragraph | Table;
@@ -41,9 +43,7 @@ export function parseTableCell(element: Element | null): TableCell | null {
         content.push(paragraph);
       }
     } else if (localName === 'tbl') {
-      // Nested table - imported at top level since TypeScript handles circular deps differently
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { parseTable } = require('./table-parser');
+      // Nested table
       const table = parseTable(child);
       if (table !== null) {
         content.push(table);
