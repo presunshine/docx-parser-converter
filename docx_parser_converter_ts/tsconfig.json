@@ -27,8 +27,8 @@
     "emitDeclarationOnly": true,     
     "skipLibCheck": true
   },
-  "include": ["src", "tests"], 
-  "exclude": ["node_modules", "dist"] ,
+  "include": ["src"],
+  "exclude": ["node_modules", "dist", "src/-legacy", "tests"] ,
   "references": [ 
   { "path": "./tsconfig.node.json" }
 ]
