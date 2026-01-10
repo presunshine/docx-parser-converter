@@ -40,3 +40,28 @@ export { parseTableGridColumn, parseTableGrid } from './table-grid-parser';
 export { parseTableRow } from './table-row-parser';
 export { parseTableCell } from './table-cell-parser';
 export { parseTable } from './table-parser';
+
+// Hyperlink parser (standalone versions with specific return types)
+export {
+  parseHyperlink as parseHyperlinkStandalone,
+  parseBookmarkStart as parseBookmarkStartStandalone,
+  parseBookmarkEnd as parseBookmarkEndStandalone,
+} from './hyperlink-parser';
+
+// Section parser
+export {
+  parsePageSize,
+  parsePageMargins,
+  parseColumn,
+  parseColumns,
+  parseDocumentGrid,
+  parseHeaderFooterReference,
+  parsePageBorders,
+  parsePageNumberType,
+  parseLineNumberType,
+  parseSectionProperties,
+} from './section-parser';
+
+// Body and document parsers
+export { parseBody } from './body-parser';
+export { parseDocument } from './document-parser';
