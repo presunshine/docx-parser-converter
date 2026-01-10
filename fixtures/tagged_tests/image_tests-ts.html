@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title></title>
+<meta name="generator" content="docx-parser-converter">
+<style>
+body {
+  font-family: 'Calibri', Arial, sans-serif;
+  font-size: 11pt;
+  line-height: 1.15;
+  margin: 0;
+  padding: 72pt 72pt 72pt 72pt;
+}
+p {
+  margin: 0;
+}
+.page-break {
+  page-break-after: always;
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+</style>
+</head>
+<body>
+<main id="content" role="main">
+<p><span style="font-size: 16pt; font-weight: bold">Image Tests</span></p><p><br></p><p>Test #1: Simple Inline Image</p><p>A simple inline image.</p><p>Expected: {&quot;image_type&quot;: &quot;inline&quot;, &quot;width&quot;: 100, &quot;height&quot;: 100}</p><p><br></p><p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4z8AAAAMBAQDJ/pLvAAAAAElFTkSuQmCC" alt="" style="width: 100px; height: 100px"></p><p><br></p><p>Test #2: Inline Image with Alt Text</p><p>An image with alt text description.</p><p>Expected: {&quot;image_type&quot;: &quot;inline&quot;, &quot;alt_text&quot;: &quot;A red square image&quot;}</p><p><br></p><p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4z8AAAAMBAQDJ/pLvAAAAAElFTkSuQmCC" alt="A red square image" style="width: 80px; height: 80px"></p><p><br></p><p>Test #3: Image with Specific Dimensions</p><p>A 150x75 pixel image.</p><p>Expected: {&quot;image_type&quot;: &quot;inline&quot;, &quot;width&quot;: 150, &quot;height&quot;: 75}</p><p><br></p><p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNgYPgPAAEDAQAIicLsAAAAAElFTkSuQmCC" alt="" style="width: 150px; height: 75px"></p><p><br></p><p>Test #4: Left-Aligned Floating Image</p><p>A left-aligned floating image with text wrap.</p><p>Expected: {&quot;image_type&quot;: &quot;anchor&quot;, &quot;h_align&quot;: &quot;left&quot;, &quot;wrap&quot;: &quot;square&quot;}</p><p><br></p><p><div style="overflow: hidden;"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4z8AAAAMBAQDJ/pLvAAAAAElFTkSuQmCC" alt="" style="width: 80px; height: 80px; float: left; margin-right: 10px; margin-bottom: 10px"></div></p><p><br></p><p>Test #5: Right-Aligned Floating Image</p><p>A right-aligned floating image.</p><p>Expected: {&quot;image_type&quot;: &quot;anchor&quot;, &quot;h_align&quot;: &quot;right&quot;, &quot;wrap&quot;: &quot;square&quot;}</p><p><br></p><p><div style="overflow: hidden;"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNgYPgPAAEDAQAIicLsAAAAAElFTkSuQmCC" alt="" style="width: 80px; height: 80px; float: right; margin-left: 10px; margin-bottom: 10px"></div></p><p><br></p><p>Test #6: Center-Aligned Floating Image</p><p>A center-aligned floating image.</p><p>Expected: {&quot;image_type&quot;: &quot;anchor&quot;, &quot;h_align&quot;: &quot;center&quot;}</p><p><br></p><p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNg+M8AAAICAQB7CYF4AAAAAElFTkSuQmCC" alt="" style="width: 80px; height: 80px; display: block; margin-left: auto; margin-right: auto"></p><p><br></p><p>Test #7: Image Inside Paragraph with Text</p><p>Text before and after an inline image.</p><p>Expected: {&quot;text_before&quot;: &quot;Here is &quot;, &quot;text_after&quot;: &quot; in the text.&quot;}</p><p><br></p><p>Here is&nbsp;<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4z8AAAAMBAQDJ/pLvAAAAAElFTkSuQmCC" alt="" style="width: 50px; height: 50px">&nbsp;in the text.</p><p><br></p><p>Test #8: Multiple Images in One Paragraph</p><p>Three images in a single paragraph.</p><p>Expected: {&quot;image_count&quot;: 3}</p><p><br></p><p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4z8AAAAMBAQDJ/pLvAAAAAElFTkSuQmCC" alt="" style="width: 40px; height: 40px"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNgYPgPAAEDAQAIicLsAAAAAElFTkSuQmCC" alt="" style="width: 40px; height: 40px"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNg+M8AAAICAQB7CYF4AAAAAElFTkSuQmCC" alt="" style="width: 40px; height: 40px"></p><p><br></p>
+</main>
+</body>
+</html>

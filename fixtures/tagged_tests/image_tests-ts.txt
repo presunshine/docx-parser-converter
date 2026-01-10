@@ -1,0 +1,51 @@
+Image Tests
+
+Test #1: Simple Inline Image
+
+A simple inline image.
+
+Expected: {"image_type": "inline", "width": 100, "height": 100}
+
+Test #2: Inline Image with Alt Text
+
+An image with alt text description.
+
+Expected: {"image_type": "inline", "alt_text": "A red square image"}
+
+Test #3: Image with Specific Dimensions
+
+A 150x75 pixel image.
+
+Expected: {"image_type": "inline", "width": 150, "height": 75}
+
+Test #4: Left-Aligned Floating Image
+
+A left-aligned floating image with text wrap.
+
+Expected: {"image_type": "anchor", "h_align": "left", "wrap": "square"}
+
+Test #5: Right-Aligned Floating Image
+
+A right-aligned floating image.
+
+Expected: {"image_type": "anchor", "h_align": "right", "wrap": "square"}
+
+Test #6: Center-Aligned Floating Image
+
+A center-aligned floating image.
+
+Expected: {"image_type": "anchor", "h_align": "center"}
+
+Test #7: Image Inside Paragraph with Text
+
+Text before and after an inline image.
+
+Expected: {"text_before": "Here is ", "text_after": " in the text."}
+
+Here is  in the text.
+
+Test #8: Multiple Images in One Paragraph
+
+Three images in a single paragraph.
+
+Expected: {"image_count": 3}

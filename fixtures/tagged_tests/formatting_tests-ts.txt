@@ -1,0 +1,97 @@
+Formatting Tests
+
+Test #1: Bold Text
+
+Text with bold formatting.
+
+Expected: {"text_bold": true}
+
+This is bold text
+
+Test #2: Italic Text
+
+Text with italic formatting.
+
+Expected: {"text_italic": true}
+
+This is italic text
+
+Test #3: Bold and Italic
+
+Text with both bold and italic.
+
+Expected: {"text_bold": true, "text_italic": true}
+
+Bold and italic
+
+Test #4: Single Underline
+
+Text with single underline.
+
+Expected: {"text_underline": true}
+
+Underlined text
+
+Test #5: Double Underline
+
+Text with double underline.
+
+Expected: {"text_underline": "double"}
+
+Double underline
+
+Test #6: Strikethrough
+
+Text with strikethrough.
+
+Expected: {"text_strike": true}
+
+Strikethrough text
+
+Test #7: Red Color
+
+Text in red color.
+
+Expected: {"text_color": "#FF0000"}
+
+Red text
+
+Test #8: Blue Color
+
+Text in blue color.
+
+Expected: {"text_color": "#0000FF"}
+
+Blue text
+
+Test #9: Yellow Highlight
+
+Text with yellow highlight.
+
+Expected: {"text_highlight": "#FFFF00"}
+
+Highlighted
+
+Test #10: 24pt Font Size
+
+Text in 24 point size.
+
+Expected: {"text_size": "24pt"}
+
+Large text
+
+Test #11: Arial Font
+
+Text in Arial font.
+
+Expected: {"text_font": "Arial"}
+
+Arial text
+
+Test #12: Combined Formatting
+
+Bold, red, 16pt Arial.
+
+Expected: {"text_bold": true, "text_color": "#FF0000", "text_size": "16pt", "text_font": "Arial"}
+
+Combined styles
