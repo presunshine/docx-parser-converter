@@ -4,7 +4,6 @@
  * Matches Python: core/docx_reader.py
  */
 
-import * as fs from 'fs';
 import JSZip from 'jszip';
 
 import {
@@ -19,29 +18,56 @@ import { DOCUMENT_XML_PATH, CONTENT_TYPES_PATH } from './constants';
 export type DocxSource = string | ArrayBuffer | Uint8Array | Blob;
 
 /**
+ * Check if running in Node.js environment.
+ */
+function isNodeEnvironment(): boolean {
+  return (
+    typeof process !== 'undefined' &&
+    process.versions != null &&
+    process.versions.node != null
+  );
+}
+
+/**
+ * Read a file from disk (Node.js only).
+ * Uses dynamic import to avoid bundling fs in browser builds.
+ */
+async function readFileFromPath(filePath: string): Promise<Uint8Array> {
+  if (!isNodeEnvironment()) {
+    throw new DocxReadError(
+      'File path input is only supported in Node.js. In the browser, use ArrayBuffer, Uint8Array, or Blob.'
+    );
+  }
+
+  try {
+    // Dynamic import to avoid bundling fs in browser
+    const fs = await import('fs');
+    if (!fs.existsSync(filePath)) {
+      throw new DocxNotFoundError(filePath);
+    }
+    return fs.readFileSync(filePath);
+  } catch (e) {
+    if (e instanceof DocxNotFoundError) {
+      throw e;
+    }
+    throw new DocxNotFoundError(filePath);
+  }
+}
+
+/**
  * Open a DOCX file from various sources.
  *
- * @param source - Path string, ArrayBuffer, Uint8Array, or Blob
+ * @param source - Path string (Node.js only), ArrayBuffer, Uint8Array, or Blob
  * @returns JSZip instance
- * @throws DocxNotFoundError if file path doesn't exist
+ * @throws DocxNotFoundError if file path doesn't exist or path used in browser
  * @throws DocxReadError if content is invalid
  */
 export async function openDocx(source: DocxSource): Promise<JSZip> {
   let data: ArrayBuffer | Uint8Array | Blob;
 
-  // Handle string path
+  // Handle string path (Node.js only)
   if (typeof source === 'string') {
-    try {
-      if (!fs.existsSync(source)) {
-        throw new DocxNotFoundError(source);
-      }
-      data = fs.readFileSync(source);
-    } catch (e) {
-      if (e instanceof DocxNotFoundError) {
-        throw e;
-      }
-      throw new DocxNotFoundError(source);
-    }
+    data = await readFileFromPath(source);
   } else {
     data = source;
   }

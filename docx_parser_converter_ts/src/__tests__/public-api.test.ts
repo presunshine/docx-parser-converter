@@ -444,3 +444,79 @@ describe('TestMultiFormatConsistency', () => {
     expect(fromPath).toBe(fromBytes);
   });
 });
+
+// =============================================================================
+// Browser Compatibility Tests
+// =============================================================================
+
+describe('TestBrowserCompatibility', () => {
+  let fixture: string | null;
+
+  beforeAll(() => {
+    fixture = getSampleFixture();
+  });
+
+  it('test_arraybuffer_input_works', async () => {
+    if (!fixture) return;
+
+    const buffer = fs.readFileSync(fixture);
+    const arrayBuffer = buffer.buffer.slice(
+      buffer.byteOffset,
+      buffer.byteOffset + buffer.byteLength
+    );
+
+    const html = await docxToHtml(arrayBuffer);
+    const text = await docxToText(arrayBuffer);
+
+    expect(html).toContain('<html');
+    expect(text.length).toBeGreaterThan(0);
+  });
+
+  it('test_uint8array_input_works', async () => {
+    if (!fixture) return;
+
+    const buffer = fs.readFileSync(fixture);
+    const uint8Array = new Uint8Array(buffer);
+
+    const html = await docxToHtml(uint8Array);
+    const text = await docxToText(uint8Array);
+
+    expect(html).toContain('<html');
+    expect(text.length).toBeGreaterThan(0);
+  });
+
+  it('test_blob_input_works', async () => {
+    if (!fixture) return;
+
+    const buffer = fs.readFileSync(fixture);
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    });
+
+    const html = await docxToHtml(blob);
+    const text = await docxToText(blob);
+
+    expect(html).toContain('<html');
+    expect(text.length).toBeGreaterThan(0);
+  });
+
+  it('test_all_browser_input_types_produce_same_output', async () => {
+    if (!fixture) return;
+
+    const buffer = fs.readFileSync(fixture);
+    const arrayBuffer = buffer.buffer.slice(
+      buffer.byteOffset,
+      buffer.byteOffset + buffer.byteLength
+    );
+    const uint8Array = new Uint8Array(buffer);
+    const blob = new Blob([buffer]);
+
+    const htmlFromArrayBuffer = await docxToHtml(arrayBuffer);
+    const htmlFromUint8Array = await docxToHtml(uint8Array);
+    const htmlFromBlob = await docxToHtml(blob);
+
+    // All browser-compatible input types should produce identical output
+    expect(htmlFromArrayBuffer).toBe(htmlFromUint8Array);
+    expect(htmlFromUint8Array).toBe(htmlFromBlob);
+  });
+});

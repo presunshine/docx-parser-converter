@@ -13,8 +13,8 @@ export default defineConfig({
   build: {
     sourcemap: true,
     lib: {
-      entry: 'src/main.ts', // Or path.resolve(process.cwd(), 'src/main.ts')
-      name: 'DocxParserConverter', // Or 'MyLib'
+      entry: 'src/index.ts', // Main entry point
+      name: 'DocxParserConverter',
       formats: ['es', 'umd', 'iife'],
       fileName: (format) => `docx-parser-converter.${format}.js`,
     },

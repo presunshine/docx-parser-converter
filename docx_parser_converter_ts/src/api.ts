@@ -301,6 +301,17 @@ export async function docxToText(
 // =============================================================================
 
 /**
+ * Check if running in Node.js environment.
+ */
+function isNodeEnvironment(): boolean {
+  return (
+    typeof process !== 'undefined' &&
+    process.versions != null &&
+    process.versions.node != null
+  );
+}
+
+/**
  * Write content to a file (Node.js only).
  *
  * @param content - Content to write
@@ -308,15 +319,18 @@ export async function docxToText(
  * @throws Error if running in browser environment
  */
 async function writeOutput(content: string, outputPath: string): Promise<void> {
+  if (!isNodeEnvironment()) {
+    throw new Error(
+      'File writing is only supported in Node.js environment. In the browser, use the returned string directly.'
+    );
+  }
+
   // Dynamic import of Node.js fs module for platform compatibility
   try {
-    const fs = await import('node:fs/promises');
+    const fs = await import('fs/promises');
     await fs.writeFile(outputPath, content, 'utf-8');
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ERR_MODULE_NOT_FOUND') {
-      throw new Error('File writing is only supported in Node.js environment');
-    }
-    throw error;
+    throw new Error(`Failed to write file: ${(error as Error).message}`);
   }
 }
 
