@@ -6,7 +6,7 @@ A decimal numbered list with proper indentation.
 
 Expected: {"list_marker": "1.\t", "list_indent": "36pt", "has_hanging_indent": true}
 
-1.	First numbered item
+    1.	First numbered item
 
 Test #2: Second Numbered Item
 
@@ -14,7 +14,7 @@ The second item should show 2.
 
 Expected: {"list_marker": "2.\t", "list_indent": "36pt", "has_hanging_indent": true}
 
-2.	Second numbered item
+    2.	Second numbered item
 
 Test #3: Nested Letter List
 
@@ -22,9 +22,9 @@ A nested list using lowercase letters.
 
 Expected: {"list_marker": "a.\t", "list_indent": "72pt", "has_hanging_indent": true}
 
-3.	Parent item
+    3.	Parent item
 
-a.	Nested letter a
+        a.	Nested letter a
 
 Test #4: Roman Numerals
 
@@ -32,7 +32,7 @@ A list using uppercase Roman numerals.
 
 Expected: {"list_marker": "I.\t", "list_indent": "36pt", "has_hanging_indent": true}
 
-I.	Roman one
+    I.	Roman one
 
 Test #5: Roman Numeral Two
 
@@ -40,7 +40,7 @@ Second Roman numeral should be II.
 
 Expected: {"list_marker": "II.\t", "list_indent": "36pt", "has_hanging_indent": true}
 
-II.	Roman two
+    II.	Roman two
 
 Test #6: Deeply Nested List
 
@@ -48,8 +48,8 @@ Third level nesting with roman numerals.
 
 Expected: {"list_marker": "i.\t", "list_indent": "108pt", "has_hanging_indent": true}
 
-4.	Level 1
+    4.	Level 1
 
-a.	Level 2
+        a.	Level 2
 
-i.	Level 3 roman
+            i.	Level 3 roman

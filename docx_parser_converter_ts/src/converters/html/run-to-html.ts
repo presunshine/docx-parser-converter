@@ -11,11 +11,13 @@ import { runPropertiesToCss } from './css-generator';
 import { drawingToHtml } from './image-to-html';
 import type { ImageData } from './image-to-html';
 import type { Drawing } from '../../models/document/drawing';
+import type { StyleResolver } from '../common/style-resolver';
 
 export interface RunToHTMLConverterOptions {
   useSemanticTags?: boolean;
   useClasses?: boolean;
   imageData?: ImageData;
+  styleResolver?: StyleResolver | null;
 }
 
 /**
@@ -154,18 +156,38 @@ export function runToHtml(run: Run | null | undefined, options?: RunToHTMLConver
 
   // Check if semantic tags should be used
   const useSemanticTags = options?.useSemanticTags ?? false;
+  const styleResolver = options?.styleResolver;
+
+  // Generate CSS from direct run properties
+  let css = runPropertiesToCss(rPr);
+
+  // Effective run properties for semantic tag application (includes resolved styles)
+  let effectiveRPr: RunProperties = rPr;
+
+  // Resolve character style if present and merge with direct formatting
+  if (styleResolver && rPr.rStyle) {
+    const resolvedRPr = styleResolver.resolveRunProperties(rPr.rStyle);
+    if (resolvedRPr && Object.keys(resolvedRPr).length > 0) {
+      const styleCss = runPropertiesToCss(resolvedRPr as RunProperties);
+      // Merge: direct formatting overrides style
+      css = { ...styleCss, ...css };
+      // For semantic tags, merge resolved properties with direct properties
+      effectiveRPr = { ...resolvedRPr, ...rPr } as RunProperties;
+    }
+  }
 
   if (useSemanticTags) {
-    return applySemanticTags(contentHtml, rPr);
+    return applySemanticTagsWithCss(contentHtml, effectiveRPr, css);
   } else {
-    return applyInlineStyles(contentHtml, rPr);
+    return applyInlineStylesWithCss(contentHtml, css);
   }
 }
 
 /**
- * Apply semantic HTML tags for formatting.
+ * Apply semantic HTML tags for formatting with pre-computed CSS.
+ * Used when character style resolution has already computed the CSS.
  */
-function applySemanticTags(content: string, rPr: RunProperties): string {
+function applySemanticTagsWithCss(content: string, rPr: RunProperties, css: Record<string, string>): string {
   let result = content;
 
   // Apply semantic tags from innermost to outermost
@@ -191,16 +213,15 @@ function applySemanticTags(content: string, rPr: RunProperties): string {
     result = `<strong>${result}</strong>`;
   }
 
-  // Apply remaining styles via span
-  const css = runPropertiesToCss(rPr);
   // Remove properties that were handled by semantic tags
-  delete css['font-weight'];
-  delete css['font-style'];
-  delete css['text-decoration'];
-  delete css['vertical-align'];
+  const remainingCss = { ...css };
+  delete remainingCss['font-weight'];
+  delete remainingCss['font-style'];
+  delete remainingCss['text-decoration'];
+  delete remainingCss['vertical-align'];
 
-  if (Object.keys(css).length > 0) {
-    const styleStr = Object.entries(css)
+  if (Object.keys(remainingCss).length > 0) {
+    const styleStr = Object.entries(remainingCss)
       .map(([key, value]) => `${key}: ${value}`)
       .join('; ');
     result = `<span style="${styleStr}">${result}</span>`;
@@ -210,11 +231,10 @@ function applySemanticTags(content: string, rPr: RunProperties): string {
 }
 
 /**
- * Apply inline CSS styles for formatting.
+ * Apply inline CSS styles with pre-computed CSS.
+ * Used when character style resolution has already computed the CSS.
  */
-function applyInlineStyles(content: string, rPr: RunProperties): string {
-  const css = runPropertiesToCss(rPr);
-
+function applyInlineStylesWithCss(content: string, css: Record<string, string>): string {
   if (Object.keys(css).length === 0) {
     return content;
   }
@@ -232,10 +252,19 @@ function applyInlineStyles(content: string, rPr: RunProperties): string {
 export class RunToHTMLConverter {
   useSemanticTags: boolean;
   useClasses: boolean;
+  styleResolver: StyleResolver | null;
 
   constructor(options?: RunToHTMLConverterOptions) {
     this.useSemanticTags = options?.useSemanticTags ?? false;
     this.useClasses = options?.useClasses ?? false;
+    this.styleResolver = options?.styleResolver ?? null;
+  }
+
+  /**
+   * Set style resolver for character style resolution.
+   */
+  setStyleResolver(styleResolver: StyleResolver | null): void {
+    this.styleResolver = styleResolver;
   }
 
   /**
@@ -245,6 +274,7 @@ export class RunToHTMLConverter {
     return runToHtml(run, {
       useSemanticTags: this.useSemanticTags,
       useClasses: this.useClasses,
+      styleResolver: this.styleResolver,
     });
   }
 

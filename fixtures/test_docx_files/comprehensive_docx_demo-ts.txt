@@ -64,19 +64,19 @@ This sentence has red bold character style and blue italic character style appli
 
 5.1 Bullet List
 
-•	First bullet point - demonstrating proper bullet formatting
+    •	First bullet point - demonstrating proper bullet formatting
 
-•	Second bullet point - uses LevelFormat.BULLET constant
+    •	Second bullet point - uses LevelFormat.BULLET constant
 
-•	Third bullet point - not unicode symbols
+    •	Third bullet point - not unicode symbols
 
 5.2 Numbered List
 
-1.	First numbered item - uses decimal numbering
+    1.	First numbered item - uses decimal numbering
 
-2.	Second numbered item - continues sequence
+    2.	Second numbered item - continues sequence
 
-3.	Third numbered item - proper Word numbering
+    3.	Third numbered item - proper Word numbering
 
 6. Tables
 
@@ -106,18 +106,18 @@ Summary
 
 This document demonstrates all major DOCX features:
 
-•	Inline formatting: bold, italic, underline, strikethrough, highlights
+    •	Inline formatting: bold, italic, underline, strikethrough, highlights
 
-•	Multiple font types: Arial, Times New Roman, Calibri, Georgia, Verdana, Courier New
+    •	Multiple font types: Arial, Times New Roman, Calibri, Georgia, Verdana, Courier New
 
-•	Font sizes: from 8pt to 24pt
+    •	Font sizes: from 8pt to 24pt
 
-•	Text colors and highlights
+    •	Text colors and highlights
 
-•	Style-based formatting using styles.xml references
+    •	Style-based formatting using styles.xml references
 
-•	Bullet and numbered lists
+    •	Bullet and numbered lists
 
-•	Tables with borders, shading, and formatted cells
+    •	Tables with borders, shading, and formatted cells
 
-•	Text alignment options
+    •	Text alignment options

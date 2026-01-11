@@ -50,7 +50,7 @@ export {
   bookmarkEndToHtml,
   paragraphContentToHtml,
 } from './paragraph-to-html';
-export type { ParagraphToHTMLConverterOptions } from './paragraph-to-html';
+export type { ParagraphToHTMLConverterOptions, ParagraphContentToHTMLOptions } from './paragraph-to-html';
 
 export {
   TableToHTMLConverter,

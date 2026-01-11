@@ -79,12 +79,10 @@ export class HTMLDocument {
     this.keywords = options.keywords ?? [];
     this.direction = options.direction ?? 'ltr';
     this.minify = options.minify ?? false;
-    this._pretty = options.pretty ?? true;
+    this._pretty = options.pretty ?? false;
     this.includePrintStyles = options.includePrintStyles ?? false;
     this.includeSkipLink = options.includeSkipLink ?? false;
     this.pageMargins = options.pageMargins ?? null;
-    // Suppress unused variable warning
-    void this._pretty;
   }
 
   /**
@@ -244,10 +242,9 @@ export class HTMLDocument {
     styles.push(`.page-break {
     page-break-after: always;
     break-after: page;
-}`);
+}
 
-    // Print media query for page break
-    styles.push(`@media print {
+@media print {
     .page-break {
         page-break-after: always;
     }
@@ -329,10 +326,13 @@ export class HTMLDocument {
   }
 
   /**
-   * Get newline character based on minify setting.
+   * Get newline character based on pretty and minify settings.
+   * Returns newline only when pretty=true and minify=false.
    */
   private getNewline(): string {
-    return this.minify ? '' : '\n';
+    if (this.minify) return '';
+    if (this._pretty) return '\n';
+    return '';
   }
 }
 
@@ -353,7 +353,7 @@ export class HTMLDocumentBuilder {
   private keywords: string[] = [];
   private direction: 'ltr' | 'rtl' = 'ltr';
   private minify: boolean = false;
-  private pretty: boolean = true;
+  private pretty: boolean = false;
   private includePrintStyles: boolean = false;
   private includeSkipLink: boolean = false;
   private pageMargins: { top: number; right: number; bottom: number; left: number } | null = null;

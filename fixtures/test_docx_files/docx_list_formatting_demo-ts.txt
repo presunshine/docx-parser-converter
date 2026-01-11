@@ -10,11 +10,11 @@ Simple decimal list: 1., 2., 3.
 
 Sample List:
 
-1.	Item that should be numbered 1.
+    1.	Item that should be numbered 1.
 
-2.	Item that should be numbered 2.
+    2.	Item that should be numbered 2.
 
-3.	Item that should be numbered 3.
+    3.	Item that should be numbered 3.
 
 Paragraph XML for first list item:
 
@@ -46,11 +46,11 @@ Lowercase alphabetic list: a., b., c.
 
 Sample List:
 
-a.	Item that should be numbered a.
+    a.	Item that should be numbered a.
 
-b.	Item that should be numbered b.
+    b.	Item that should be numbered b.
 
-c.	Item that should be numbered c.
+    c.	Item that should be numbered c.
 
 Paragraph XML for first list item:
 
@@ -82,11 +82,11 @@ Uppercase alphabetic list: A., B., C.
 
 Sample List:
 
-A.	Item that should be numbered A.
+    A.	Item that should be numbered A.
 
-B.	Item that should be numbered B.
+    B.	Item that should be numbered B.
 
-C.	Item that should be numbered C.
+    C.	Item that should be numbered C.
 
 Paragraph XML for first list item:
 
@@ -118,11 +118,11 @@ Lowercase Roman numerals: i., ii., iii.
 
 Sample List:
 
-i.	Item that should be numbered i.
+    i.	Item that should be numbered i.
 
-ii.	Item that should be numbered ii.
+    ii.	Item that should be numbered ii.
 
-iii.	Item that should be numbered iii.
+    iii.	Item that should be numbered iii.
 
 Paragraph XML for first list item:
 
@@ -154,11 +154,11 @@ Uppercase Roman numerals: I., II., III.
 
 Sample List:
 
-I.	Item that should be numbered I.
+    I.	Item that should be numbered I.
 
-II.	Item that should be numbered II.
+    II.	Item that should be numbered II.
 
-III.	Item that should be numbered III.
+    III.	Item that should be numbered III.
 
 Paragraph XML for first list item:
 
@@ -190,11 +190,11 @@ Standard bullet list using the filled circle (•).
 
 Sample List:
 
-•	Item that should have a • bullet.
+    •	Item that should have a • bullet.
 
-•	Another item that should have a • bullet.
+    •	Another item that should have a • bullet.
 
-•	Third item that should have a • bullet.
+    •	Third item that should have a • bullet.
 
 Paragraph XML for first list item:
 
@@ -226,11 +226,11 @@ Decimal list whose first item is numbered 5.
 
 Sample List:
 
-1.	Item that should be numbered 5.
+    1.	Item that should be numbered 5.
 
-2.	Item that should be numbered 6.
+    2.	Item that should be numbered 6.
 
-3.	Item that should be numbered 7.
+    3.	Item that should be numbered 7.
 
 Paragraph XML for first list item:
 
@@ -264,15 +264,15 @@ Multi-level decimal list: 1., 1.1., 1.1.1., 1.1.1.1.
 
 Sample List:
 
-1.	Level 1 – numbering should be 1.
+    1.	Level 1 – numbering should be 1.
 
-1.1.	Level 2 – numbering should be 1.1.
+        1.1.	Level 2 – numbering should be 1.1.
 
-1.1.1.	Level 3 – numbering should be 1.1.1.
+            1.1.1.	Level 3 – numbering should be 1.1.1.
 
-1.1.1.1.	Level 4 – numbering should be 1.1.1.1.
+                1.1.1.1.	Level 4 – numbering should be 1.1.1.1.
 
-2.	Level 1 – numbering should be 2.
+    2.	Level 1 – numbering should be 2.
 
 Paragraph XML for first list item:
 
@@ -319,15 +319,15 @@ Multi-level lower-alpha list with parentheses: (a), (a.a), (a.a.a), (a.a.a.a).
 
 Sample List:
 
-(a)	Level 1 – numbering should be (a).
+    (a)	Level 1 – numbering should be (a).
 
-(a.a)	Level 2 – numbering should be (a.a).
+        (a.a)	Level 2 – numbering should be (a.a).
 
-(a.a.a)	Level 3 – numbering should be (a.a.a).
+            (a.a.a)	Level 3 – numbering should be (a.a.a).
 
-(a.a.a.a)	Level 4 – numbering should be (a.a.a.a).
+                (a.a.a.a)	Level 4 – numbering should be (a.a.a.a).
 
-(b)	Level 1 – numbering should be (b).
+    (b)	Level 1 – numbering should be (b).
 
 Paragraph XML for first list item:
 
@@ -374,15 +374,15 @@ Multi-level upper-alpha list with closing parenthesis.
 
 Sample List:
 
-A)	Level 1 – numbering should be A).
+    A)	Level 1 – numbering should be A).
 
-A.A)	Level 2 – numbering should be A.A).
+        A.A)	Level 2 – numbering should be A.A).
 
-A.A.A)	Level 3 – numbering should be A.A.A).
+            A.A.A)	Level 3 – numbering should be A.A.A).
 
-A.A.A.A)	Level 4 – numbering should be A.A.A.A).
+                A.A.A.A)	Level 4 – numbering should be A.A.A.A).
 
-B)	Level 1 – numbering should be B).
+    B)	Level 1 – numbering should be B).
 
 Paragraph XML for first list item:
 
@@ -429,15 +429,15 @@ Multi-level lower-roman list: i., i.i., i.i.i., i.i.i.i.
 
 Sample List:
 
-i.	Level 1 – numbering should be i.
+    i.	Level 1 – numbering should be i.
 
-i.i.	Level 2 – numbering should be i.i.
+        i.i.	Level 2 – numbering should be i.i.
 
-i.i.i.	Level 3 – numbering should be i.i.i.
+            i.i.i.	Level 3 – numbering should be i.i.i.
 
-i.i.i.i.	Level 4 – numbering should be i.i.i.i.
+                i.i.i.i.	Level 4 – numbering should be i.i.i.i.
 
-ii.	Level 1 – numbering should be ii.
+    ii.	Level 1 – numbering should be ii.
 
 Paragraph XML for first list item:
 
@@ -484,15 +484,15 @@ Multi-level upper-roman list with parentheses.
 
 Sample List:
 
-(I)	Level 1 – numbering should be (I).
+    (I)	Level 1 – numbering should be (I).
 
-(I.I)	Level 2 – numbering should be (I.I).
+        (I.I)	Level 2 – numbering should be (I.I).
 
-(I.I.I)	Level 3 – numbering should be (I.I.I).
+            (I.I.I)	Level 3 – numbering should be (I.I.I).
 
-(I.I.I.I)	Level 4 – numbering should be (I.I.I.I).
+                (I.I.I.I)	Level 4 – numbering should be (I.I.I.I).
 
-(II)	Level 1 – numbering should be (II).
+    (II)	Level 1 – numbering should be (II).
 
 Paragraph XML for first list item:
 
@@ -539,15 +539,15 @@ Multi-level bullet list: •, ○, ▪, • (four levels).
 
 Sample List:
 
-•	Level 1 – bullet should be •.
+    •	Level 1 – bullet should be •.
 
-○	Level 2 – bullet should be ○.
+        ○	Level 2 – bullet should be ○.
 
-▪	Level 3 – bullet should be ▪.
+            ▪	Level 3 – bullet should be ▪.
 
-•	Level 4 – bullet should be • again.
+                •	Level 4 – bullet should be • again.
 
-•	Level 1 – bullet should be •.
+    •	Level 1 – bullet should be •.
 
 Paragraph XML for first list item:
 
@@ -594,15 +594,15 @@ Four-level combination: 1., (a), i), •.
 
 Sample List:
 
-1.	Level 1 – numbering should be 1.
+    1.	Level 1 – numbering should be 1.
 
-(a)	Level 2 – numbering should be (a).
+        (a)	Level 2 – numbering should be (a).
 
-i)	Level 3 – numbering should be i).
+            i)	Level 3 – numbering should be i).
 
-•	Level 4 – bullet should be •.
+                •	Level 4 – bullet should be •.
 
-2.	Level 1 – numbering should be 2.
+    2.	Level 1 – numbering should be 2.
 
 Paragraph XML for first list item:
 
@@ -649,15 +649,15 @@ Four-level combination: A., (a), 1), (i).
 
 Sample List:
 
-A.	Level 1 – numbering should be A.
+    A.	Level 1 – numbering should be A.
 
-(a)	Level 2 – numbering should be (a).
+        (a)	Level 2 – numbering should be (a).
 
-1)	Level 3 – numbering should be 1).
+            1)	Level 3 – numbering should be 1).
 
-(i)	Level 4 – numbering should be (i).
+                (i)	Level 4 – numbering should be (i).
 
-B.	Level 1 – numbering should be B.
+    B.	Level 1 – numbering should be B.
 
 Paragraph XML for first list item:
 

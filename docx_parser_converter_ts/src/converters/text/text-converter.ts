@@ -216,12 +216,25 @@ export class TextConverter {
     }
 
     // Extract left indentation from level's paragraph properties
+    // The indentation is stored in pPr.ind.left
     const pPr = level.pPr;
-    if (typeof pPr === 'object' && pPr !== null && 'left' in pPr) {
-      const leftTwips = (pPr as Record<string, unknown>).left;
-      if (typeof leftTwips === 'number') {
-        // Convert twips to spaces (180 twips per space)
-        return Math.max(0, Math.floor(leftTwips / 180));
+    if (typeof pPr === 'object' && pPr !== null) {
+      // Check for ind.left (proper structure)
+      if ('ind' in pPr && typeof pPr.ind === 'object' && pPr.ind !== null && 'left' in pPr.ind) {
+        const leftTwips = (pPr.ind as Record<string, unknown>).left;
+        if (typeof leftTwips === 'number') {
+          // Convert twips to spaces
+          // 720 twips = 0.5 inch ≈ 4 spaces (standard indent)
+          // Using ~180 twips per space
+          return Math.max(0, Math.floor(leftTwips / 180));
+        }
+      }
+      // Fallback: check for direct left property (legacy format)
+      if ('left' in pPr) {
+        const leftTwips = (pPr as Record<string, unknown>).left;
+        if (typeof leftTwips === 'number') {
+          return Math.max(0, Math.floor(leftTwips / 180));
+        }
       }
     }
 

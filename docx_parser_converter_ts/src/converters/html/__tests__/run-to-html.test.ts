@@ -478,3 +478,105 @@ describe('RunToHTMLConverter Class', () => {
     expect(result).toContain('Test');
   });
 });
+
+// =============================================================================
+// Character Style Resolution Tests
+// =============================================================================
+
+describe('Character Style Resolution', () => {
+  it('should apply character style formatting via styleResolver', () => {
+    // Mock style resolver that returns bold formatting for 'Strong' style
+    const mockStyleResolver = {
+      resolveRunProperties: (styleId: string) => {
+        if (styleId === 'Strong') {
+          return { b: true };
+        }
+        return {};
+      },
+    };
+
+    const run: Run = {
+      rPr: { rStyle: 'Strong' },
+      content: [{ type: 'text', value: 'Strong text' }],
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = runToHtml(run, { styleResolver: mockStyleResolver as any });
+    expect(result).toContain('font-weight: bold');
+    expect(result).toContain('Strong text');
+  });
+
+  it('should allow direct formatting to override character style', () => {
+    // Mock style resolver that returns blue color for 'Emphasis' style
+    const mockStyleResolver = {
+      resolveRunProperties: (styleId: string) => {
+        if (styleId === 'Emphasis') {
+          return { i: true, color: { val: '0000FF' } };
+        }
+        return {};
+      },
+    };
+
+    const run: Run = {
+      rPr: {
+        rStyle: 'Emphasis',
+        color: { val: 'FF0000' }, // Direct formatting: red color
+      },
+      content: [{ type: 'text', value: 'Emphasis text' }],
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = runToHtml(run, { styleResolver: mockStyleResolver as any });
+    // Direct formatting (red) should override style (blue)
+    expect(result).toContain('#FF0000');
+    // Style's italic should still apply
+    expect(result).toContain('font-style: italic');
+  });
+
+  it('should work without styleResolver', () => {
+    const run: Run = {
+      rPr: { rStyle: 'Strong', b: true },
+      content: [{ type: 'text', value: 'Bold text' }],
+    };
+
+    const result = runToHtml(run);
+    expect(result).toContain('font-weight: bold');
+    expect(result).toContain('Bold text');
+  });
+
+  it('should handle missing character style gracefully', () => {
+    const mockStyleResolver = {
+      resolveRunProperties: () => ({}),
+    };
+
+    const run: Run = {
+      rPr: { rStyle: 'NonExistentStyle' },
+      content: [{ type: 'text', value: 'Plain text' }],
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = runToHtml(run, { styleResolver: mockStyleResolver as any });
+    expect(result).toBe('Plain text');
+  });
+
+  it('should apply character style with semantic tags', () => {
+    const mockStyleResolver = {
+      resolveRunProperties: (styleId: string) => {
+        if (styleId === 'Strong') {
+          return { b: true };
+        }
+        return {};
+      },
+    };
+
+    const run: Run = {
+      rPr: { rStyle: 'Strong' },
+      content: [{ type: 'text', value: 'Strong text' }],
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = runToHtml(run, { styleResolver: mockStyleResolver as any, useSemanticTags: true });
+    expect(result).toContain('<strong>');
+    expect(result).toContain('Strong text');
+  });
+});

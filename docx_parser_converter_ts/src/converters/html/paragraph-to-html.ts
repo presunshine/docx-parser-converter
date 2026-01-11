@@ -21,6 +21,11 @@ export interface ParagraphToHTMLConverterOptions {
   useHeadings?: boolean;
 }
 
+export interface ParagraphContentToHTMLOptions extends ParagraphToHTMLConverterOptions {
+  imageData?: ImageData;
+  styleResolver?: StyleResolver | null;
+}
+
 /**
  * Escapes HTML special characters in a string.
  */
@@ -93,14 +98,18 @@ export function hyperlinkToHtml(
 export function paragraphContentToHtml(
   item: Run | Hyperlink | BookmarkStart | BookmarkEnd | unknown,
   relationships?: Record<string, string>,
-  options?: ParagraphToHTMLConverterOptions & { imageData?: ImageData }
+  options?: ParagraphContentToHTMLOptions
 ): string {
   if (!item || typeof item !== 'object') return '';
 
   // Check item type based on properties
   if ('content' in item && 'rPr' in item) {
     // It's a Run
-    return runToHtml(item as Run, { ...options, imageData: options?.imageData });
+    return runToHtml(item as Run, {
+      ...options,
+      imageData: options?.imageData,
+      styleResolver: options?.styleResolver,
+    });
   }
   if ('rId' in item || 'anchor' in item) {
     // It's a Hyperlink
@@ -117,7 +126,11 @@ export function paragraphContentToHtml(
 
   // Try to convert as Run if it has content
   if ('content' in item && Array.isArray((item as Run).content)) {
-    return runToHtml(item as Run, { ...options, imageData: options?.imageData });
+    return runToHtml(item as Run, {
+      ...options,
+      imageData: options?.imageData,
+      styleResolver: options?.styleResolver,
+    });
   }
 
   return '';
@@ -187,12 +200,14 @@ export function paragraphToHtml(
 
   // Handle numbering indent
   if (numberingIndentPt !== undefined) {
-    css['margin-left'] = `${numberingIndentPt}pt`;
+    // Format with one decimal place to match Python output (e.g., 36.0pt)
+    css['margin-left'] = `${numberingIndentPt.toFixed(1)}pt`;
   }
 
   // Handle numbering hanging indent (negative text-indent)
   if (numberingHangingPt !== undefined) {
-    css['text-indent'] = `-${numberingHangingPt}pt`;
+    // Format with one decimal place to match Python output
+    css['text-indent'] = `-${numberingHangingPt.toFixed(1)}pt`;
   }
 
   // Build attributes
@@ -233,6 +248,7 @@ export function paragraphToHtml(
           useSemanticTags: options?.useSemanticTags,
           useClasses: options?.useClasses,
           imageData: options?.imageData,
+          styleResolver: options?.styleResolver,
         })
       )
       .join('');
