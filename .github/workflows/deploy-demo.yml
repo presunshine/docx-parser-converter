@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - ts-refactor  # Remove this line after merging to main
     paths:
       - 'docx_parser_converter_ts/**'
   workflow_dispatch:  # Allow manual trigger
