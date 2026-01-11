@@ -7,7 +7,7 @@ Convert Microsoft Word DOCX files to HTML and plain text. Available for both **P
 - **High-fidelity HTML conversion** with CSS styling
 - **Plain text extraction** with optional Markdown formatting
 - **Rich text formatting**: bold, italic, underline, strikethrough, subscript, superscript, highlight
-- **Images**: inline and floating images (Python only)
+- **Images**: inline and floating images
 - **Tables**: cell merging, borders, shading
 - **Lists**: bullets, numbered, multi-level
 - **Hyperlinks**: resolved from document relationships
@@ -121,7 +121,7 @@ const text = await docxToText(buffer, config);
 | **Lists** (bullets, numbered, multi-level) | ✅ | ✅ |
 | **Tables** (borders, merging, shading) | ✅ | ✅ |
 | **Hyperlinks** | ✅ | ✅ |
-| **Images** (inline and floating) | ✅ | ❌ |
+| **Images** (inline and floating) | ✅ | ✅ |
 | **Style inheritance** | ✅ | ✅ |
 
 ## Environment Compatibility

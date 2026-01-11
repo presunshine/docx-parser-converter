@@ -254,13 +254,17 @@ const text = await docxToText(null);  // Returns ""
 - Cell shading and backgrounds
 - Column widths and table alignment
 
+### Images
+- Inline images with dimensions and alt text
+- Floating/anchored images with positioning (left, right, center)
+- Embedded as base64 data URLs in HTML output
+
 ### Hyperlinks
 - External URLs resolved from relationships
 
 ## TypeScript-Specific Limitations
 
 The TypeScript implementation does **not** currently support:
-- Images (inline or floating)
 - Headers and footers
 - Footnotes and endnotes
 - Comments
@@ -414,7 +418,6 @@ pnpm lint
 ## Known Limitations
 
 ### Not Currently Supported
-- **Images**: Inline and floating images are not extracted
 - **Headers and footers**: Document headers/footers are not included
 - **Footnotes and endnotes**: These are not extracted
 - **Comments and track changes**: Revision marks are not processed
