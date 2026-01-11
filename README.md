@@ -13,6 +13,12 @@ Convert Microsoft Word DOCX files to HTML and plain text. Available for both **P
 - **Hyperlinks**: resolved from document relationships
 - **Style inheritance**: follows Word's style chain
 
+## 🚀 Try the Live Demo
+
+**[Open the Interactive Demo →](https://omer-go.github.io/docx-parser-converter/)**
+
+Upload a DOCX file and see it converted to HTML or plain text instantly in your browser. Experiment with all configuration options.
+
 ## ⚠️ Python v1.0.0 Breaking Changes
 
 The Python package (v1.0.0) has a **completely rewritten API**. If upgrading from a previous version:
