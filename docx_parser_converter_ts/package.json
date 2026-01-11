@@ -65,6 +65,9 @@
   ],
   "author": "Omer Hayun <omerha86@gmail.com>",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/omer-go/docx-parser-converter.git"
