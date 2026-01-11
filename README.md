@@ -34,6 +34,8 @@ pip install docx-parser-converter
 ```bash
 npm install @omer-go/docx-parser-converter-ts
 # or
+pnpm add @omer-go/docx-parser-converter-ts
+# or
 yarn add @omer-go/docx-parser-converter-ts
 ```
 
@@ -57,19 +59,22 @@ docx_to_html("document.docx", output_path="output.html")
 ### TypeScript/JavaScript
 
 ```typescript
-import { DocxToHtmlConverter, DocxToTxtConverter } from '@omer-go/docx-parser-converter-ts';
+import { docxToHtml, docxToText } from '@omer-go/docx-parser-converter-ts';
 
-// In browser with file input
+// Browser: from file input
 const file = document.getElementById('fileInput').files[0];
+const html = await docxToHtml(file);
+const text = await docxToText(file);
+
+// Browser: from ArrayBuffer
 const arrayBuffer = await file.arrayBuffer();
+const html = await docxToHtml(arrayBuffer);
 
-// Convert to HTML
-const htmlConverter = await DocxToHtmlConverter.create(arrayBuffer);
-const html = htmlConverter.convertToHtml();
+// Node.js: from file path
+const html = await docxToHtml('document.docx');
 
-// Convert to plain text
-const txtConverter = await DocxToTxtConverter.create(arrayBuffer);
-const text = txtConverter.convertToTxt();
+// Node.js: save directly to file
+await docxToHtml('document.docx', undefined, { outputPath: 'output.html' });
 ```
 
 ## Configuration
@@ -93,13 +98,18 @@ html = docx_to_html("document.docx", config=config)
 ### TypeScript/JavaScript
 
 ```typescript
-const converter = await DocxToHtmlConverter.create(arrayBuffer, {
-    useDefaultValues: true
-});
-const html = converter.convertToHtml();
+import { docxToHtml, docxToText, ConversionConfig } from '@omer-go/docx-parser-converter-ts';
 
-const txtConverter = await DocxToTxtConverter.create(arrayBuffer);
-const text = txtConverter.convertToTxt({ indent: true });
+const config: ConversionConfig = {
+  title: 'My Document',
+  styleMode: 'inline',         // "inline", "class", or "none"
+  useSemanticTags: false,      // CSS spans vs <strong>, <em>
+  textFormatting: 'plain',     // "plain" or "markdown"
+  tableMode: 'auto',           // "auto", "ascii", "tabs", "plain"
+};
+
+const html = await docxToHtml(buffer, config);
+const text = await docxToText(buffer, config);
 ```
 
 ## Supported Elements
@@ -113,6 +123,16 @@ const text = txtConverter.convertToTxt({ indent: true });
 | **Hyperlinks** | ✅ | ✅ |
 | **Images** (inline and floating) | ✅ | ❌ |
 | **Style inheritance** | ✅ | ✅ |
+
+## Environment Compatibility
+
+| Environment | Python | TypeScript |
+|-------------|--------|------------|
+| **Server / Node.js** | ✅ | ✅ |
+| **Browser** | ❌ | ✅ |
+| **File path input** | ✅ | ✅ (Node.js only) |
+| **Binary input** | ✅ | ✅ |
+| **ArrayBuffer / Blob** | ❌ | ✅ |
 
 ## Known Limitations
 
@@ -149,8 +169,9 @@ pdm run pytest
 
 # TypeScript development
 cd docx_parser_converter_ts
-npm install
-npm run build
+pnpm install
+pnpm build
+pnpm test
 ```
 
 ## License
