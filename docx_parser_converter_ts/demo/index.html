@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DOCX Parser Converter - Demo</title>
+    <title>DOCX Parser Converter - Standalone Demo</title>
     <style>
         * {
             margin: 0;
@@ -40,6 +40,15 @@
         .header p {
             font-size: 1.2em;
             opacity: 0.9;
+        }
+
+        .header .standalone-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            margin-top: 10px;
         }
 
         .demo-card {
@@ -397,6 +406,7 @@
         <div class="header">
             <h1>📄 DOCX Parser Converter</h1>
             <p>High-performance TypeScript library for converting DOCX documents to HTML and plain text</p>
+            <div class="standalone-badge">✨ Standalone HTML - No Build Required</div>
         </div>
 
         <div class="demo-card">
@@ -547,9 +557,9 @@
 
         <div class="features">
             <div class="feature-card">
-                <div class="feature-icon">⚡</div>
-                <h3>High Performance</h3>
-                <p>Optimized for speed in browser environments</p>
+                <div class="feature-icon">📦</div>
+                <h3>Standalone</h3>
+                <p>Works without a build server - just open in browser</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon">🔧</div>
@@ -566,16 +576,17 @@
                 <h3>Browser Ready</h3>
                 <p>No server required - runs entirely client-side</p>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon">📦</div>
-                <h3>Zero Dependencies</h3>
-                <p>Lightweight with minimal bundle size</p>
-            </div>
         </div>
     </div>
 
-    <script type="module">
-        import { docxToHtml, docxToText } from '../src/index.ts';
+    <!-- Load the UMD bundle - adjust path as needed -->
+    <!-- For local use: <script src="../dist/docx-parser-converter.umd.js"></script> -->
+    <!-- For CDN (when published): <script src="https://unpkg.com/@omer-go/docx-parser-converter-ts"></script> -->
+    <script src="../dist/docx-parser-converter.umd.js"></script>
+    
+    <script>
+        // Get the library from the global namespace
+        const { docxToHtml, docxToText } = DocxParserConverter;
 
         let currentFile = null;
 
@@ -798,9 +809,12 @@
             statusArea.innerHTML = `<div class="status ${type}">${message}</div>`;
         }
 
-        // Log library version info
-        console.log('DOCX Parser Converter Demo loaded');
-        console.log('Using docxToHtml and docxToText from @omer-go/docx-parser-converter-ts');
+        // Check if library loaded
+        if (typeof DocxParserConverter === 'undefined') {
+            showStatus('❌ Library not loaded. Make sure to build first: pnpm build', 'error');
+        } else {
+            console.log('DOCX Parser Converter loaded successfully (standalone mode)');
+        }
     </script>
 </body>
-</html> 
+</html>
