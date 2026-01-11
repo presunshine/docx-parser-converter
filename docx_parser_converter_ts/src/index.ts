@@ -39,7 +39,7 @@ export { DEFAULT_CONFIG, toHtmlConfig, toTextConfig } from './config';
 // Types
 // =============================================================================
 
-export type { DocxInput, DocxMetadata } from './api';
+export type { DocxInput, DocxMetadata, ConversionOptions } from './api';
 export type { DocxSource } from './core/docx-reader';
 
 // =============================================================================

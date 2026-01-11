@@ -51,6 +51,12 @@ export interface DocxMetadata {
   imageData: ImageData;
 }
 
+/** Additional options for conversion (separate from config) */
+export interface ConversionOptions {
+  /** Path to write output file (Node.js only) */
+  outputPath?: string;
+}
+
 // =============================================================================
 // DOCX Parsing
 // =============================================================================
@@ -138,6 +144,7 @@ export async function parseDocx(
  *   - Document model instance
  *   - null/undefined (returns empty HTML document)
  * @param config - Conversion configuration options
+ * @param options - Additional conversion options (e.g., outputPath for file writing)
  * @returns Promise resolving to HTML string
  * @throws DocxNotFoundError if file path doesn't exist
  * @throws DocxReadError if file cannot be read
@@ -158,38 +165,49 @@ export async function parseDocx(
  *   styleMode: 'class',
  *   fragmentOnly: true,
  * });
+ *
+ * // With output file (Node.js only)
+ * const html = await docxToHtml('/path/to/doc.docx', {}, { outputPath: '/path/to/output.html' });
  * ```
  */
 export async function docxToHtml(
   source: DocxInput,
-  config?: ConversionConfig
+  config?: ConversionConfig,
+  options?: ConversionOptions
 ): Promise<string> {
   const htmlConfig = toHtmlConfig(config);
+
+  let result: string;
 
   // Handle null/undefined input
   if (source === null || source === undefined) {
     const converter = new HTMLConverter(htmlConfig);
-    return converter.convert(null);
-  }
-
-  // Handle Document model input directly
-  if (isDocumentModel(source)) {
+    result = converter.convert(null);
+  } else if (isDocumentModel(source)) {
+    // Handle Document model input directly
     const converter = new HTMLConverter(htmlConfig);
-    return converter.convert(source);
+    result = converter.convert(source);
+  } else {
+    // Parse DOCX file
+    const [document, metadata] = await parseDocx(source as DocxSource);
+
+    // Convert to HTML
+    const converter = new HTMLConverter(htmlConfig, {
+      styles: metadata.styles ?? undefined,
+      numbering: metadata.numbering ?? undefined,
+      relationships: metadata.relationships,
+      imageData: metadata.imageData,
+    });
+
+    result = converter.convert(document);
   }
 
-  // Parse DOCX file
-  const [document, metadata] = await parseDocx(source as DocxSource);
+  // Write to file if outputPath is specified
+  if (options?.outputPath) {
+    await writeOutput(result, options.outputPath);
+  }
 
-  // Convert to HTML
-  const converter = new HTMLConverter(htmlConfig, {
-    styles: metadata.styles ?? undefined,
-    numbering: metadata.numbering ?? undefined,
-    relationships: metadata.relationships,
-    imageData: metadata.imageData,
-  });
-
-  return converter.convert(document);
+  return result;
 }
 
 // =============================================================================
@@ -210,6 +228,7 @@ export async function docxToHtml(
  *   - Document model instance
  *   - null/undefined (returns empty string)
  * @param config - Conversion configuration options
+ * @param options - Additional conversion options (e.g., outputPath for file writing)
  * @returns Promise resolving to plain text string
  * @throws DocxNotFoundError if file path doesn't exist
  * @throws DocxReadError if file cannot be read
@@ -233,42 +252,73 @@ export async function docxToHtml(
  * const text = await docxToText(buffer, {
  *   tableMode: 'ascii',
  * });
+ *
+ * // With output file (Node.js only)
+ * const text = await docxToText('/path/to/doc.docx', {}, { outputPath: '/path/to/output.txt' });
  * ```
  */
 export async function docxToText(
   source: DocxInput,
-  config?: ConversionConfig
+  config?: ConversionConfig,
+  options?: ConversionOptions
 ): Promise<string> {
   const textConfig = toTextConfig(config);
 
+  let result: string;
+
   // Handle null/undefined input
   if (source === null || source === undefined) {
-    return '';
-  }
-
-  // Handle Document model input directly
-  if (isDocumentModel(source)) {
+    result = '';
+  } else if (isDocumentModel(source)) {
+    // Handle Document model input directly
     const converter = new TextConverter({ config: textConfig });
-    return converter.convert(source);
+    result = converter.convert(source);
+  } else {
+    // Parse DOCX file
+    const [document, metadata] = await parseDocx(source as DocxSource);
+
+    // Convert to text
+    const converter = new TextConverter({
+      config: textConfig,
+      styles: metadata.styles ?? undefined,
+      numbering: metadata.numbering ?? undefined,
+      hyperlinkUrls: metadata.relationships,
+    });
+
+    result = converter.convert(document);
   }
 
-  // Parse DOCX file
-  const [document, metadata] = await parseDocx(source as DocxSource);
+  // Write to file if outputPath is specified
+  if (options?.outputPath) {
+    await writeOutput(result, options.outputPath);
+  }
 
-  // Convert to text
-  const converter = new TextConverter({
-    config: textConfig,
-    styles: metadata.styles ?? undefined,
-    numbering: metadata.numbering ?? undefined,
-    hyperlinkUrls: metadata.relationships,
-  });
-
-  return converter.convert(document);
+  return result;
 }
 
 // =============================================================================
 // Helper Functions
 // =============================================================================
+
+/**
+ * Write content to a file (Node.js only).
+ *
+ * @param content - Content to write
+ * @param outputPath - Path to write to
+ * @throws Error if running in browser environment
+ */
+async function writeOutput(content: string, outputPath: string): Promise<void> {
+  // Dynamic import of Node.js fs module for platform compatibility
+  try {
+    const fs = await import('node:fs/promises');
+    await fs.writeFile(outputPath, content, 'utf-8');
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ERR_MODULE_NOT_FOUND') {
+      throw new Error('File writing is only supported in Node.js environment');
+    }
+    throw error;
+  }
+}
 
 /**
  * Check if a value is a Document model.
