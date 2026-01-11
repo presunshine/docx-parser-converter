@@ -157,6 +157,17 @@ export function eighthsToPt(eighths: number | null | undefined): number | null {
 }
 
 /**
+ * Format a point value with .0 suffix for integers to match Python output.
+ * E.g., 234 becomes "234.0pt", 1.5 becomes "1.5pt"
+ */
+export function formatPtValue(pt: number): string {
+  if (Number.isInteger(pt)) {
+    return `${pt.toFixed(1)}pt`;
+  }
+  return `${pt}pt`;
+}
+
+/**
  * Convert EMUs to pixels.
  */
 export function emuToPx(emu: number | null | undefined): number | null {
@@ -302,7 +313,9 @@ export function borderToCss(border: Border | null | undefined): string | null {
     color = '#000000'; // Default to black
   }
 
-  return `${widthPt}pt ${style} ${color}`;
+  // Format width with .0 suffix for integer values to match Python (1.0pt instead of 1pt)
+  const widthStr = Number.isInteger(widthPt) ? widthPt.toFixed(1) : String(widthPt);
+  return `${widthStr}pt ${style} ${color}`;
 }
 
 /**

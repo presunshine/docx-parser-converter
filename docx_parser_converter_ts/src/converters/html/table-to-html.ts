@@ -10,7 +10,7 @@ import type { TableRow } from '../../models/document/table';
 import type { TableCell } from '../../models/document/table';
 import type { TableBorders } from '../../models/common/border';
 import type { Paragraph } from '../../models/document/paragraph';
-import { tableCellPropertiesToCss, widthToCss, twipsToPt, borderToCss } from './css-generator';
+import { tableCellPropertiesToCss, widthToCss, twipsToPt, borderToCss, formatPtValue } from './css-generator';
 import { paragraphToHtml } from './paragraph-to-html';
 import type { StyleResolver } from '../common/style-resolver';
 
@@ -152,11 +152,8 @@ export function tableToHtml(
   const numRows = table.tr?.length ?? 0;
   const numCols = calculateNumCols(table);
 
-  // Build table CSS
+  // Build table CSS - order matches Python: width, margin, table-layout, border-collapse
   const tableCss: Record<string, string> = {};
-
-  // Border collapse (always use for DOCX tables)
-  tableCss['border-collapse'] = 'collapse';
 
   // Table width
   if (tblPr?.tblW) {
@@ -193,6 +190,9 @@ export function tableToHtml(
     }
   }
 
+  // Border collapse (always use for DOCX tables) - added last to match Python order
+  tableCss['border-collapse'] = 'collapse';
+
   // Note: Table borders are NOT applied to the table element.
   // They are applied to edge cells instead (in cellToHtml).
 
@@ -220,7 +220,9 @@ export function tableToHtml(
       .map((col) => {
         if (col.w) {
           const widthPt = twipsToPt(col.w);
-          return `<col style="width: ${widthPt}pt">`;
+          // Format with .0 suffix for integer values to match Python
+          const widthStr = widthPt !== null ? formatPtValue(widthPt) : '0pt';
+          return `<col style="width: ${widthStr}">`;
         }
         return '<col>';
       })
@@ -259,11 +261,15 @@ export function tableToHtml(
     if (headerRowsHtml.length > 0) {
       theadHtml = `<thead>${headerRowsHtml.join('')}</thead>`;
     }
+
+    // Match Python: only use tbody if there are header rows
     if (bodyRowsHtml.length > 0) {
-      tbodyHtml = `<tbody>${bodyRowsHtml.join('')}</tbody>`;
-    } else if (headerRowsHtml.length === 0) {
-      // No header and no body - nothing to render
-      tbodyHtml = '';
+      if (headerRowsHtml.length > 0) {
+        tbodyHtml = `<tbody>${bodyRowsHtml.join('')}</tbody>`;
+      } else {
+        // No header rows - output body rows directly without tbody wrapper
+        tbodyHtml = bodyRowsHtml.join('');
+      }
     }
   }
 

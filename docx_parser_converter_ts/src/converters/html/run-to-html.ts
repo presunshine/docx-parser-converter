@@ -41,16 +41,33 @@ export function textToHtml(text: Text | null): string {
 
   let content = escapeHtml(text.value);
 
-  // Handle xml:space="preserve" - convert spaces to &nbsp;
+  // Handle xml:space="preserve" - convert multiple spaces to &nbsp;
+  // Match Python behavior: only convert the 2nd+ space in a run to &nbsp;
   if (text.space === 'preserve') {
-    // Convert leading/trailing spaces and multiple spaces to &nbsp;
-    content = content.replace(/\s{2}/g, '&nbsp;&nbsp;');
-    if (content.startsWith(' ')) {
-      content = '&nbsp;' + content.slice(1);
+    // Replace runs of 2+ spaces: keep first space as-is, convert rest to &nbsp;
+    let result = '';
+    let i = 0;
+    while (i < content.length) {
+      if (content[i] === ' ') {
+        // Count consecutive spaces
+        let spaceCount = 0;
+        while (i < content.length && content[i] === ' ') {
+          spaceCount++;
+          i++;
+        }
+        // Use &nbsp; for all but first space in a run
+        if (spaceCount > 1) {
+          result += ' ';
+          result += '&nbsp;'.repeat(spaceCount - 1);
+        } else {
+          result += ' ';
+        }
+      } else {
+        result += content[i];
+        i++;
+      }
     }
-    if (content.endsWith(' ')) {
-      content = content.slice(0, -1) + '&nbsp;';
-    }
+    content = result;
   }
 
   return content;
