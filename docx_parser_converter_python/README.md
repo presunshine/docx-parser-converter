@@ -334,4 +334,4 @@ Contributions are welcome! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) for
 ## Related Documentation
 
 - [XML to CSS Conversion](../docs/xml_to_css_conversion.md) - XML to CSS conversion reference
-- [XML Structure Guide](../docs/XML_STRUCTURE_GUIDE.md) - OOXML structure reference
+- [XML Structure Guide](../docs/xml_structure_guide.md) - OOXML structure reference

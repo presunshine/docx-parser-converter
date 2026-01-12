@@ -160,7 +160,7 @@ For detailed documentation specific to each implementation:
 ## Technical Reference
 
 - [XML to CSS Conversion](docs/xml_to_css_conversion.md) - Mapping of DOCX XML elements to CSS
-- [XML Structure Guide](docs/XML_STRUCTURE_GUIDE.md) - OOXML structure reference
+- [XML Structure Guide](docs/xml_structure_guide.md) - OOXML structure reference
 
 ## Development
 
