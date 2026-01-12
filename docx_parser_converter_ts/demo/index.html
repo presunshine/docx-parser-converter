@@ -579,14 +579,10 @@
         </div>
     </div>
 
-    <!-- Load the UMD bundle - adjust path as needed -->
-    <!-- For local use: <script src="../dist/docx-parser-converter.umd.js"></script> -->
-    <!-- For CDN (when published): <script src="https://unpkg.com/@omer-go/docx-parser-converter-ts"></script> -->
-    <script src="../dist/docx-parser-converter.umd.js"></script>
-    
-    <script>
-        // Get the library from the global namespace
-        const { docxToHtml, docxToText } = DocxParserConverter;
+    <!-- Load the ES module bundle from CDN (works standalone) -->
+    <!-- For local development: import from '../dist/docx-parser-converter.es.js' -->
+    <script type="module">
+        import { docxToHtml, docxToText } from 'https://unpkg.com/@omer-go/docx-parser-converter-ts@1.0.0/dist/docx-parser-converter.es.js';
 
         let currentFile = null;
 
@@ -809,12 +805,8 @@
             statusArea.innerHTML = `<div class="status ${type}">${message}</div>`;
         }
 
-        // Check if library loaded
-        if (typeof DocxParserConverter === 'undefined') {
-            showStatus('❌ Library not loaded. Make sure to build first: pnpm build', 'error');
-        } else {
-            console.log('DOCX Parser Converter loaded successfully (standalone mode)');
-        }
+        // ES module loaded successfully
+        console.log('DOCX Parser Converter loaded successfully (ES module)');
     </script>
 </body>
 </html>

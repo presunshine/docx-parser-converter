@@ -24,33 +24,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'pnpm'
-          cache-dependency-path: 'docx_parser_converter_ts/pnpm-lock.yaml'
-
-      - name: Install dependencies
-        working-directory: docx_parser_converter_ts
-        run: pnpm install --frozen-lockfile
-
-      - name: Build library
-        working-directory: docx_parser_converter_ts
-        run: pnpm build
-
       - name: Prepare demo for GitHub Pages
         run: |
           mkdir -p _site
           cp docx_parser_converter_ts/demo/index.html _site/index.html
-          cp -r docx_parser_converter_ts/dist _site/dist
-          # Update the script path in index.html
-          sed -i 's|../dist/docx-parser-converter.umd.js|./dist/docx-parser-converter.umd.js|g' _site/index.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
