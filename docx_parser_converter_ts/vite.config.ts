@@ -1,6 +1,5 @@
 // vite.config.ts
 import { defineConfig } from 'vite';
-import path from 'path';
 import dts from 'vite-plugin-dts';
 
 export default defineConfig({
@@ -15,11 +14,11 @@ export default defineConfig({
     lib: {
       entry: 'src/index.ts', // Main entry point
       name: 'DocxParserConverter',
-      formats: ['es', 'umd', 'iife'],
-      fileName: (format) => `docx-parser-converter.${format}.js`,
+      formats: ['es', 'cjs'],
+      fileName: (format) => `docx-parser-converter.${format === 'es' ? 'es.js' : 'cjs'}`,
     },
     rollupOptions: {
-            output: {
+      output: {
         exports: 'named',
       }
     },
