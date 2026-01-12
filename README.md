@@ -27,6 +27,14 @@ The Python package (v1.0.0) has a **completely rewritten API**. If upgrading fro
 - Old API still works with deprecation warnings
 - New API: `from docx_parser_converter import docx_to_html, docx_to_text`
 
+## ⚠️ TypeScript v1.0.0 - New Package
+
+The TypeScript package (v1.0.0) is a **complete rewrite** and is **not backwards compatible** with previous versions:
+
+- Entirely new API design
+- No migration path from earlier versions
+- See the [TypeScript CHANGELOG](docx_parser_converter_ts/CHANGELOG.md) for details
+
 ## Installation
 
 ### Python
